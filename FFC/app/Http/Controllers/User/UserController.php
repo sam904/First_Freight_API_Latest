@@ -13,7 +13,9 @@ class UserController extends Controller
     public function index(Request $request)
     {
         //pagination
-        $users = User::paginate(10);
+        $users = User::with(['tokens' => function ($query) {
+            $query->where('status', 'activated'); // Adjust the status as needed
+        }])->paginate(10);
 
         return response()->json($users);
     }
@@ -48,7 +50,7 @@ class UserController extends Controller
         $user = User::create([
             'first_name' => $validatedData['first_name'],
             'last_name' => $validatedData['last_name'],
-            'email' => $validatedData['username'],
+            'email' => $validatedData['email'],
             //$loginType => $request->username,
             'mobile_number' => $validatedData['mobile_number'],
             'password' => Hash::make($validatedData['password']),

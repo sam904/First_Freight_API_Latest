@@ -22,6 +22,7 @@ return new class extends Migration {
 
             // Indexing
             $table->index('user_id'); // Adding index to user_id
+            $table->index('status'); // Adding index to user_id
 
             // If you want to add foreign key constraint with 'users' table
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
