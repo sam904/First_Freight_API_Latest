@@ -9,7 +9,7 @@ use App\Http\Middleware\CheckTokenExpiry;
 // Public Routes
 Route::post('login', [AuthController::class, 'login']);
 Route::post('refresh', [AuthController::class, 'refreshToken']);
-
+Route::post('register', [UserController::class, 'store']);
 
 
 
@@ -25,7 +25,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
             function () {
                 Route::controller(UserController::class)->group(function () {
                     Route::get('/index', 'index');
-                    Route::post('/register', 'store');
+                    Route::post('/update/{id}', 'update');
                 });
             }
         );

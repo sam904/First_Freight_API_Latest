@@ -12,15 +12,26 @@ class CheckTokenExpiry
 {
     public function handle($request, Closure $next)
     {
+        $authHeader = $request->header('Authorization');
+
+        // Check if it contains a Bearer token
+        if ($authHeader && preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
+            $bearerToken = $matches[1]; // The token itself
+        } else {
+            return response()->json(['error' => 'Token not provided'], 401);
+        }
+
         $user = Auth::user();
         if (!$user) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         // Retrieve the last stored token data for the user
-        $tokenData = DB::table('tokens')->where('user_id', $user->id)->orderBy('access_token_expires_at', 'desc')->first();
-
-        Log::info($tokenData->id);
+        $tokenData = DB::table('tokens')
+            ->where('user_id', $user->id)
+            ->where('status', 'activated')
+            ->where('access_token', $bearerToken)
+            ->orderBy('access_token_expires_at', 'desc')->first();
 
         if (!$tokenData) {
             return response()->json(['error' => 'Token not found'], 401);

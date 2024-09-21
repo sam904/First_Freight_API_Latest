@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Services\Auth\TokenService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -29,13 +30,15 @@ class AuthController extends Controller
         }
 
         // Determine whether the input is an email or username
-        $loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        //$loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         // Create login credentials array
         $credentials = [
-            $loginType => $request->username,
+            'email' => $request->username,
             'password' => $request->password,
         ];
+
+
 
         if (!Auth::attempt($credentials)) {
             return response()->json(['error' => 'Invalid credentials'], 401);

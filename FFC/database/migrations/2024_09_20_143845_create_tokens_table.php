@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->dateTime('access_token_expires_at')->nullable();
             $table->text('refresh_token');
             $table->dateTime('refresh_token_expires_at')->nullable();
-            $table->string('status')->default('active');
+            $table->string('status')->default('activated');
             $table->timestamps();
 
             // Indexing

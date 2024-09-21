@@ -2,16 +2,12 @@
 
 namespace App\Services\Auth;
 
-use Carbon\Carbon;
-use Laravel\Passport\TokenRepository;
-use Laravel\Passport\RefreshTokenRepository;
-use Laravel\Passport\Passport;
-use Illuminate\Support\Facades\Response;
-use Crypt;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Exception;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use App\Models\User;
+use Laravel\Passport\Passport;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TokenService
 {
@@ -22,6 +18,7 @@ class TokenService
         $accessTokenResult = $user->createToken('Personal Access Token');
         $accessToken = $accessTokenResult->accessToken;
         $accessTokenExpiry = Carbon::now()->addDays(1);
+
 
         // Generate refresh token (15 days expiry here)
         $refreshTokenResult = $user->createToken('Personal Access Token');
@@ -40,7 +37,7 @@ class TokenService
             ]);
 
             //now update all token status as deactivate except latesid
-            DB::table('tokens')->where('id', $tokensLatestId)->update([
+            DB::table('tokens')->where('id', '!=', $tokensLatestId)->update([
                 'status' => 'deactivated',
                 'updated_at' => Carbon::now(),
             ]);
