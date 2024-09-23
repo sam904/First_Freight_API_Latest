@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class VendorController extends Controller
 {
@@ -56,6 +55,25 @@ class VendorController extends Controller
             // Return error response
             return response()->json($error, 500);
         }
+    }
+
+    public function edit($vendorId)
+    {
+        try {
+            Vendor::findOrFail($vendorId);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['status' => false, 'error' => 'Customer not found'], 404);
+        }
+
+        $Vendor = Vendor::with([
+            'sales',
+            'finance'
+        ])->find($vendorId);
+
+        return response()->json([
+            'status' => true,
+            'data' => $Vendor
+        ], 200);
     }
 
     public function update(Request $request, $id)
