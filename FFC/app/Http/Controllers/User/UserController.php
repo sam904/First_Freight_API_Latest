@@ -13,10 +13,11 @@ class UserController extends Controller
     public function index(Request $request)
     {
         //pagination
-        $users = User::with(['tokens' => function ($query) {
-            $query->where('status', 'activated'); // Adjust the status as needed
-        }])->paginate(10);
+        // $users = User::with(['tokens' => function ($query) {
+        //     $query->where('status', 'activated'); // Adjust the status as needed
+        // }])->paginate(10);
 
+        $users = User::paginate(10);
         return response()->json($users);
     }
 

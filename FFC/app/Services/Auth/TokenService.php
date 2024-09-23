@@ -2,11 +2,10 @@
 
 namespace App\Services\Auth;
 
+use App\Models\User;
 use Exception;
 use Carbon\Carbon;
-use App\Models\User;
-use Laravel\Passport\Passport;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Support\Facades\Log;
 
 class TokenService
@@ -14,85 +13,42 @@ class TokenService
 
     public function generateToken($user)
     {
-        // Generate access token with expiry (1 hour here)
+        $firstName = $user->first_name;
+        // Generate access token with expiry (1 days here)
         $accessTokenResult = $user->createToken('Personal Access Token');
         $accessToken = $accessTokenResult->accessToken;
         $accessTokenExpiry = Carbon::now()->addDays(1);
 
-
-        // Generate refresh token (15 days expiry here)
-        $refreshTokenResult = $user->createToken('Personal Access Token');
-        $refreshToken = $refreshTokenResult->accessToken; // Simulate refresh token (you can use Passport's refresh token)
+        // Generate refresh token (30 days expiry here)
+        $refreshTokenResult = $user->createToken('Personal Access Token}');
+        $refreshToken = $refreshTokenResult->accessToken;
         $refreshTokenExpiry = Carbon::now()->addDays(30);
 
         try {
-            // Store tokens in the database
-            $tokensLatestId  = DB::table('tokens')->insertGetId([
-                'user_id' => $user->id,
+            $user->update([
                 'access_token' => $accessToken,
                 'access_token_expires_at' => $accessTokenExpiry,
                 'refresh_token' => $refreshToken,
                 'refresh_token_expires_at' => $refreshTokenExpiry,
-                'updated_at' => Carbon::now()
             ]);
-
-            //now update all token status as deactivate except latesid
-            DB::table('tokens')->where('id', '!=', $tokensLatestId)->update([
-                'status' => 'deactivated',
-                'updated_at' => Carbon::now(),
-            ]);
-
-            return [
-                'access_token' => $accessToken,
-                'access_token_expires_at' => $accessTokenExpiry,
-                'refresh_token' => $refreshToken,
-                'refresh_token_expires_at' => $refreshTokenExpiry,
-            ];
+            return $user;
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            return $e;
         }
     }
 
     public function refreshToken($refreshToken)
     {
-        $tokenData = DB::table('tokens')->where('refresh_token', $refreshToken)->orderBy('refresh_token_expires_at', 'desc')->first();
+        $user = User::where('refresh_token', $refreshToken)->first();
 
-        if (!$tokenData) {
-            return response()->json(['error' => 'Invalid refresh token'], 401);
+        // Check if user exists and if the refresh token matches securely
+        if (!$user || !hash_equals($user->refresh_token, $refreshToken)) {
+            return ['error' => 'Invalid refresh token'];
         }
 
-        // Check if the refresh token has expired
-        if (Carbon::now()->greaterThan($tokenData->refresh_token_expires_at)) {
-            return response()->json(['error' => 'Refresh token has expired'], 401);
+        if (Carbon::now()->greaterThan($user->refresh_token_expires_at)) {
+            return ['error' => 'Refresh token has expired'];
         }
-
-        // Generate new access token and update the database
-        $user = User::find($tokenData->user_id);
-        $accessTokenResult = $user->createToken('Personal Access Token');
-        $newAccessToken = $accessTokenResult->accessToken;
-        $newAccessTokenExpiry = Carbon::now()->addDays(1);
-
-        // Generate refresh token (15 days expiry here)
-        $refreshTokenResult = $user->createToken('Personal Access Token');
-        $refreshToken = $refreshTokenResult->accessToken; // Simulate refresh token (you can use Passport's refresh token)
-        $refreshTokenExpiry = Carbon::now()->addDays(30);
-
-        try {
-            DB::table('tokens')->where('user_id', $user->id)->update([
-                'access_token' => $newAccessToken,
-                'access_token_expires_at' => $newAccessTokenExpiry,
-                'refresh_token' => $refreshToken,
-                'refresh_token_expires_at' => $refreshTokenExpiry,
-                'updated_at' => Carbon::now(),
-            ]);
-            return [
-                'access_token' => $newAccessToken,
-                'access_token_expires_at' => $newAccessTokenExpiry,
-                'refresh_token' => $refreshToken,
-                'refresh_token_expires_at' => $refreshTokenExpiry,
-            ];
-        } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
-        }
+        return $this->generateToken($user);
     }
 }

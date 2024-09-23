@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Services\Auth\TokenService;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -38,17 +39,18 @@ class AuthController extends Controller
             'password' => $request->password,
         ];
 
-
-
         if (!Auth::attempt($credentials)) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
 
         $user = Auth::user();
 
-        $tokenData = $this->tokenService->generateToken($user);
-
-        return response()->json($tokenData, 200);
+        try {
+            $tokenData = $this->tokenService->generateToken($user);
+            return response()->json($tokenData, 200);
+        } catch (Exception $e) {
+            return response()->json($e->getMessage(), 400);
+        }
     }
 
     public function refreshToken(Request $request)
@@ -64,7 +66,10 @@ class AuthController extends Controller
         $refreshToken = $request->refresh_token;
 
         $tokenData = $this->tokenService->refreshToken($refreshToken);
-
+        // Check if the result contains an error
+        if (isset($tokenData['error'])) {
+            return response()->json(['status' => false, 'error' => $tokenData['error']], 401); // Return only the error message
+        }
         return response()->json($tokenData, 200);
     }
 

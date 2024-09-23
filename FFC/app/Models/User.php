@@ -25,6 +25,10 @@ class User extends Authenticatable
         'password',
         'mobile_number',
         'profile_image',
+        'access_token',
+        'access_token_expires_at',
+        'refresh_token',
+        'refresh_token_expires_at',
     ];
 
     /**
@@ -48,10 +52,5 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    public function tokens()
-    {
-        return $this->hasMany(Tokens::class);
     }
 }

@@ -4,19 +4,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\Vendor\VendorController;
 use App\Http\Middleware\CheckTokenExpiry;
 
 // Public Routes
 Route::post('login', [AuthController::class, 'login']);
-Route::post('refresh', [AuthController::class, 'refreshToken']);
 Route::post('register', [UserController::class, 'store']);
-
+Route::post('refresh', [AuthController::class, 'refreshToken']);
 
 
 // Group for routes that require authentication and token expiration check
 Route::middleware(['auth:api', CheckTokenExpiry::class])
     ->group(function () {
         Route::get('/test', [AuthController::class, 'test']); // Protected route
+
         Route::get('/user', function (Request $request) {
             return $request->user();
         });
@@ -26,6 +27,18 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                 Route::controller(UserController::class)->group(function () {
                     Route::get('/index', 'index');
                     Route::post('/update/{id}', 'update');
+                });
+            }
+        );
+
+        //Verndor Management
+        Route::prefix('vendor')->group(
+            function () {
+                Route::controller(VendorController::class)->group(function () {
+                    Route::get('/index', 'index');
+                    Route::post('/save', action: 'store');
+                    Route::post('/update/{id}', action: 'update');
+                    Route::delete('/delete/{id}', action: 'destroy');
                 });
             }
         );
