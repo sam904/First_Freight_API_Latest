@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -58,7 +59,7 @@ class UserController extends Controller
             'profile_image' => $validatedData['profile_image'],
         ]);
 
-        return response()->json(['message' => 'User registered successfully!']);
+        return response()->json(['status' => true, 'message' => 'User registered successfully!']);
     }
 
     public function update(Request $request, $id)
@@ -91,7 +92,7 @@ class UserController extends Controller
         $update = $user->update($validatedData);
 
         if ($update) {
-            return response()->json(['message' => 'User updated successfully.']);
+            return response()->json(['status' => true, 'message' => 'User updated successfully.']);
         }
 
         return abort(500); //Return server error if user update fails
@@ -110,5 +111,19 @@ class UserController extends Controller
 
         return abort(500); //Return a server error if the task deletion fails
 
+    }
+
+    public function status(Request $request, $userId)
+    {
+        try {
+            $user = User::findOrFail($userId);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['status' => false, 'message' => 'User not found'], 404);
+        }
+
+        $user->update([
+            'status' => $request->status,
+        ]);
+        return response()->json(['status' => true, 'message' => 'User status updated successfully']);
     }
 }
