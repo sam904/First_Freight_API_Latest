@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Customer\CustomerController;
+use App\Http\Controllers\Permission\PermissionController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Vendor\VendorController;
 use App\Http\Middleware\CheckTokenExpiry;
@@ -55,6 +56,17 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', 'update');
                     Route::delete('/delete/{id}', action: 'destroy');
+                });
+            }
+        );
+
+        //Permission
+        Route::prefix('permission')->group(
+            function () {
+                Route::controller(PermissionController::class)->group(function () {
+                    Route::get('/view/{id}', 'view');
+                    Route::get('/master', 'index');
+                    Route::post('/saveUserPermissions/{id}', 'saveUserPermissions');
                 });
             }
         );

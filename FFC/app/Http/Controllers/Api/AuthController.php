@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Services\Auth\TokenService;
@@ -27,11 +28,19 @@ class AuthController extends Controller
                 'password' => 'required|string',
             ]);
         } catch (ValidationException $e) {
-            return response()->json($e->errors(), 422);
+            return response()->json(['status' => false, 'error' => $e->errors()], 422);
         }
 
         // Determine whether the input is an email or username
         //$loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        // Check if the user exists
+        $user = User::where('email', $request->email)->first();
+
+        // Check if user exists and is inactive
+        if ($user && $user->status != "activated") {
+            return response()->json(['status' => false, 'error' => 'Your account is inactive. Please contact support.'], 401);
+        }
 
         // Create login credentials array
         $credentials = [
@@ -40,16 +49,16 @@ class AuthController extends Controller
         ];
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+            return response()->json(['status' => false, 'error' => 'Invalid credentials'], 401);
         }
 
         $user = Auth::user();
 
         try {
             $tokenData = $this->tokenService->generateToken($user);
-            return response()->json($tokenData, 200);
+            return response()->json(['status' => false, 'data' => $tokenData], 200);
         } catch (Exception $e) {
-            return response()->json($e->getMessage(), 400);
+            return response()->json(['status' => false, 'error' => $e->getMessage()], 400);
         }
     }
 
@@ -60,7 +69,7 @@ class AuthController extends Controller
                 'refresh_token' => 'required',
             ]);
         } catch (ValidationException $e) {
-            return response()->json($e->errors(), 422);
+            return response()->json(['status' => false, 'error' => $e->errors()], 422);
         }
 
         $refreshToken = $request->refresh_token;

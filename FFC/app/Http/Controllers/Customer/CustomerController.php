@@ -27,7 +27,7 @@ class CustomerController extends Controller
             'delivery',
             'contact',
             'finance'
-        ])->paginate(2);
+        ])->paginate(10);
         return response()->json($customer);
     }
 

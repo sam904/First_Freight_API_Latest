@@ -36,7 +36,7 @@ class UserController extends Controller
                 'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
             ]);
         } catch (ValidationException $e) {
-            return response()->json($e->errors(), 500);
+            return response()->json(['status' => false, 'error' => $e->errors()], 500);
         }
 
         // Determine whether the input is an email or username
@@ -74,7 +74,7 @@ class UserController extends Controller
                 'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
             ]);
         } catch (ValidationException $e) {
-            return response()->json($e->errors(), 500);
+            return response()->json(['status' => false, 'error' => $e->errors()], 500);
         }
 
         if ($image = $request->file('profile_image')) {

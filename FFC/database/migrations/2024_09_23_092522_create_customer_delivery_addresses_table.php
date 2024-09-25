@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('customer_id'); // INT NOT NULL
             $table->timestamps();
 
-            // If you want to add foreign key constraint with 'users' table
+            // If you want to add foreign key constraint with 'customers' table
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
         });
     }
