@@ -56,7 +56,7 @@ class AuthController extends Controller
 
         try {
             $tokenData = $this->tokenService->generateToken($user);
-            return response()->json(['status' => false, 'data' => $tokenData], 200);
+            return response()->json(['status' => true, 'message' => 'User login successfully', 'data' => $tokenData], 200);
         } catch (Exception $e) {
             return response()->json(['status' => false, 'error' => $e->getMessage()], 400);
         }
