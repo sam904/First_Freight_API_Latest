@@ -48,12 +48,9 @@ class CustomerService
         $this->storeFinanceDetails($request, $customer);
 
 
-        $successData = [
-            'success' => true,
-            'message' => "Customer created successfully."
-        ];
 
-        return $successData;
+
+        return true;
     }
 
 
@@ -61,8 +58,8 @@ class CustomerService
     {
         try {
             $customer = Customer::findOrFail($id);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => false, 'error' => 'Customer not found'], 404);
+        } catch (\Exception $e) {
+            return ['errorMsg' => "Customer not found"];
         }
 
         // Delete existing related records
@@ -101,12 +98,7 @@ class CustomerService
         $this->storeFinanceDetails($request, $customer);
 
 
-        $successData = [
-            'success' => true,
-            'message' => "Customer updated successfully."
-        ];
-
-        return $successData;
+        return true;
     }
 
 

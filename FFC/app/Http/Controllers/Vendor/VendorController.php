@@ -23,9 +23,9 @@ class VendorController extends Controller
     {
         $vendor = Vendor::with(['sales', 'finance'])->paginate(10);
         return response()->json([
-            "status" => "success",
+            "status" => "true",
             "data" => $vendor
-        ]);
+        ], 200);
     }
 
     public function store(Request $request)
@@ -36,24 +36,34 @@ class VendorController extends Controller
 
             // Check if the validated data is an array (i.e., no validation errors)
             if (!is_array($validatedData)) {
-                return response()->json($validatedData, 422); // Return the validation error response
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Vendor validation failed',
+                    'error' => $validatedData
+                ], 422);
             }
 
-            $vendor = $this->vendorService->createVendor($request);
+            $this->vendorService->createVendor($request);
 
             DB::commit();
 
-            return response()->json($vendor, 200);
+            return response()->json([
+                'status' => true,
+                'message' => "Vendor created successfully"
+            ], 201);
         } catch (\Exception $e) {
             // Rollback the transaction if something goes wrong
-            // DB::rollBack();
+            DB::rollBack();
 
             // Optionally, log the error for debugging
             Log::error('Failed to create vendor data: ', ['error' => $e->getMessage()]);
 
-            $error = ['success' => false, 'message' => 'Failed to save vendor data.', $e->getMessage()];
             // Return error response
-            return response()->json($error, 500);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to save vendor data',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -62,7 +72,10 @@ class VendorController extends Controller
         try {
             Vendor::findOrFail($vendorId);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => false, 'error' => 'Customer not found'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Vendor not found'
+            ], 404);
         }
 
         $Vendor = Vendor::with([
@@ -86,30 +99,49 @@ class VendorController extends Controller
 
             // Check if the validated data is an array (i.e., no validation errors)
             if (!is_array($validatedData)) {
-                return response()->json($validatedData, 422); // Return the validation error response
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Vendor validation failed',
+                    'error' => $validatedData
+                ], 422);
             }
 
-            $vendor = $this->vendorService->updateVendor($request, $id);
+            $vendorMsg = $this->vendorService->updateVendor($request, $id);
 
             DB::commit();
 
-            return response()->json($vendor, 200);
+            if (isset($vendorMsg['errorMsg'])) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $vendorMsg['errorMsg']
+                ], 404); // Return only the error message
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => "Vendor updated successfully",
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction if something goes wrong            
             Log::error('Failed to update vendor data: ', ['error' => $e->getMessage()]);
-            $error = ['success' => false, 'message' => 'Failed to update vendor data.', $e->getMessage()];
-            return response()->json($error, 500); // Return error response
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update vendor data',
+                'error' => $e->getMessage()
+            ], 500); // Return error response
         }
     }
 
     public function destroy($vendorId)
     {
-
         try {
             // Find the vendor or fail
             $vendor = Vendor::findOrFail($vendorId);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => false, 'error' => 'Vendor not found'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Vendor not found'
+            ], 404);
         }
 
         DB::transaction(function () use ($vendor) {
@@ -122,7 +154,10 @@ class VendorController extends Controller
             $vendor->delete();
         });
 
-        return response()->json(['message' => 'Vendor deleted successfully.'], 200);
+        return response()->json([
+            'status' => true,
+            'message' => 'Vendor deleted successfully'
+        ], 200);
     }
 
     public function vendorValidateData(Request $request)
@@ -169,11 +204,7 @@ class VendorController extends Controller
 
         // Check if validation fails
         if ($validator->fails()) {
-            $status = [
-                'status' => false,
-                'errors' => $validator->errors()
-            ];
-            return response()->json($status, 422);
+            return $validator->errors();
         }
 
         // Return validated data

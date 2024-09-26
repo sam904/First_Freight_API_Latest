@@ -28,7 +28,11 @@ class CustomerController extends Controller
             'contact',
             'finance'
         ])->paginate(10);
-        return response()->json($customer);
+
+        return response()->json([
+            'status' => true,
+            'data' => $customer
+        ], 200);
     }
 
     public function store(Request $request)
@@ -38,20 +42,31 @@ class CustomerController extends Controller
 
         // Check if the validated data is an array (i.e., no validation errors)
         if (!is_array($validatedData)) {
-            return response()->json($validatedData, 422); // Return the validation error response
+            return response()->json([
+                'status' => false,
+                'message' => 'Customer validation failed',
+                'error' => $validatedData
+            ], 422);
         }
 
         DB::beginTransaction();  // Start the transaction
 
         try {
-            $customer = $this->customerService->createCustomer($request);
+            $this->customerService->createCustomer($request);
             DB::commit();
-            return response()->json($customer, 200);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Customer created successfully"
+            ], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction if something goes wrong            
             Log::error('Failed to insert customer data: ', ['error' => $e->getMessage()]);
-            $error = ['success' => false, 'message' => 'Failed to insert customer data.', $e->getMessage()];
-            return response()->json($error, 500); // Return error response
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to insert customer data',
+                "error" => $e->getMessage()
+            ], 500); // Return error response
         }
     }
 
@@ -60,7 +75,10 @@ class CustomerController extends Controller
         try {
             Customer::findOrFail($customerId);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => false, 'error' => 'Customer not found'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Customer not found'
+            ], 404);
         }
 
         $customer = Customer::with([
@@ -84,30 +102,48 @@ class CustomerController extends Controller
 
         // Check if the validated data is an array (i.e., no validation errors)
         if (!is_array($validatedData)) {
-            return response()->json($validatedData, 422); // Return the validation error response
+            return response()->json([
+                'status' => false,
+                'message' => 'Customer validation failed',
+                'error' => $validatedData
+            ], 422);
         }
 
         DB::beginTransaction();  // Start the transaction
 
         try {
-            $customer = $this->customerService->updateCustomer($request, $id);
+            $customerMsg = $this->customerService->updateCustomer($request, $id);
             DB::commit();
-            return response()->json($customer, 200);
+
+            if (isset($customerMsg['errorMsg'])) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $customerMsg['errorMsg']
+                ], 404); // Return only the error message
+            }
+            return response()->json([
+                'status' => true,
+                'message' => "Customer updated successfully"
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction if something goes wrong            
-            Log::error('Failed to insert customer data: ', ['error' => $e->getMessage()]);
-            $error = ['success' => false, 'message' => 'Failed to insert customer data.', $e->getMessage()];
-            return response()->json($error, 500); // Return error response
+            Log::error('Failed to update customer data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update customer data',
+                'error' => $e->getMessage()
+            ], 500); // Return error response
         }
     }
     public function destroy($customerId)
     {
-
         try {
-            // Find the vendor or fail
             $customer = Customer::findOrFail($customerId);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => false, 'error' => 'Customer not found'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Customer not found'
+            ], 404);
         }
 
         DB::transaction(function () use ($customer) {
@@ -123,11 +159,13 @@ class CustomerController extends Controller
             $customer->delete();
         });
 
-        return response()->json(['status' => true, 'message' => 'Customer deleted successfully.'], 200);
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer deleted successfully'
+        ], 200);
     }
     public function customerValidateData(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'company_name' => 'required|string',
             'customer_type' => 'required|string',
@@ -187,8 +225,7 @@ class CustomerController extends Controller
 
         // Check if validation fails
         if ($validator->fails()) {
-            $status = ['status' => false, 'errors' => $validator->errors()];
-            return response()->json($status, 422);
+            return  $validator->errors();
         }
 
         // Return validated data

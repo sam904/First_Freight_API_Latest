@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Services\Auth\TokenService;
 use Exception;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -28,18 +27,24 @@ class AuthController extends Controller
                 'password' => 'required|string',
             ]);
         } catch (ValidationException $e) {
-            return response()->json(['status' => false, 'error' => $e->errors()], 422);
+            return response()->json([
+                'status' => false,
+                'error' => $e->errors()
+            ], 422);
         }
 
         // Determine whether the input is an email or username
-        //$loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        // $loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         // Check if the user exists
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $request->username)->first();
 
         // Check if user exists and is inactive
         if ($user && $user->status != "activated") {
-            return response()->json(['status' => false, 'error' => 'Your account is inactive. Please contact support.'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Your account is inactive. Please contact support'
+            ], 401);
         }
 
         // Create login credentials array
@@ -49,14 +54,21 @@ class AuthController extends Controller
         ];
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(['status' => false, 'error' => 'Invalid credentials'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid credentials'
+            ], 401);
         }
 
         $user = Auth::user();
 
         try {
             $tokenData = $this->tokenService->generateToken($user);
-            return response()->json(['status' => true, 'message' => 'User login successfully', 'data' => $tokenData], 200);
+            return response()->json([
+                'status' => true,
+                'message' => 'User login successfully',
+                'data' => $tokenData
+            ], 200);
         } catch (Exception $e) {
             return response()->json(['status' => false, 'error' => $e->getMessage()], 400);
         }
@@ -69,17 +81,29 @@ class AuthController extends Controller
                 'refresh_token' => 'required',
             ]);
         } catch (ValidationException $e) {
-            return response()->json(['status' => false, 'error' => $e->errors()], 422);
+            return response()->json([
+                'status' => false,
+                'error' => $e->errors()
+            ], 422);
         }
 
         $refreshToken = $request->refresh_token;
 
         $tokenData = $this->tokenService->refreshToken($refreshToken);
+
         // Check if the result contains an error
-        if (isset($tokenData['error'])) {
-            return response()->json(['status' => false, 'error' => $tokenData['error']], 401); // Return only the error message
+        if (isset($tokenData['errorMsg'])) {
+            return response()->json([
+                'status' => false,
+                'message' => $tokenData['errorMsg']
+            ], 401); // Return only the error message
         }
-        return response()->json($tokenData, 200);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'New refresh token generated',
+            'data' => $tokenData
+        ], 200);
     }
 
     public function test()
@@ -91,6 +115,6 @@ class AuthController extends Controller
     {
         $request->user()->token()->revoke();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['status' => true, 'message' => 'User successfully logged out']);
     }
 }

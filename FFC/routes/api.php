@@ -30,6 +30,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::get('/index', 'index');
                     Route::post('/update/{id}', 'update');
                     Route::post('/status/{id}', 'status');
+                    Route::delete('/delete/{id}', action: 'destroy');
                 });
             }
         );

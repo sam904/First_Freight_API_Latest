@@ -13,13 +13,11 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        //pagination
-        // $users = User::with(['tokens' => function ($query) {
-        //     $query->where('status', 'activated'); // Adjust the status as needed
-        // }])->paginate(10);
-
         $users = User::paginate(10);
-        return response()->json($users);
+        return response()->json([
+            'status' => true,
+            'data' => $users
+        ], 200);
     }
 
     // Register a new user
@@ -36,7 +34,10 @@ class UserController extends Controller
                 'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
             ]);
         } catch (ValidationException $e) {
-            return response()->json(['status' => false, 'error' => $e->errors()], 500);
+            return response()->json([
+                'status' => false,
+                'error' => $e->errors()
+            ], 422);
         }
 
         // Determine whether the input is an email or username
@@ -59,11 +60,23 @@ class UserController extends Controller
             'profile_image' => $validatedData['profile_image'],
         ]);
 
-        return response()->json(['status' => true, 'message' => 'User registered successfully!']);
+        return response()->json([
+            'status' => true,
+            'message' => 'User registered successfully'
+        ], 201);
     }
 
     public function update(Request $request, $id)
     {
+        try {
+            $user = User::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
         try {
             $validatedData = $request->validate([
                 'first_name' => 'required|string|max:255',
@@ -74,7 +87,10 @@ class UserController extends Controller
                 'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
             ]);
         } catch (ValidationException $e) {
-            return response()->json(['status' => false, 'error' => $e->errors()], 500);
+            return response()->json([
+                'status' => false,
+                'error' => $e->errors()
+            ], 422);
         }
 
         if ($image = $request->file('profile_image')) {
@@ -86,31 +102,40 @@ class UserController extends Controller
             unset($validatedData['profile_image']);
         }
 
-        $user = User::findOrFail($id);
-
         // Update the task with the validated data
         $update = $user->update($validatedData);
 
         if ($update) {
-            return response()->json(['status' => true, 'message' => 'User updated successfully.']);
+            return response()->json([
+                'status' => true,
+                'message' => 'User updated successfully'
+            ], 200);
         }
 
         return abort(500); //Return server error if user update fails
     }
 
-
     public function destroy($id)
     {
+        try {
+            $user = User::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
 
-        $user = User::findOrFail($id);
         $delete = $user->delete($id);
 
         if ($delete) {
-            return response()->json(['message' => 'User deleted successfully.']);
+            return response()->json([
+                'status' => true,
+                'message' => 'User deleted successfully'
+            ], 200);
         }
 
         return abort(500); //Return a server error if the task deletion fails
-
     }
 
     public function status(Request $request, $userId)
@@ -118,12 +143,18 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($userId);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => false, 'message' => 'User not found'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
         }
 
         $user->update([
             'status' => $request->status,
         ]);
-        return response()->json(['status' => true, 'message' => 'User status updated successfully']);
+        return response()->json([
+            'status' => true,
+            'message' => 'User status updated successfully'
+        ], 200);
     }
 }

@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class PermissionController extends Controller
 {
@@ -18,7 +19,10 @@ class PermissionController extends Controller
         try {
             User::findOrFail($userId);
         } catch (\Exception $e) {
-            return response()->json(['status' => false, "error", 'User not found'], 400);
+            return response()->json([
+                'status' => false,
+                "message" => 'User not found'
+            ], 404);
         }
 
         $masters = Master::select('id', 'name')
@@ -26,7 +30,10 @@ class PermissionController extends Controller
                 $query->select('master_id', 'can_create', 'can_edit', 'can_delete', 'can_view')->where('user_id', $userId); // Only load permissions for this user
             }])->get();
 
-        return response()->json(['status' => true, 'data' => $masters]);
+        return response()->json([
+            'status' => true,
+            'data' => $masters
+        ], 200);
     }
 
     public function saveUserPermissions(Request $request, $id)
@@ -34,19 +41,28 @@ class PermissionController extends Controller
         try {
             $user = User::findOrFail($id);
         } catch (\Exception $e) {
-            return response()->json(['status' => false, "error", 'User not found'], 400);
+            return response()->json([
+                'status' => false,
+                "message" => 'User not found'
+            ], 404);
         }
 
         // Validate the request data
-        $validated = $request->validate([
-            'user_id' => 'required|integer|exists:users,id',
-            'permissions' => 'required|array'
-        ]);
+        try {
+            $validated = $request->validate([
+                'user_id' => 'required|integer|exists:users,id',
+                'permissions' => 'required|array'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->errors()
+            ], 422);
+        }
 
         // Extract user_id from the request
         $userId = $validated['user_id'];
         $loginUser = Auth::user();
-        Log::info('loginUser : ' . $loginUser->id);
 
         // Loop through each permission and update or create the record
         foreach ($validated['permissions'] as $masterName => $permissionData) {
@@ -70,7 +86,7 @@ class PermissionController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Permissions saved successfully!'
-        ], 200);
+            'message' => 'Permissions saved successfully'
+        ], 201);
     }
 }

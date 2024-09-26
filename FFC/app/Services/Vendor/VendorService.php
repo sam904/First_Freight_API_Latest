@@ -63,17 +63,15 @@ class VendorService
         // Create finance records
         $this->storeFinance($request, $vendor);
 
-        $successData = ['success' => true, 'message' => "Vendor created successfully."];
-
-        return $successData;
+        return true;
     }
 
     public function updateVendor(Request $request, $id)
     {
         try {
             $vendor = Vendor::findOrFail($id);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => false, 'error' => 'Vendor not found'], 404);
+        } catch (\Exception $e) {
+            return ['errorMsg' => "Vendor not found"];
         }
 
         // Delete existing related records
@@ -110,9 +108,7 @@ class VendorService
         // Create finance records
         $this->storeFinance($request, $vendor);
 
-        $successData = ['success' => true, 'message' => "Vendor updated successfully."];
-
-        return $successData;
+        return true;
     }
 
     public function storeSales(Request $request, $vendor)
