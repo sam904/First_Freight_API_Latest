@@ -10,19 +10,45 @@ use App\Http\Controllers\Vendor\VendorController;
 use App\Http\Middleware\CheckTokenExpiry;
 
 // Public Routes
-Route::post('login', [AuthController::class, 'login']);
-Route::post('register', [UserController::class, 'store']);
-Route::post('refresh', [AuthController::class, 'refreshToken']);
+// Route::post('login', [AuthController::class, 'login']);
+// Route::post('refresh', [AuthController::class, 'refreshToken']);
 
+Route::prefix('user')->group(
+    function () {
+        Route::controller(AuthController::class)->group(
+            function () {
+                Route::post('/login', action: 'login');
+                Route::post('/refresh', 'refreshToken');
+                Route::post('/sendOtp/{id}', 'sendOtp');
+                Route::post('/verifyOtp', 'verifyOtp');
+                Route::post('/reset-password', 'resetPassword');
+                Route::post('/verify-reset-password', 'verifyResetPassword');
+            }
+        );
+        Route::controller(UserController::class)->group(
+            function () {
+                Route::post('/register', 'store');
+            }
+        );
+    }
+);
 
 // Group for routes that require authentication and token expiration check
 Route::middleware(['auth:api', CheckTokenExpiry::class])
     ->group(function () {
         Route::get('/test', [AuthController::class, 'test']); // Protected route
+        Route::prefix('user')->group(
+            function () {
+                Route::controller(AuthController::class)->group(function () {
+                    Route::post('/update-reset-password', 'updateResetPassword');
+                });
+            }
+        );
 
         Route::get('/user', function (Request $request) {
             return $request->user();
         });
+
         //UserManagment
         Route::prefix('user')->group(
             function () {
