@@ -66,6 +66,22 @@ class UserController extends Controller
         ], 201);
     }
 
+    public function edit($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            return response()->json([
+                'status' => true,
+                'data' => $user
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+    }
+
     public function update(Request $request, $id)
     {
         try {

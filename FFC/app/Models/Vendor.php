@@ -30,6 +30,7 @@ class Vendor extends Model
         'bank_routing',
         'bank_address',
         'remarks',
+        'status',
     ];
 
     public function sales()

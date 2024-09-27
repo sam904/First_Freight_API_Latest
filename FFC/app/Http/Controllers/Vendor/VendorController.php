@@ -160,6 +160,26 @@ class VendorController extends Controller
         ], 200);
     }
 
+    public function status(Request $request, $vendorId)
+    {
+        try {
+            $vendor = Vendor::findOrFail($vendorId);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Vendor not found'
+            ], 404);
+        }
+
+        $vendor->update([
+            'status' => $request->status,
+        ]);
+        return response()->json([
+            'status' => true,
+            'message' => 'Vendor status updated successfully'
+        ], 200);
+    }
+
     public function vendorValidateData(Request $request)
     {
         $validator = Validator::make($request->all(), [

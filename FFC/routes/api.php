@@ -29,6 +29,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                 Route::controller(UserController::class)->group(function () {
                     Route::get('/index', 'index');
                     Route::post('/update/{id}', 'update');
+                    Route::get('/edit/{id}', 'edit');
                     Route::post('/status/{id}', 'status');
                     Route::delete('/delete/{id}', action: 'destroy');
                 });
@@ -44,6 +45,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', action: 'update');
                     Route::delete('/delete/{id}', action: 'destroy');
+                    Route::post('/status/{id}', 'status');
                 });
             }
         );
@@ -57,6 +59,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', 'update');
                     Route::delete('/delete/{id}', action: 'destroy');
+                    Route::post('/status/{id}', 'status');
                 });
             }
         );

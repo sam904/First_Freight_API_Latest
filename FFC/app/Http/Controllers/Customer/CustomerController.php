@@ -164,6 +164,27 @@ class CustomerController extends Controller
             'message' => 'Customer deleted successfully'
         ], 200);
     }
+
+    public function status(Request $request, $customerId)
+    {
+        try {
+            $customer = Customer::findOrFail($customerId);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Customer not found'
+            ], 404);
+        }
+
+        $customer->update([
+            'status' => $request->status,
+        ]);
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer status updated successfully'
+        ], 200);
+    }
+
     public function customerValidateData(Request $request)
     {
         $validator = Validator::make($request->all(), [
