@@ -30,6 +30,10 @@ class CustomerService
             'company_tax_id' => $request['company_tax_id'],
             'payment_terms' => $request['payment_terms'],
             'credit_limit' => $request['credit_limit'],
+            'contact_name' => $request['contact_name'],
+            'phone' => $request['phone'],
+            'email' => $request['email'],
+
         ]);
 
         // Create Warehouse Address
@@ -47,20 +51,13 @@ class CustomerService
         // Create Warehouse Address
         $this->storeFinanceDetails($request, $customer);
 
-
-
-
         return true;
     }
 
 
     public function updateCustomer(Request $request, $id)
     {
-        try {
-            $customer = Customer::findOrFail($id);
-        } catch (\Exception $e) {
-            return ['errorMsg' => "Customer not found"];
-        }
+        $customer = Customer::find($id);
 
         // Delete existing related records
         $customer->warehouse()->delete();
@@ -80,6 +77,9 @@ class CustomerService
             'company_tax_id' => $request['company_tax_id'],
             'payment_terms' => $request['payment_terms'],
             'credit_limit' => $request['credit_limit'],
+            'contact_name' => $request['contact_name'],
+            'phone' => $request['phone'],
+            'email' => $request['email'],
         ]);
 
         // Create Warehouse Address

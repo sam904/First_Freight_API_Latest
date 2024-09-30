@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
@@ -96,7 +97,15 @@ class CustomerController extends Controller
 
     public function update(Request $request, $id)
     {
-        $validatedData = $this->customerValidateData($request);
+        // Use the findModel helper to retrieve the customer
+        $customer = findModel(Customer::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($customer instanceof \Illuminate\Http\JsonResponse) {
+            return $customer;  // Return the not found response
+        }
+
+        $validatedData = $this->customerValidateData($request,  $id);
 
         // Check if the validated data is an array (i.e., no validation errors)
         if (!is_array($validatedData)) {
@@ -113,12 +122,6 @@ class CustomerController extends Controller
             $customerMsg = $this->customerService->updateCustomer($request, $id);
             DB::commit();
 
-            if (isset($customerMsg['errorMsg'])) {
-                return response()->json([
-                    'status' => false,
-                    'message' => $customerMsg['errorMsg']
-                ], 404); // Return only the error message
-            }
             return response()->json([
                 'status' => true,
                 'message' => "Customer updated successfully"
@@ -171,7 +174,7 @@ class CustomerController extends Controller
     }
 
 
-    public function customerValidateData(Request $request)
+    public function customerValidateData(Request $request, $customerId = null)
     {
         $validator = Validator::make($request->all(), [
             'company_name' => 'required|string',
@@ -184,6 +187,21 @@ class CustomerController extends Controller
             'company_tax_id' => 'required|string',
             'payment_terms' => 'required|string',
             'credit_limit' => 'required|string',
+            'contact_name' => 'required|string',
+            'phone' => [
+                'required',
+                'string',
+                'min:10',
+                'max:15',
+                Rule::unique('customers')->ignore($customerId),
+            ],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('customers')->ignore($customerId),
+            ],
 
             // Warehouse validation for each item in the array
             'warehouse' => 'required|array',

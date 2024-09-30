@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class VendorController extends Controller
 {
@@ -89,11 +90,20 @@ class VendorController extends Controller
 
     public function update(Request $request, $id)
     {
+
+        // Use the findModel helper to retrieve the vendor
+        $vendor = findModel(Vendor::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($vendor instanceof \Illuminate\Http\JsonResponse) {
+            return $vendor;  // Return the not found response
+        }
+
         DB::beginTransaction();  // Start the transaction
 
         try {
 
-            $validatedData = $this->vendorValidateData($request);
+            $validatedData = $this->vendorValidateData($request, $id);
 
             // Check if the validated data is an array (i.e., no validation errors)
             if (!is_array($validatedData)) {
@@ -104,16 +114,8 @@ class VendorController extends Controller
                 ], 422);
             }
 
-            $vendorMsg = $this->vendorService->updateVendor($request, $id);
-
+            $this->vendorService->updateVendor($request, $id);
             DB::commit();
-
-            if (isset($vendorMsg['errorMsg'])) {
-                return response()->json([
-                    'status' => false,
-                    'message' => $vendorMsg['errorMsg']
-                ], 404); // Return only the error message
-            }
 
             return response()->json([
                 'status' => true,
@@ -168,7 +170,7 @@ class VendorController extends Controller
         ]);
     }
 
-    public function vendorValidateData(Request $request)
+    public function vendorValidateData(Request $request, $vendorId = null)
     {
         $validator = Validator::make($request->all(), [
             'vendor_type' => 'required|string',
@@ -191,6 +193,21 @@ class VendorController extends Controller
             'bank_routing' => 'required|string',
             'bank_address' => 'required|string',
             'remarks' => 'required|string',
+            'contact_name' => 'required|string',
+            'phone' => [
+                'required',
+                'string',
+                'min:10',
+                'max:15',
+                Rule::unique('vendors')->ignore($vendorId),
+            ],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('vendors')->ignore($vendorId),
+            ],
 
             // Vendor sale validation for each item in the array
             'sales' => 'required|array',

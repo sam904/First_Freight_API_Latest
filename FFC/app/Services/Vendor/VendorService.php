@@ -53,7 +53,10 @@ class VendorService
             'bank_account_number' => $request['bank_account_number'],
             'bank_routing' => $request['bank_routing'],
             'bank_address' => $request['bank_address'],
-            'remarks' => $request['remarks']
+            'remarks' => $request['remarks'],
+            'contact_name' => $request['contact_name'],
+            'phone' => $request['phone'],
+            'email' => $request['email'],
         ]);
 
         // Create sales records
@@ -67,11 +70,7 @@ class VendorService
 
     public function updateVendor(Request $request, $id)
     {
-        try {
-            $vendor = Vendor::findOrFail($id);
-        } catch (\Exception $e) {
-            return ['errorMsg' => "Vendor not found"];
-        }
+        $vendor = Vendor::find($id);
 
         // Delete existing related records
         $vendor->sales()->delete();      // Delete all sales records related to this vendor
@@ -98,7 +97,10 @@ class VendorService
             'bank_account_number' => $request['bank_account_number'],
             'bank_routing' => $request['bank_routing'],
             'bank_address' => $request['bank_address'],
-            'remarks' => $request['remarks']
+            'remarks' => $request['remarks'],
+            'contact_name' => $request['contact_name'],
+            'phone' => $request['phone'],
+            'email' => $request['email'],
         ]);
 
         // Create sales records

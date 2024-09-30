@@ -27,6 +27,9 @@ class Customer extends Model
         "payment_terms",
         "credit_limit",
         "status",
+        'contact_name',
+        'phone',
+        'email',
     ];
 
     public function delivery()

@@ -31,6 +31,9 @@ class Vendor extends Model
         'bank_address',
         'remarks',
         'status',
+        'contact_name',
+        'phone',
+        'email',
     ];
 
     public function sales()
