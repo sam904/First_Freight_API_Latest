@@ -180,12 +180,12 @@ class AuthController extends Controller
 
         $otpEntry = Otp::where('otp', $request->otp)->first();
 
-        //fetch user details
-        $user = User::where('id', $otpEntry->user_id)->first();
-
         if (!$otpEntry) {
             return response()->json(['status' => false, 'message' => 'Otp not found'], 404);
         }
+
+        //fetch user details
+        $user = User::where('id', $otpEntry->user_id)->first();
 
         // Check if the OTP matches and is still valid 
         if ($otpEntry->expires_at > now()) {

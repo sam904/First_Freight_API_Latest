@@ -118,17 +118,19 @@ class UserController extends Controller
             unset($validatedData['profile_image']);
         }
 
-        // Update the task with the validated data
-        $update = $user->update($validatedData);
-
-        if ($update) {
+        try {
+            $user->update($validatedData);
             return response()->json([
                 'status' => true,
                 'message' => 'User updated successfully'
             ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update user data',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        return abort(500); //Return server error if user update fails
     }
 
     public function destroy($id)

@@ -8,7 +8,6 @@ use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class PermissionController extends Controller
@@ -16,13 +15,12 @@ class PermissionController extends Controller
 
     public function view($userId)
     {
-        try {
-            User::findOrFail($userId);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                "message" => 'User not found'
-            ], 404);
+        // Use the findModel helper to retrieve the customer
+        $user = findModel(User::class, $userId);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user;  // Return the not found response
         }
 
         $masters = Master::select('id', 'name')
@@ -38,13 +36,12 @@ class PermissionController extends Controller
 
     public function saveUserPermissions(Request $request, $id)
     {
-        try {
-            $user = User::findOrFail($id);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                "message" => 'User not found'
-            ], 404);
+        // Use the findModel helper to retrieve the customer
+        $user = findModel(User::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user;  // Return the not found response
         }
 
         // Validate the request data
@@ -88,5 +85,18 @@ class PermissionController extends Controller
             'status' => true,
             'message' => 'Permissions saved successfully'
         ], 201);
+    }
+
+    public function findModelHelper(string $id)
+    {
+        // Use the findModel helper to retrieve the customer
+        $user = findModel(User::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user;  // Return the not found response
+        }
+
+        return $user;
     }
 }

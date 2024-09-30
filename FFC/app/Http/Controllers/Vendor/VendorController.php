@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Models\Vendor;
 use App\Services\Vendor\VendorService;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -69,13 +68,12 @@ class VendorController extends Controller
 
     public function edit($vendorId)
     {
-        try {
-            Vendor::findOrFail($vendorId);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Vendor not found'
-            ], 404);
+        // Use the findModel helper to retrieve the vendor
+        $vendor = findModel(Vendor::class, $vendorId);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($vendor instanceof \Illuminate\Http\JsonResponse) {
+            return $vendor;  // Return the not found response
         }
 
         $Vendor = Vendor::with([
@@ -134,14 +132,17 @@ class VendorController extends Controller
 
     public function destroy($vendorId)
     {
-        try {
-            // Find the vendor or fail
-            $vendor = Vendor::findOrFail($vendorId);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Vendor not found'
-            ], 404);
+        // Use the findModel helper to retrieve the vendor
+        $vendor = findModel(Vendor::class, $vendorId);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($vendor instanceof \Illuminate\Http\JsonResponse) {
+            return $vendor;  // Return the not found response
+        }
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($vendor instanceof \Illuminate\Http\JsonResponse) {
+            return $vendor;  // Return the not found response
         }
 
         DB::transaction(function () use ($vendor) {
@@ -162,22 +163,9 @@ class VendorController extends Controller
 
     public function status(Request $request, $vendorId)
     {
-        try {
-            $vendor = Vendor::findOrFail($vendorId);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Vendor not found'
-            ], 404);
-        }
-
-        $vendor->update([
-            'status' => $request->status,
+        return statusUpdate(Vendor::class, $vendorId, [
+            'status' => $request->status
         ]);
-        return response()->json([
-            'status' => true,
-            'message' => 'Vendor status updated successfully'
-        ], 200);
     }
 
     public function vendorValidateData(Request $request)

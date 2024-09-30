@@ -3,8 +3,11 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Common\CommonController;
 use App\Http\Controllers\Customer\CustomerController;
+use App\Http\Controllers\Destination\DestinationController;
 use App\Http\Controllers\Permission\PermissionController;
+use App\Http\Controllers\Port\PortController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Vendor\VendorController;
 use App\Http\Middleware\CheckTokenExpiry;
@@ -37,10 +40,12 @@ Route::prefix('user')->group(
 Route::middleware(['auth:api', CheckTokenExpiry::class])
     ->group(function () {
         Route::get('/test', [AuthController::class, 'test']); // Protected route
+
+        // Update Reset Password
         Route::prefix('user')->group(
             function () {
                 Route::controller(AuthController::class)->group(function () {
-                    Route::post('/update-reset-password', 'updateResetPassword');
+                    Route::post('/update-reset-password/{id}', 'updateResetPassword');
                 });
             }
         );
@@ -97,6 +102,43 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::get('/view/{id}', 'view');
                     Route::get('/master', 'index');
                     Route::post('/saveUserPermissions/{id}', 'saveUserPermissions');
+                });
+            }
+        );
+
+        //Common
+        Route::controller(CommonController::class)->group(function () {
+            Route::get('/country', 'country');
+            Route::get('/state/{id}', 'state');
+            Route::get('/city/{id}', 'city');
+        });
+
+        //Port
+        Route::prefix('port')->group(
+            function () {
+                Route::controller(PortController::class)->group(function () {
+                    Route::get('/port-type', 'portType');
+                    Route::get('/index', 'index');
+                    Route::post('/save', 'store');
+                    Route::get('/edit/{id}', 'edit');
+                    Route::post('/update/{id}', 'update');
+                    Route::delete('/delete/{id}', action: 'destroy');
+                    Route::post('/status/{id}', 'status');
+                });
+            }
+        );
+
+        //Designation
+        Route::prefix('destination')->group(
+            function () {
+                Route::controller(DestinationController::class)->group(function () {
+                    Route::get('/county', 'county');
+                    Route::get('/index', 'index');
+                    Route::post('/save', 'store');
+                    Route::get('/edit/{id}', 'edit');
+                    Route::post('/update/{id}', 'update');
+                    Route::delete('/delete/{id}', action: 'destroy');
+                    Route::post('/status/{id}', 'status');
                 });
             }
         );

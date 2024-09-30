@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Services\Customer\CustomerService;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -72,13 +71,12 @@ class CustomerController extends Controller
 
     public function edit($customerId)
     {
-        try {
-            Customer::findOrFail($customerId);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Customer not found'
-            ], 404);
+        // Use the findModel helper to retrieve the customer
+        $customer = findModel(Customer::class, $customerId);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($customer instanceof \Illuminate\Http\JsonResponse) {
+            return $customer;  // Return the not found response
         }
 
         $customer = Customer::with([
@@ -137,13 +135,12 @@ class CustomerController extends Controller
     }
     public function destroy($customerId)
     {
-        try {
-            $customer = Customer::findOrFail($customerId);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Customer not found'
-            ], 404);
+        // Use the findModel helper to retrieve the customer
+        $customer = findModel(Customer::class, $customerId);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($customer instanceof \Illuminate\Http\JsonResponse) {
+            return $customer;  // Return the not found response
         }
 
         DB::transaction(function () use ($customer) {
@@ -167,23 +164,12 @@ class CustomerController extends Controller
 
     public function status(Request $request, $customerId)
     {
-        try {
-            $customer = Customer::findOrFail($customerId);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Customer not found'
-            ], 404);
-        }
-
-        $customer->update([
-            'status' => $request->status,
+        // Use the statusUpdate helper to update status
+        return statusUpdate(Customer::class, $customerId, [
+            'status' => $request->status
         ]);
-        return response()->json([
-            'status' => true,
-            'message' => 'Customer status updated successfully'
-        ], 200);
     }
+
 
     public function customerValidateData(Request $request)
     {

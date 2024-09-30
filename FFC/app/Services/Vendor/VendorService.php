@@ -5,7 +5,6 @@ namespace App\Services\Vendor;
 use App\Models\Vendor;
 use App\Models\VendorFinances;
 use App\Models\VendorSales;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class VendorService
