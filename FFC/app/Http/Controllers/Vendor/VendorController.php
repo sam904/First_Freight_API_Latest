@@ -90,7 +90,6 @@ class VendorController extends Controller
 
     public function update(Request $request, $id)
     {
-
         // Use the findModel helper to retrieve the vendor
         $vendor = findModel(Vendor::class, $id);
 
@@ -102,7 +101,6 @@ class VendorController extends Controller
         DB::beginTransaction();  // Start the transaction
 
         try {
-
             $validatedData = $this->vendorValidateData($request, $id);
 
             // Check if the validated data is an array (i.e., no validation errors)
@@ -114,7 +112,7 @@ class VendorController extends Controller
                 ], 422);
             }
 
-            $this->vendorService->updateVendor($request, $id);
+            $this->vendorService->updateVendor($request, $id, $vendor);
             DB::commit();
 
             return response()->json([
@@ -142,17 +140,14 @@ class VendorController extends Controller
             return $vendor;  // Return the not found response
         }
 
-        // Check if the returned value is a JSON response (meaning the model was not found)
-        if ($vendor instanceof \Illuminate\Http\JsonResponse) {
-            return $vendor;  // Return the not found response
-        }
-
         DB::transaction(function () use ($vendor) {
-
-            // Delete all related records
+            // Delete all vendor related records
             $vendor->sales()->delete();
             $vendor->finance()->delete();
-
+            // Unlink images
+            $this->vendorService->unlinkImage($vendor->upload_w9);
+            $this->vendorService->unlinkImage($vendor->void_check);
+            $this->vendorService->unlinkImage($vendor->upload_insurance_certificate);
             // Delete the vendor record
             $vendor->delete();
         });
@@ -184,9 +179,9 @@ class VendorController extends Controller
             'mc_number' => 'required|string',
             'scac_number' => 'required|string',
             'us_dot_number' => 'required|string',
-            // 'upload_w9' => 'required|image|mimes:jpeg,png,jpg,gif|max:3048',
-            // 'void_check' => 'required|image|mimes:jpeg,png,jpg,gif|max:3048',
-            // 'upload_insurance_certificate' => 'required|image|mimes:jpeg,png,jpg,gif|max:3048',
+            'upload_w9' => 'required|image|mimes:jpeg,png,jpg,gif|max:3048',
+            'void_check' => 'required|image|mimes:jpeg,png,jpg,gif|max:3048',
+            'upload_insurance_certificate' => 'required|image|mimes:jpeg,png,jpg,gif|max:3048',
             'date_of_expiration' => 'required|date',
             'bank_name' => 'required|string',
             'bank_account_number' => 'required|string',

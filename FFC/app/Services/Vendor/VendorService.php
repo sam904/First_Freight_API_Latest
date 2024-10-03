@@ -13,25 +13,9 @@ class VendorService
 
     public function createVendor(Request $request)
     {
-
-        /*if ($image = $request->file('upload_w9')) {
-                $destinationPath = 'images/profiles/vendor/';
-                $upload_w9 = date('YmdHis') . "." . $image->getClientOriginalExtension();
-                $image->move($destinationPath, $upload_w9);
-                $request['upload_w9'] = "$upload_w9";
-            }
-            if ($image = $request->file('void_check')) {
-                $destinationPath = 'images/profiles/vendor/';
-                $void_check = date('YmdHis') . "." . $image->getClientOriginalExtension();
-                $image->move($destinationPath, $void_check);
-                $request['upload_w9'] = "$void_check";
-            }
-            if ($image = $request->file('upload_insurance_certificate')) {
-                $destinationPath = 'images/profiles/vendor/';
-                $upload_insurance_certificate = date('YmdHis') . "." . $image->getClientOriginalExtension();
-                $image->move($destinationPath, $upload_insurance_certificate);
-                $request['upload_w9'] = "$upload_w9";
-            }*/
+        $vendorImage['upload_w9'] = $this->uploadImages($request->file('upload_w9'));
+        $vendorImage['void_check'] = $this->uploadImages($request->file('void_check'));
+        $vendorImage['upload_insurance_certificate'] = $this->uploadImages($request->file('upload_insurance_certificate'));
 
         $vendor = Vendor::create([
             'vendor_type' => $request['vendor_type'],
@@ -45,9 +29,9 @@ class VendorService
             'mc_number' => $request['mc_number'],
             'scac_number' => $request['scac_number'],
             'us_dot_number' => $request['us_dot_number'],
-            'upload_w9' => $request['upload_w9'],
-            'void_check' => $request['void_check'],
-            'upload_insurance_certificate' => $request['upload_insurance_certificate'],
+            'upload_w9' => $vendorImage['upload_w9'],
+            'void_check' => $vendorImage['void_check'],
+            'upload_insurance_certificate' => $vendorImage['upload_insurance_certificate'],
             'date_of_expiration' => $request['date_of_expiration'],
             'bank_name' => $request['bank_name'],
             'bank_account_number' => $request['bank_account_number'],
@@ -68,13 +52,33 @@ class VendorService
         return true;
     }
 
-    public function updateVendor(Request $request, $id)
+    public function updateVendor(Request $request, $id, Vendor $vendor)
     {
-        $vendor = Vendor::find($id);
+
+        // Store images name in $image array
+        $vendorOldImages['upload_w9'] = $vendor->upload_w9;
+        $vendorOldImages['void_check'] = $vendor->void_check;
+        $vendorOldImages['upload_insurance_certificate'] = $vendor->upload_insurance_certificate;
 
         // Delete existing related records
         $vendor->sales()->delete();      // Delete all sales records related to this vendor
         $vendor->finance()->delete();   // Delete all finance records related to this vendor
+
+        if ($image = $request->file('upload_w9')) {
+            $vendorImage['upload_w9'] = $this->uploadImages($request->file('upload_w9'));
+        } else {
+            unset($request['upload_w9']);
+        }
+        if ($image = $request->file('void_check')) {
+            $vendorImage['void_check'] = $this->uploadImages($request->file('void_check'));
+        } else {
+            unset($request['void_check']);
+        }
+        if ($image = $request->file('upload_insurance_certificate')) {
+            $vendorImage['upload_insurance_certificate'] = $this->uploadImages($request->file('upload_insurance_certificate'));
+        } else {
+            unset($request['upload_insurance_certificate']);
+        }
 
         // Update vendor details
         $vendor->update([
@@ -89,9 +93,9 @@ class VendorService
             'mc_number' => $request['mc_number'],
             'scac_number' => $request['scac_number'],
             'us_dot_number' => $request['us_dot_number'],
-            'upload_w9' => $request['upload_w9'],
-            'void_check' => $request['void_check'],
-            'upload_insurance_certificate' => $request['upload_insurance_certificate'],
+            'upload_w9' => $vendorImage['upload_w9'],
+            'void_check' => $vendorImage['void_check'],
+            'upload_insurance_certificate' => $vendorImage['upload_insurance_certificate'],
             'date_of_expiration' => $request['date_of_expiration'],
             'bank_name' => $request['bank_name'],
             'bank_account_number' => $request['bank_account_number'],
@@ -108,6 +112,11 @@ class VendorService
 
         // Create finance records
         $this->storeFinance($request, $vendor);
+
+        // Now unlink image
+        $this->unlinkImage($vendorOldImages['upload_w9']);
+        $this->unlinkImage($vendorOldImages['void_check']);
+        $this->unlinkImage($vendorOldImages['upload_insurance_certificate']);
 
         return true;
     }
@@ -150,5 +159,22 @@ class VendorService
         }
 
         $vendor->finance()->saveMany($finance);
+    }
+
+    public function uploadImages($image)
+    {
+        $destinationPath = 'images/profiles/vendor/';
+        $img_upload = date('YmdHis') . str_replace('.', '', microtime(true)) . "." . $image->getClientOriginalExtension();
+        $image->move($destinationPath, $img_upload);
+        return $img_upload;
+    }
+
+    public function unlinkImage($imageName)
+    {
+        $filePath = public_path('images/profiles/vendor/' . $imageName); // Get full path of the image
+
+        if (file_exists($filePath)) {
+            unlink($filePath); // Delete the file
+        }
     }
 }
