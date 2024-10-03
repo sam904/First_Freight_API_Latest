@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -232,8 +233,16 @@ class AuthController extends Controller
      * Summary of updateResetPassword
      * Passed only userId related Access Token else It will not Update Passoword
      */
-    public function updateResetPassword(Request $request, $userId)
+    public function updateResetPassword(Request $request, $id)
     {
+        // Use the findModel helper to retrieve the user
+        $user = findModel(User::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user;  // Return the not found response
+        }
+
         $validator = Validator::make($request->all(), [
             'new_password' => 'required|string|min:8|confirmed',
         ], [
@@ -244,12 +253,6 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['status' => false, 'error' => $validator->errors()], 422); // Return validation errors with a 422 status code
-        }
-
-        try {
-            $user = User::findOrFail($userId);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => false, 'messasge' => 'User not found'], 404);
         }
 
         // Based on Access Token Update the User's Password
@@ -264,6 +267,14 @@ class AuthController extends Controller
 
         if ($user->access_token == $bearerToken) {
             $user->password = Hash::make($request->new_password);
+
+            // Encrypt the password
+            $key = generateSecretKey(32); // Make sure to use a strong key
+            $encryptedPassword = encryptPassword($user->password, $key);
+            $user->secret_password = $encryptedPassword;
+            $user->secret_key = $key;
+
+            // Save user
             $user->save();
             return response()->json(['status' => true, 'message' => 'Password updated successfully'], 200);
         } else {

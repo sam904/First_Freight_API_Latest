@@ -1,6 +1,8 @@
 
 <?php
 
+use Illuminate\Support\Str;
+
 if (!function_exists('statusUpdate')) {
     /**
      * Find a model by ID and update it with the provided data.
@@ -52,5 +54,43 @@ if (!function_exists('findModel')) {
                 'message' => class_basename($modelClass) . ' not found'
             ], 404);
         }
+    }
+}
+
+
+
+if (!function_exists('encryptPassword')) {
+    function encryptPassword($password, $key)
+    {
+        $cipher = "aes-256-cbc"; // Encryption cipher
+
+        // Generate an IV (16 bytes for AES-256-CBC)
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher)); // Generate an IV
+
+        // Encrypt the password
+        $encryptedPassword = openssl_encrypt($password, $cipher, $key, 0, $iv);
+
+        // Return the encrypted password and IV (which is needed for decryption)
+        return base64_encode($encryptedPassword . "::" . $iv);
+    }
+}
+
+if (!function_exists('decryptPassword')) {
+    function decryptPassword($encryptedPassword, $key)
+    {
+        $cipher = "aes-256-cbc"; // Encryption cipher
+
+        // Split the encrypted password into the actual encrypted data and the IV
+        list($encrypted_data, $iv) = explode("::", base64_decode($encryptedPassword), 2);
+
+        // Decrypt the password
+        return openssl_decrypt($encrypted_data, $cipher, $key, 0, $iv);
+    }
+}
+
+if (!function_exists('generateSecretKey')) {
+    function generateSecretKey($length = 32)
+    {
+        return Str::random($length);
     }
 }

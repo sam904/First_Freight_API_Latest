@@ -5,15 +5,14 @@ namespace App\Http\Controllers\User;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $users = User::paginate(10);
+        $users = User::orderBy("id", "desc")->paginate(10);
         return response()->json([
             'status' => true,
             'data' => $users
@@ -50,6 +49,11 @@ class UserController extends Controller
             $validatedData['profile_image'] = "$profileImage";
         }
 
+        // Generate key
+        $key = generateSecretKey(32); // Make sure to use a strong key
+        // Encrypt the password
+        $encryptedPassword = encryptPassword($validatedData['password'], $key);
+
         $user = User::create([
             'first_name' => $validatedData['first_name'],
             'last_name' => $validatedData['last_name'],
@@ -58,6 +62,8 @@ class UserController extends Controller
             'mobile_number' => $validatedData['mobile_number'],
             'password' => Hash::make($validatedData['password']),
             'profile_image' => $validatedData['profile_image'],
+            'secret_password' => $encryptedPassword,
+            'secret_key' => $key,
         ]);
 
         return response()->json([
@@ -68,29 +74,28 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        try {
-            $user = User::findOrFail($id);
-            return response()->json([
-                'status' => true,
-                'data' => $user
-            ], 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'User not found'
-            ], 404);
+        // Use the findModel helper to retrieve the user
+        $users = findModel(User::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($users instanceof \Illuminate\Http\JsonResponse) {
+            return $users;  // Return the not found response
         }
+
+        return response()->json([
+            'status' => true,
+            'data' => $users
+        ], 200);
     }
 
     public function update(Request $request, $id)
     {
-        try {
-            $user = User::findOrFail($id);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'User not found'
-            ], 404);
+        // Use the findModel helper to retrieve the user
+        $user = findModel(User::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user;  // Return the not found response
         }
 
         try {
@@ -118,6 +123,16 @@ class UserController extends Controller
             unset($validatedData['profile_image']);
         }
 
+        // Generate key
+        $key = generateSecretKey(32); // Make sure to use a strong key
+
+        // Encrypt the password
+        $encryptedPassword = encryptPassword($validatedData['password'], $key);
+
+        // Save secret password and key
+        $user->secret_password = $encryptedPassword;
+        $user->secret_key = $key;
+
         try {
             $user->update($validatedData);
             return response()->json([
@@ -135,16 +150,16 @@ class UserController extends Controller
 
     public function destroy($id)
     {
-        try {
-            $user = User::findOrFail($id);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'User not found'
-            ], 404);
+        // Use the findModel helper to retrieve the user
+        $user = findModel(User::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user;  // Return the not found response
         }
 
-        $delete = $user->delete($id);
+        // Delete User
+        $delete = $user->delete();
 
         if ($delete) {
             return response()->json([
@@ -156,23 +171,11 @@ class UserController extends Controller
         return abort(500); //Return a server error if the task deletion fails
     }
 
-    public function status(Request $request, $userId)
+    public function status(Request $request, $id)
     {
-        try {
-            $user = User::findOrFail($userId);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'User not found'
-            ], 404);
-        }
-
-        $user->update([
-            'status' => $request->status,
+        // Use the statusUpdate helper to update status
+        return statusUpdate(User::class, $id, [
+            'status' => $request->status
         ]);
-        return response()->json([
-            'status' => true,
-            'message' => 'User status updated successfully'
-        ], 200);
     }
 }

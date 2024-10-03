@@ -29,6 +29,9 @@ class User extends Authenticatable
         'access_token_expires_at',
         'refresh_token',
         'refresh_token_expires_at',
+        'secret_password',
+        'secret_key',
+        'status',
     ];
 
     /**
