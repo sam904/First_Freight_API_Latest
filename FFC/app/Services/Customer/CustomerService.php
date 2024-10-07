@@ -8,9 +8,7 @@ use App\Models\Customer\CustomerDeliveryAddress;
 use App\Models\Customer\CustomerFinanceDetails;
 use App\Models\Customer\CustomerShippingAddress;
 use App\Models\Customer\CustomerWarehouseAddress;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class CustomerService
 {
@@ -101,47 +99,32 @@ class CustomerService
         return true;
     }
 
-
     public function storeWarehouseAddress(Request $request, $customer)
     {
-        $warehouseData = $request->input('warehouse');
-        $warehouse = [];
-
-        foreach ($warehouseData as $warehouseItem) {
-            $warehouse[] = new CustomerWarehouseAddress([
-                'warehouse_name' => $warehouseItem['warehouse_name'],
-                'warehouse_address' => $warehouseItem['warehouse_address'],
-                'warehouse_city' => $warehouseItem['warehouse_city'],
-                'warehouse_state' => $warehouseItem['warehouse_state'],
-                'warehouse_country' => $warehouseItem['warehouse_country'],
-                'warehouse_zip_code' => $warehouseItem['warehouse_zip_code'],
-                'customer_id' => $customer->id
-            ]);
-        }
-
-        // Save all warehouse related to customer
-        $customer->warehouse()->saveMany($warehouse);
+        CustomerWarehouseAddress::create([
+            'warehouse_name' => $request['warehouse_name'],
+            'warehouse_address' => $request['warehouse_address'],
+            'warehouse_city' => $request['warehouse_city'],
+            'warehouse_state' => $request['warehouse_state'],
+            'warehouse_country' => $request['warehouse_country'],
+            'warehouse_zip_code' => $request['warehouse_zip_code'],
+            'customer_id' => $customer->id
+        ]);
     }
+
     public function storeShippingAddress(Request $request, $customer)
     {
-        $shippingData = $request->input('shipping');
-        $shipping = [];
-
-        foreach ($shippingData as $shippingItem) {
-            $shipping[] = new CustomerShippingAddress([
-                'shipping_name' => $shippingItem['shipping_name'],
-                'shipping_address' => $shippingItem['shipping_address'],
-                'shipping_city' => $shippingItem['shipping_city'],
-                'shipping_state' => $shippingItem['shipping_state'],
-                'shipping_country' => $shippingItem['shipping_country'],
-                'shipping_zip_code' => $shippingItem['shipping_zip_code'],
-                'customer_id' => $customer->id
-            ]);
-        }
-
-        // Save all shipping related to customer
-        $customer->shipping()->saveMany($shipping);
+        CustomerShippingAddress::create([
+            'shipping_name' => $request['shipping_name'],
+            'shipping_address' => $request['shipping_address'],
+            'shipping_city' => $request['shipping_city'],
+            'shipping_state' => $request['shipping_state'],
+            'shipping_country' => $request['shipping_country'],
+            'shipping_zip_code' => $request['shipping_zip_code'],
+            'customer_id' => $customer->id
+        ]);
     }
+
     public function storeDeliveryAddress(Request $request, $customer)
     {
         $deliveryData = $request->input('delivery');

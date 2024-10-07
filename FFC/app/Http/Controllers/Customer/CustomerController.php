@@ -136,6 +136,7 @@ class CustomerController extends Controller
             ], 500); // Return error response
         }
     }
+
     public function destroy($customerId)
     {
         // Use the findModel helper to retrieve the customer
@@ -173,7 +174,6 @@ class CustomerController extends Controller
         ]);
     }
 
-
     public function customerValidateData(Request $request, $customerId = null)
     {
         $validator = Validator::make($request->all(), [
@@ -204,7 +204,7 @@ class CustomerController extends Controller
             ],
 
             // Warehouse validation for each item in the array
-            'warehouse' => 'required|array',
+            // 'warehouse' => 'required|array',
             'warehouse.*.warehouse_name' => 'required|string',
             'warehouse.*.warehouse_address' => 'required|string',
             'warehouse.*.warehouse_city' => 'required|string',
@@ -213,7 +213,7 @@ class CustomerController extends Controller
             'warehouse.*.warehouse_zip_code' => 'required|string',
 
             // shipping validation for each item in the array
-            'shipping' => 'required|array',
+            // 'shipping' => 'required|array',
             'shipping.*.shipping_name' => 'required|string',
             'shipping.*.shipping_address' => 'required|string',
             'shipping.*.shipping_city' => 'required|string',

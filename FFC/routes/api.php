@@ -8,6 +8,7 @@ use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Destination\DestinationController;
 use App\Http\Controllers\Permission\PermissionController;
 use App\Http\Controllers\Port\PortController;
+use App\Http\Controllers\Quote\QuoteController;
 use App\Http\Controllers\Rate\RateController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Vendor\VendorController;
@@ -150,6 +151,20 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                 Route::controller(RateController::class)->group(function () {
                     Route::get('/index', 'index');
                     Route::post('/save', 'store');
+                    Route::get('/edit/{id}', 'edit');
+                    Route::post('/update/{id}', 'update');
+                    Route::delete('/delete/{id}', action: 'destroy');
+                    Route::post('/status/{id}', 'status');
+                });
+            }
+        );
+
+        // Quotes
+        Route::prefix('quote')->group(
+            function (): void {
+                Route::controller(QuoteController::class)->group(function () {
+                    Route::get('/index', 'index');
+                    Route::post('/getVendorList', 'getVendorList');
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', 'update');
                     Route::delete('/delete/{id}', action: 'destroy');

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Rate;
 use App\Http\Controllers\Controller;
 use App\Models\Rate\Rate;
 use App\Services\Rate\RateService;
-use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +22,8 @@ class RateController extends Controller
 
     public function index()
     {
+        $today = Carbon::now()->toDateString();
+
         $rates = DB::table('rates')
             ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
             ->join('ports', 'rates.port_id', '=', 'ports.id')
@@ -32,21 +34,52 @@ class RateController extends Controller
                 'ports.name as port_name',
                 'destinations.name as destination_name',
                 'freight',
-                'start_date',
+                // 'start_date',
+                DB::raw("DATE_FORMAT(rates.start_date, '%m/%d/%y') as rate_received"),
                 // DB::raw('DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY) as expiry_date'),
                 // DB::raw('GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0) as expiry_days'),
                 DB::raw("CONCAT(
-            DATE_FORMAT(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), '%m/%d/%Y'),
-            ', ',
-            GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0),
-            ' Days Left'
-        ) as rate_validity"),
+                    DATE_FORMAT(DATE_ADD(rates.start_date, INTERVAL GREATEST(rates.expiry - DATEDIFF('$today', rates.start_date), 0) DAY), '%m/%d/%Y'),
+                    ', ',
+                    GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0),
+                    ' Days Left'
+                ) as rate_validity"),
                 'rates.status',
-            )
-            // ->whereNotNull('rates.expiry')
-            ->get();
+            )->paginate(10);
 
         return response()->json(['status' => true, 'data' => $rates], 200);
+
+        // $rates = DB::table('rates')
+        //     ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
+        //     ->join('ports', 'rates.port_id', '=', 'ports.id')
+        //     ->join('destinations', 'rates.destination_id', '=', 'destinations.id')
+        //     ->select(
+        //         'rates.id as rate_id',
+        //         'vendors.company_name as vendor_name',
+        //         'ports.name as port_name',
+        //         'destinations.name as destination_name',
+        //         'freight',
+        //         'start_date',
+        //         // DB::raw('DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY) as expiry_date'),
+        //         // DB::raw('GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0) as expiry_days'),
+        //         DB::raw("CONCAT(
+        //                 DATE_FORMAT(DATE_ADD(rates.start_date, INTERVAL GREATEST(rates.expiry - DATEDIFF('$today', rates.start_date), 0) DAY), '%m/%d/%Y'),
+        //                 ', ',
+        //                 GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0),
+        //                 ' Days Left'
+        //             ) as rate_validity"),
+        //         'rates.status',
+        //         // Calculate how many days have passed since the start date
+        //         // DB::raw("DATEDIFF('$today', rates.start_date) as days_passed"),
+        //         // Calculate remaining days
+        //         DB::raw("GREATEST(rates.expiry - DATEDIFF('$today', rates.start_date), 0) as remaining_days")
+
+        //     )
+        //     ->paginate(10);
+        // // Now calculate `new_expiry_date` in PHP based on remaining_days
+        // foreach ($rates as $rate) {
+        //     $rate->new_expiry_date = Carbon::parse($rate->start_date)->addDays($rate->remaining_days)->toDateString();
+        // }
     }
 
     public function store(Request $request)
