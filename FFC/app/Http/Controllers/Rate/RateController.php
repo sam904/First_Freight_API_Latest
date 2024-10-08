@@ -34,16 +34,31 @@ class RateController extends Controller
                 'ports.name as port_name',
                 'destinations.name as destination_name',
                 'freight',
-                // 'start_date',
+                'expiry',
+                // DB::raw("DATEDIFF('$today', rates.start_date) as days_passed"),
                 DB::raw("DATE_FORMAT(rates.start_date, '%m/%d/%y') as rate_received"),
                 // DB::raw('DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY) as expiry_date'),
                 // DB::raw('GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0) as expiry_days'),
+                // DB::raw("CONCAT(
+                //     DATE_FORMAT(DATE_ADD(rates.start_date, INTERVAL GREATEST(rates.expiry - DATEDIFF('$today', rates.start_date), 0) DAY), '%m/%d/%Y'),
+                //     ', ',
+                //     GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0),
+                //     ' Days Left'
+                // ) as rate_validity"),
                 DB::raw("CONCAT(
-                    DATE_FORMAT(DATE_ADD(rates.start_date, INTERVAL GREATEST(rates.expiry - DATEDIFF('$today', rates.start_date), 0) DAY), '%m/%d/%Y'),
-                    ', ',
-                    GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0),
-                    ' Days Left'
-                ) as rate_validity"),
+                        DATE_FORMAT(
+                            DATE_ADD(
+                                rates.start_date, 
+                                INTERVAL GREATEST(rates.expiry - DATEDIFF('$today', rates.start_date), 0) DAY
+                            ), '%m/%d/%Y'
+                        ),
+                        ', ',
+                        CASE 
+                            WHEN GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0) = 0 
+                            THEN 'Expired' 
+                            ELSE CONCAT(GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0), ' Days Left')
+                        END
+                    ) as rate_validity"),
                 'rates.status',
             )->paginate(10);
 

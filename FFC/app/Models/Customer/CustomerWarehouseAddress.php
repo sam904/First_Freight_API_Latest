@@ -11,6 +11,7 @@ class CustomerWarehouseAddress extends Model
 
     protected $table = "customer_warehouse_addresses";
 
+    protected $hidden = ['id', 'customer_id'];
     protected $fillable = [
         'warehouse_name',
         'warehouse_address',

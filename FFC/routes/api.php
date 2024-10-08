@@ -165,6 +165,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                 Route::controller(QuoteController::class)->group(function () {
                     Route::get('/index', 'index');
                     Route::post('/getVendorList', 'getVendorList');
+                    Route::post('/save', 'store');
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', 'update');
                     Route::delete('/delete/{id}', action: 'destroy');

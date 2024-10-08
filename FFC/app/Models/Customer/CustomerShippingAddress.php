@@ -11,7 +11,8 @@ class CustomerShippingAddress extends Model
 
     protected $table = "customer_shipping_addresses";
 
-    //CustomerShipping	
+    protected $hidden = ['id', 'customer_id'];
+
     protected $fillable = [
         "shipping_name",
         "shipping_address",

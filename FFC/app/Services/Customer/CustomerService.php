@@ -53,10 +53,8 @@ class CustomerService
     }
 
 
-    public function updateCustomer(Request $request, $id)
+    public function updateCustomer(Request $request, $id, Customer $customer)
     {
-        $customer = Customer::find($id);
-
         // Delete existing related records
         $customer->warehouse()->delete();
         $customer->shipping()->delete();

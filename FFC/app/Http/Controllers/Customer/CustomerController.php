@@ -88,9 +88,24 @@ class CustomerController extends Controller
             'finance'
         ])->find($customerId);
 
+        $data = $customer->toArray();
+
+        // Check if the warehouse and shipping arrays have at least one entry and flatten them
+        if (!empty($data['warehouse'])) {
+            $warehouse = $data['warehouse'][0]; // Take the first element of the warehouse array
+            unset($data['warehouse']); // Remove the warehouse array
+            $data = array_merge($data, $warehouse); // Merge the first warehouse element into the customer array
+        }
+
+        if (!empty($data['shipping'])) {
+            $shipping = $data['shipping'][0]; // Take the first element of the shipping array
+            unset($data['shipping']); // Remove the shipping array
+            $data = array_merge($data, $shipping); // Merge the first shipping element into the customer array
+        }
+
         return response()->json([
             'status' => true,
-            'data' => $customer
+            'data' => $data
         ], 200);
     }
 
@@ -119,9 +134,8 @@ class CustomerController extends Controller
         DB::beginTransaction();  // Start the transaction
 
         try {
-            $customerMsg = $this->customerService->updateCustomer($request, $id);
+            $customerMsg = $this->customerService->updateCustomer($request, $id, $customer);
             DB::commit();
-
             return response()->json([
                 'status' => true,
                 'message' => "Customer updated successfully"

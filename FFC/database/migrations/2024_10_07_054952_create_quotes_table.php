@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('quotes', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('amount')->unsigned()->nullable();
-            $table->string('quotes_status');
-            $table->string('status');
+            $table->string('quote_status')->default('pending');
+            $table->string('status')->default('activated');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
 
