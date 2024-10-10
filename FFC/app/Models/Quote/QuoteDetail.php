@@ -4,6 +4,8 @@ namespace App\Models\Quote;
 
 use App\Models\Destination\Destination;
 use App\Models\Port\Port;
+use App\Models\Rate\Rate;
+use App\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,6 +21,7 @@ class QuoteDetail extends Model
         'rate_id',
         'freight',
         'fsc',
+        'shipment_type'
     ];
 
 
@@ -40,5 +43,15 @@ class QuoteDetail extends Model
     public function destination()
     {
         return $this->belongsTo(Destination::class, 'destination_id');
+    }
+
+    public function rate()
+    {
+        return $this->belongsTo(Rate::class);
+    }
+
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
     }
 }

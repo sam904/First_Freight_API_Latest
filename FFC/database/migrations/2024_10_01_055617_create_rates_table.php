@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('expiry');
             $table->bigInteger('freight')->unsigned();
             $table->bigInteger('fsc')->unsigned()->nullable();
-            $table->string('status')->default('active');
+            $table->string('status')->default('activated');
             $table->timestamps();
 
             // Foreign Constrain

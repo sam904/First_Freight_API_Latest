@@ -5,12 +5,9 @@ namespace App\Http\Controllers\Common;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Country;
-use App\Models\Customer\Customer;
-use App\Models\Destination\Destination;
-use App\Models\Port\Port;
 use App\Models\State;
-use App\Models\Vendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CommonController extends Controller
 {
@@ -54,25 +51,47 @@ class CommonController extends Controller
 
     public function getAllVendorList(Request $request)
     {
-        $vendorList = Vendor::orderBy("id", "desc")->get();
-        return response()->json(['status' => true, 'data' => $vendorList], 200);
+        $query = DB::table(table: 'vendors')->select('id', 'company_name');
+        if ($request->has('vendor_name')) {
+            $query->where('company_name', 'LIKE', '%' . $request->vendor_name . '%');
+        }
+        $query->where('status', 'activated');
+        $query = $query->orderBy('id', 'desc')->get();
+        return response()->json(['status' => true, 'data' => $query], 200);
     }
 
     public function getAllPortList(Request $request)
     {
-        $portList = Port::orderBy('id', 'desc')->get();
-        return response()->json(['status' => true, 'data' => $portList], 200);
+        $query = DB::table('ports')->select('id', 'name');
+        if ($request->has('port_name')) {
+            $query->where('name', 'LIKE', '%' . $request->port_name . '%');
+        }
+        $query->where('status', 'activated');
+        $query = $query->orderBy('id', 'desc')->get();
+
+        return response()->json(['status' => true, 'data' => $query], 200);
     }
 
     public function getAllDestinationList(Request $request)
     {
-        $destinationList = Destination::orderBy('id', 'desc')->get();
-        return response()->json(['status' => true, 'data' => $destinationList], 200);
+        $query = DB::table(table: 'destinations')->select('id', 'name');
+        if ($request->has('destination_name')) {
+            $query->where('name', 'LIKE', '%' . $request->destination_name . '%');
+        }
+        $query->where('status', 'activated');
+        $query = $query->orderBy('id', 'desc')->get();
+        return response()->json(['status' => true, 'data' => $query], 200);
     }
 
     public function getAllCustomerList(Request $request)
     {
-        $customerList = Customer::orderBy('id', 'desc')->get();
-        return response()->json(['status' => true, 'data' => $customerList], 200);
+        $query = DB::table(table: 'customers')
+            ->select('id', 'company_name');
+        if ($request->has('customer_name')) {
+            $query->where('company_name', 'LIKE', '%' . $request->customer_name . '%');
+        }
+        $query->where('status', 'activated');
+        $query = $query->orderBy('id', 'desc')->get();
+        return response()->json(['status' => true, 'data' => $query], 200);
     }
 }

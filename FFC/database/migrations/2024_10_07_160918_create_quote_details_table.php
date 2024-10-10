@@ -14,15 +14,13 @@ return new class extends Migration
         Schema::create('quote_details', function (Blueprint $table) {
             $table->id();
             $table->string('container_weight')->nullable();
+            $table->string('shipment_type')->nullable();
             $table->bigInteger('freight')->unsigned()->nullable();
             $table->bigInteger('fsc')->unsigned()->nullable();
             $table->timestamps();
 
             $table->foreignId('quote_id')->constrained()->onDelete('cascade');
-            $table->foreignId('port_id')->constrained()->onDelete('cascade');
-            $table->foreignId('destination_id')->constrained()->onDelete('cascade');
             $table->foreignId('rate_id')->constrained()->onDelete('cascade');
-            $table->foreignId('vendor_id')->constrained()->onDelete('cascade');
         });
     }
 

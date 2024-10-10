@@ -109,11 +109,19 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         );
 
         //Common
-        Route::controller(CommonController::class)->group(function () {
-            Route::get('/country', 'country');
-            Route::get('/state/{id}', 'state');
-            Route::get('/city/{id}', 'city');
-        });
+        Route::prefix('common')->group(
+            function () {
+                Route::controller(CommonController::class)->group(function () {
+                    Route::get('/country', 'country');
+                    Route::get('/state/{id}', 'state');
+                    Route::get('/city/{id}',  'city');
+                    Route::post('/vendorList', 'getAllVendorList');
+                    Route::post('/portList', 'getAllPortList');
+                    Route::post('/destinationList', 'getAllDestinationList');
+                    Route::post('/customerList', 'getAllCustomerList');
+                });
+            }
+        );
 
         //Port
         Route::prefix('port')->group(
@@ -163,7 +171,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('quote')->group(
             function (): void {
                 Route::controller(QuoteController::class)->group(function () {
-                    Route::get('/index', 'index');
+                    Route::post('/index', 'index');
                     Route::post('/getVendorList', 'getVendorList');
                     Route::post('/save', 'store');
                     Route::get('/edit/{id}', 'edit');
