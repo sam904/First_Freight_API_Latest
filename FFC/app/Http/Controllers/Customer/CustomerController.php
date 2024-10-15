@@ -22,6 +22,8 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $customer = Customer::with([
+            'country',
+            'state',
             'warehouse',
             'shipping',
             'delivery',

@@ -34,6 +34,7 @@ class Vendor extends Model
         'contact_name',
         'phone',
         'email',
+        'payment_term'
     ];
 
     public function sales()
@@ -45,5 +46,14 @@ class Vendor extends Model
     public function finance()
     {
         return $this->hasMany(VendorFinances::class, 'vendors_id');
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+    public function state()
+    {
+        return $this->belongsTo(State::class);
     }
 }

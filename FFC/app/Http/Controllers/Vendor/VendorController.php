@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\VendorResource;
+use App\Imports\VendorImport;
 use App\Models\Vendor;
 use App\Services\Vendor\VendorService;
 use Illuminate\Http\Request;
@@ -10,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class VendorController extends Controller
 {
@@ -21,10 +24,18 @@ class VendorController extends Controller
 
     public function index(Request $request)
     {
-        $vendor = Vendor::with(['sales', 'finance'])->paginate(10);
+        $vendor = Vendor::with([
+            'country:id,name',
+            'state:id,name',
+            // 'sales',
+            // 'finance'
+        ])
+            ->select('id', 'company_name', 'contact_name', 'phone', 'email', 'status', 'city', 'country_id', 'state_id')
+            ->paginate(2);
         return response()->json([
             "status" => "true",
-            "data" => $vendor
+            "data" => $vendor,
+            // "data" => VendorResource::collection($vendor),
         ], 200);
     }
 
@@ -165,6 +176,29 @@ class VendorController extends Controller
         ]);
     }
 
+    public function excelUpload(Request $request)
+    {
+        Log::info('Importing Vendor Excel sheet...');
+
+        $request->validate([
+            'uploadFile' => 'required|mimes:xlsx,xls,csv',
+            'updatedColumns' => 'required|array'
+        ]);
+        Log::info($request);
+
+        $updatedColumns = $request->input('updatedColumns');
+
+        try {
+            DB::beginTransaction();
+            Excel::import(new VendorImport($updatedColumns), $request->file('uploadFile'));
+            DB::commit();
+            return response()->json(['status' => true, 'message' => 'Excel Upload Successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function vendorValidateData(Request $request, $vendorId = null)
     {
         $validator = Validator::make($request->all(), [
@@ -203,6 +237,7 @@ class VendorController extends Controller
                 'max:255',
                 Rule::unique('vendors')->ignore($vendorId),
             ],
+            'paymentTerm' => 'required|string',
 
             // Vendor sale validation for each item in the array
             'sales' => 'required|array',

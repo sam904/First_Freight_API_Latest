@@ -2,11 +2,13 @@
 
 namespace App\Models\Customer;
 
+use App\Models\Country;
 use App\Models\Customer\CustomerContactDetails;
 use App\Models\Customer\CustomerDeliveryAddress;
 use App\Models\Customer\CustomerFinanceDetails;
 use App\Models\Customer\CustomerShippingAddress;
 use App\Models\Customer\CustomerWarehouseAddress;
+use App\Models\State;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -53,5 +55,14 @@ class Customer extends Model
     public function warehouse()
     {
         return $this->hasMany(CustomerWarehouseAddress::class, 'customer_id');
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+    public function state()
+    {
+        return $this->belongsTo(State::class);
     }
 }

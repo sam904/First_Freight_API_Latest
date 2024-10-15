@@ -5,12 +5,15 @@ namespace App\Services\Vendor;
 use App\Models\Vendor;
 use App\Models\VendorFinances;
 use App\Models\VendorSales;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel; // Import the facade
 
 class VendorService
 {
     public function __construct() {}
-
+    private $currentVendor = null;
     public function createVendor(Request $request)
     {
         $vendorImage['upload_w9'] = $this->uploadImages($request->file('upload_w9'));
@@ -41,6 +44,7 @@ class VendorService
             'contact_name' => $request['contact_name'],
             'phone' => $request['phone'],
             'email' => $request['email'],
+            'payment_term' => $request['paymentTerm'],
         ]);
 
         // Create sales records
@@ -105,6 +109,7 @@ class VendorService
             'contact_name' => $request['contact_name'],
             'phone' => $request['phone'],
             'email' => $request['email'],
+            'payment_term' => $request['paymentTerm'],
         ]);
 
         // Create sales records
@@ -177,4 +182,32 @@ class VendorService
             unlink($filePath); // Delete the file
         }
     }
+
+    public function excelUpload(Request $request)
+    {
+        if ($request->hasFile('uploadFile')) {
+            Log::info($request);
+            $path = $request->file('uploadFile')->getRealPath();
+            $data = Excel::load($path, function ($reader) {})->get();
+            Log::info($data);
+            if (!empty($data) && $data->count()) {
+                foreach ($data as $row) {
+                    Log::info($row);
+                    // If vendor_type is not null, process vendor data
+                    if (!is_null($row->vendor_type)) {
+                        //$this->currentVendor = $this->updateOrCreateVendor($row);
+                    }
+
+                    // Process sales and finance data
+                    $this->processSalesData($row);
+                    $this->processFinanceData($row);
+                }
+            }
+        }
+
+        return back()->with('success', 'File imported successfully.');
+    }
+
+    private function processSalesData($row) {}
+    private function processFinanceData($row) {}
 }
