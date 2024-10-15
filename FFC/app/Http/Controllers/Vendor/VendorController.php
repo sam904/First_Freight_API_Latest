@@ -22,13 +22,13 @@ class VendorController extends Controller
         $this->vendorService = $vendorService;
     }
 
-    public function index(Request $request)
+    public function index_working_15_oct(Request $request)
     {
         $vendor = Vendor::with([
             'country:id,name',
             'state:id,name',
-            // 'sales',
-            // 'finance'
+            'sales',
+            'finance'
         ])
             ->select('id', 'company_name', 'contact_name', 'phone', 'email', 'status', 'city', 'country_id', 'state_id')
             ->paginate(2);
@@ -38,6 +38,92 @@ class VendorController extends Controller
             // "data" => VendorResource::collection($vendor),
         ], 200);
     }
+
+    public function index(Request $request)
+    {
+        $vendors = Vendor::with([
+            'country:id,name',
+            'state:id,name',
+            'sales',
+            'finance'
+        ])->paginate(10);
+
+        // Modify each vendor to flatten 'sales' and 'finance' into the main array
+        // $vendors->through(function ($vendor) {
+        $vendors->getCollection()->each(function ($vendor) {
+            // Flatten country fields into the main vendor array
+            if ($vendor->country) {
+                $vendor->setAttribute('country_name', $vendor->country->name);
+                unset($vendor->country); // Remove the original nested country object
+            }
+
+            // Flatten state fields into the main vendor array
+            if ($vendor->state) {
+                $vendor->setAttribute('state_name', $vendor->state->name);
+                unset($vendor->state); // Remove the original nested state object
+            }
+
+            // Merge each sales record into the main vendor array
+            // foreach ($vendor->sales as $sale) {
+            //     $vendor->setAttribute('sales_' . $sale->id, [
+            //         'sales_name' => $sale->sales_name,
+            //         'sales_designation' => $sale->sales_designation,
+            //         'sales_phone' => $sale->sales_phone,
+            //         'sales_email' => $sale->sales_email,
+            //         'sales_fax' => $sale->sales_fax,
+            //         'created_at' => $sale->created_at,
+            //         'updated_at' => $sale->updated_at,
+            //     ]);
+            // }
+
+            // // Merge each finance record into the main vendor array
+            // foreach ($vendor->finance as $finance) {
+            //     $vendor->setAttribute('finance_' . $finance->id, [
+            //         'finance_name' => $finance->finance_name,
+            //         'finance_designation' => $finance->finance_designation,
+            //         'finance_phone' => $finance->finance_phone,
+            //         'finance_email' => $finance->finance_email,
+            //         'finance_fax' => $finance->finance_fax,
+            //         'created_at' => $finance->created_at,
+            //         'updated_at' => $finance->updated_at,
+            //     ]);
+            // }
+
+            // Flatten sales fields into the main vendor array
+            foreach ($vendor->sales as $index => $sale) {
+                $vendor->setAttribute('sales_name_' . ($index + 1), $sale->sales_name);
+                $vendor->setAttribute('sales_designation_' . ($index + 1), $sale->sales_designation);
+                $vendor->setAttribute('sales_phone_' . ($index + 1), $sale->sales_phone);
+                $vendor->setAttribute('sales_email_' . ($index + 1), $sale->sales_email);
+                $vendor->setAttribute('sales_fax_' . ($index + 1), $sale->sales_fax);
+                $vendor->setAttribute('sales_created_at_' . ($index + 1), $sale->created_at);
+                $vendor->setAttribute('sales_updated_at_' . ($index + 1), $sale->updated_at);
+            }
+
+            // Flatten finance fields into the main vendor array
+            foreach ($vendor->finance as $index => $finance) {
+                $vendor->setAttribute('finance_name_' . ($index + 1), $finance->finance_name);
+                $vendor->setAttribute('finance_designation_' . ($index + 1), $finance->finance_designation);
+                $vendor->setAttribute('finance_phone_' . ($index + 1), $finance->finance_phone);
+                $vendor->setAttribute('finance_email_' . ($index + 1), $finance->finance_email);
+                $vendor->setAttribute('finance_fax_' . ($index + 1), $finance->finance_fax);
+                $vendor->setAttribute('finance_created_at_' . ($index + 1), $finance->created_at);
+                $vendor->setAttribute('finance_updated_at_' . ($index + 1), $finance->updated_at);
+            }
+
+            // Remove the original sales and finance arrays
+            unset($vendor->sales, $vendor->finance);
+
+            return $vendor;
+        });
+
+        // Return the modified vendor collection
+        return response()->json([
+            'status' => true,
+            'data' => $vendors
+        ]);
+    }
+
 
     public function store(Request $request)
     {

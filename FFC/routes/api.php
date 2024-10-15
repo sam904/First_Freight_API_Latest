@@ -103,8 +103,9 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
             function () {
                 Route::controller(PermissionController::class)->group(function () {
                     Route::get('/view/{id}', 'view');
-                    Route::get('/master', 'index');
                     Route::post('/saveUserPermissions/{id}', 'saveUserPermissions');
+                    Route::get('/master', 'getAllMaster');
+                    Route::post('/saveMaster', 'storeMaster');
                 });
             }
         );

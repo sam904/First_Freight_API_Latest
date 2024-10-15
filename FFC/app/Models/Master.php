@@ -10,6 +10,9 @@ class Master extends Model
     use HasFactory;
 
     protected $fillable = ["name"];
+
+    protected $hidden = ['created_at', 'updated_at'];
+
     public function permissions()
     {
         return $this->hasMany(Permission::class, 'master_id');

@@ -8,10 +8,41 @@ use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class PermissionController extends Controller
 {
+    public function getAllMaster()
+    {
+        $master = Master::all();
+        return response()->json(['status' => true, 'data' => $master]);
+    }
+
+    public function storeMaster(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string'
+        ], [
+            'name.required' => 'Please provide a name.',
+            'name.string' => 'The name should be a valid string.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Master validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $master = Master::create(['name' => $request->name]);
+        if ($master) {
+            return response()->json(['status' => true, 'message' => 'Master created successfully'], 201);
+        } else {
+            return response()->json(['status' => false, 'message' => 'Failed to create Master data'], 500);
+        }
+    }
 
     public function view($userId)
     {
