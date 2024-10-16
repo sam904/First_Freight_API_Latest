@@ -363,6 +363,7 @@ class VendorController extends Controller
 
     public function storeVendorType(Request $request)
     {
+        Log::info($request);
         $validator = Validator::make($request->all(), [
             'type' => 'required|string'
         ]);
@@ -374,7 +375,7 @@ class VendorController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-        $vendorType = VendorType::create($request->type);
+        $vendorType = VendorType::create(['type' => $request->type]);
         if ($vendorType) {
             return response()->json(['status' => true, 'message' => 'Vendor Type created successfully'], 200);
         } else {

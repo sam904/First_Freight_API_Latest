@@ -15,6 +15,6 @@ class VendorType extends Model
 
     public static function getVendorTypes()
     {
-        return self::where('status', 'activated')->orderBy('id', 'desc')->get();
+        return self::select('id', 'type')->where('status', 'active')->orderBy('id', 'desc')->get();
     }
 }
