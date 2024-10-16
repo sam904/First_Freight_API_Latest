@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\VendorResource;
 use App\Imports\VendorImport;
 use App\Models\Vendor;
+use App\Models\VendorType;
 use App\Services\Vendor\VendorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -351,4 +352,41 @@ class VendorController extends Controller
         // Return validated data
         return $validator->validated();
     }
+
+    // Vendor Type API Start...
+    public function getAllVendorType()
+    {
+        // To get only active status vendor type
+        $vendorTypes = VendorType::getVendorTypes();
+        return response()->json(['status' => true, 'data' => $vendorTypes], 200);
+    }
+
+    public function storeVendorType(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'type' => 'required|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Vendor Type validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        $vendorType = VendorType::create($request->type);
+        if ($vendorType) {
+            return response()->json(['status' => true, 'message' => 'Vendor Type created successfully'], 200);
+        } else {
+            return response()->json(['status' => false, 'message' => 'Failed to Save Vendor Type data'], 500);
+        }
+    }
+
+    public function vendorStatus(Request $request, $id)
+    {
+        return statusUpdate(VendorType::class, $id, [
+            'status' => $request->status
+        ]);
+    }
+    // Vendor Type API END...
 }

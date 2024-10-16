@@ -123,6 +123,7 @@ class QuoteController extends Controller
 
     public function index(Request $request)
     {
+        Log::info('Quote Index...');
         // $quotes = DB::table('quotes')
         //     ->join('customers', 'quotes.customer_id', '=', 'customers.id')
         //     ->join('quote_details', 'quotes.id', '=', 'quote_details.quote_id')

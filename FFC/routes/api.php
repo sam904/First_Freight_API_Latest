@@ -80,6 +80,8 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::delete('/delete/{id}', action: 'destroy');
                     Route::post('/status/{id}', 'status');
                     Route::post('/import', 'excelUpload');
+                    Route::get('/vendorType', 'getAllVendorType');
+                    Route::post('/saveVendorType', 'storeVendorType');
                 });
             }
         );

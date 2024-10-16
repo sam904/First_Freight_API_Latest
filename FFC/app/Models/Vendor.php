@@ -42,7 +42,6 @@ class Vendor extends Model
         return $this->hasMany(VendorSales::class, 'vendors_id');
     }
 
-
     public function finance()
     {
         return $this->hasMany(VendorFinances::class, 'vendors_id');
@@ -52,8 +51,14 @@ class Vendor extends Model
     {
         return $this->belongsTo(Country::class);
     }
+
     public function state()
     {
         return $this->belongsTo(State::class);
+    }
+
+    public function type()
+    {
+        return $this->belongsTo(VendorType::class);
     }
 }
