@@ -62,6 +62,8 @@ class UserController extends Controller
         // Determine whether the input is an email or username
         //$loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
+        $validatedData = $validator->validated();
+
         if ($image = $request->file('profile_image')) {
             $destinationPath = 'images/profiles/';
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
