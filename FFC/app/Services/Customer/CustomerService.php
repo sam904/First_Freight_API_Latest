@@ -9,30 +9,30 @@ use App\Models\Customer\CustomerFinanceDetails;
 use App\Models\Customer\CustomerShippingAddress;
 use App\Models\Customer\CustomerWarehouseAddress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CustomerService
 {
 
     public function createCustomer(Request $request)
     {
-
         // save customer data
         $customer = Customer::create([
             'company_name' => $request['company_name'],
             'customer_type' => $request['customer_type'],
             'address' => $request['address'],
             'city' => $request['city'],
-            'state' => $request['state'],
-            'country' => $request['country'],
+            'state_id' => $request['state'],
+            'country_id' => $request['country'],
             'zip_code' => $request['zip_code'],
             'company_tax_id' => $request['company_tax_id'],
             'payment_terms' => $request['payment_terms'],
             'credit_limit' => $request['credit_limit'],
-            'contact_name' => $request['contact_name'],
-            'phone' => $request['phone'],
+            // 'contact_name' => $request['contact_name'],
+            // 'phone' => $request['phone'],
             'email' => $request['email'],
-
         ]);
+        Log::info("Custome save successfully...");
 
         // Create Warehouse Address
         $this->storeWarehouseAddress($request, $customer);
@@ -67,14 +67,14 @@ class CustomerService
             'customer_type' => $request['customer_type'],
             'address' => $request['address'],
             'city' => $request['city'],
-            'state' => $request['state'],
-            'country' => $request['country'],
+            'state_id' => $request['state'],
+            'country_id' => $request['country'],
             'zip_code' => $request['zip_code'],
             'company_tax_id' => $request['company_tax_id'],
             'payment_terms' => $request['payment_terms'],
             'credit_limit' => $request['credit_limit'],
-            'contact_name' => $request['contact_name'],
-            'phone' => $request['phone'],
+            // 'contact_name' => $request['contact_name'],
+            // 'phone' => $request['phone'],
             'email' => $request['email'],
         ]);
 

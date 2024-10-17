@@ -14,8 +14,8 @@ class Vendor extends Model
         'company_name',
         'address',
         'city',
-        'state',
-        'country',
+        'state_id',
+        'country_id',
         'zip_code',
         'company_tax_id',
         'mc_number',
@@ -31,8 +31,8 @@ class Vendor extends Model
         'bank_address',
         'remarks',
         'status',
-        'contact_name',
-        'phone',
+        // 'contact_name',
+        // 'phone',
         'email',
         'payment_term'
     ];

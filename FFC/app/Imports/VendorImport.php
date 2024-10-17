@@ -79,7 +79,7 @@ class VendorImport implements ToCollection, WithHeadingRow
             } else {
                 Log::info("Creating vendor...");
                 $vendorData = $this->processVendorData($row);
-                $vendorData['status'] = 'deactivated';
+                $vendorData['status'] = 'inactive';
                 Log::info('Saving Vendor datails');
                 $vendor = Vendor::create($vendorData);
             }
@@ -106,7 +106,7 @@ class VendorImport implements ToCollection, WithHeadingRow
                 if ($vendor) {
                     $vendor->update($vendorData);
                 } else {
-                    $vendorData['status'] = 'deactivated';
+                    $vendorData['status'] = 'inactive';
                     $vendor = Vendor::create($vendorData);
                 }
             }

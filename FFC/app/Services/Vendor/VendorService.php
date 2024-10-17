@@ -25,8 +25,8 @@ class VendorService
             'company_name' => $request['company_name'],
             'address' => $request['address'],
             'city' => $request['city'],
-            'state' => $request['state'],
-            'country' => $request['country'],
+            'state_id' => $request['state'],
+            'country_id' => $request['country'],
             'zip_code' => $request['zip_code'],
             'company_tax_id' => $request['company_tax_id'],
             'mc_number' => $request['mc_number'],
@@ -41,8 +41,8 @@ class VendorService
             'bank_routing' => $request['bank_routing'],
             'bank_address' => $request['bank_address'],
             'remarks' => $request['remarks'],
-            'contact_name' => $request['contact_name'],
-            'phone' => $request['phone'],
+            // 'contact_name' => $request['contact_name'],
+            // 'phone' => $request['phone'],
             'email' => $request['email'],
             'payment_term' => $request['paymentTerm'],
         ]);
@@ -90,8 +90,8 @@ class VendorService
             'company_name' => $request['company_name'],
             'address' => $request['address'],
             'city' => $request['city'],
-            'state' => $request['state'],
-            'country' => $request['country'],
+            'state_id' => $request['state'],
+            'country_id' => $request['country'],
             'zip_code' => $request['zip_code'],
             'company_tax_id' => $request['company_tax_id'],
             'mc_number' => $request['mc_number'],
@@ -106,8 +106,8 @@ class VendorService
             'bank_routing' => $request['bank_routing'],
             'bank_address' => $request['bank_address'],
             'remarks' => $request['remarks'],
-            'contact_name' => $request['contact_name'],
-            'phone' => $request['phone'],
+            // 'contact_name' => $request['contact_name'],
+            // 'phone' => $request['phone'],
             'email' => $request['email'],
             'payment_term' => $request['paymentTerm'],
         ]);
@@ -182,32 +182,4 @@ class VendorService
             unlink($filePath); // Delete the file
         }
     }
-
-    public function excelUpload(Request $request)
-    {
-        if ($request->hasFile('uploadFile')) {
-            Log::info($request);
-            $path = $request->file('uploadFile')->getRealPath();
-            $data = Excel::load($path, function ($reader) {})->get();
-            Log::info($data);
-            if (!empty($data) && $data->count()) {
-                foreach ($data as $row) {
-                    Log::info($row);
-                    // If vendor_type is not null, process vendor data
-                    if (!is_null($row->vendor_type)) {
-                        //$this->currentVendor = $this->updateOrCreateVendor($row);
-                    }
-
-                    // Process sales and finance data
-                    $this->processSalesData($row);
-                    $this->processFinanceData($row);
-                }
-            }
-        }
-
-        return back()->with('success', 'File imported successfully.');
-    }
-
-    private function processSalesData($row) {}
-    private function processFinanceData($row) {}
 }

@@ -10,4 +10,6 @@ class County extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'iso_code'];
+
+    protected $hidden = ['created_at', 'updated_at'];
 }

@@ -64,7 +64,7 @@ class QuoteController extends Controller
             $query->where('rates.destination_id', $request->destination_id);
         }
 
-        $query->where('rates.status', 'activated');
+        $query->where('rates.status', 'active');
 
         // Query for the additional record based on vendor_id and rate_id
         if ($request->has('vendor_id') && $request->has('rate_id')) {

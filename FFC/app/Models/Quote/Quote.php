@@ -15,7 +15,6 @@ class Quote extends Model
         'status',
         'created_by',
         'quote_status',
-        'shipment_type',
     ];
 
     public function customer()

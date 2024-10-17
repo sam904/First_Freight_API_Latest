@@ -48,7 +48,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->username)->first();
 
         // Check if user exists and is inactive
-        if ($user && $user->status != "activated") {
+        if ($user && $user->status != "active") {
             return response()->json([
                 'status' => false,
                 'message' => 'Your account is inactive. Please contact support'

@@ -82,6 +82,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::post('/import', 'excelUpload');
                     Route::get('/vendorType', 'getAllVendorType');
                     Route::post('/saveVendorType', 'storeVendorType');
+                    Route::post('/vendorTypeStatus/{id}', 'vendorStatus');
                 });
             }
         );

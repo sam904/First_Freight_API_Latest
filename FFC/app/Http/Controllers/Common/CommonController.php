@@ -55,7 +55,7 @@ class CommonController extends Controller
         if ($request->has('vendor_name')) {
             $query->where('company_name', 'LIKE', '%' . $request->vendor_name . '%');
         }
-        $query->where('status', 'activated');
+        $query->where('status', 'active');
         $query = $query->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $query], 200);
     }
@@ -66,7 +66,7 @@ class CommonController extends Controller
         if ($request->has('port_name')) {
             $query->where('name', 'LIKE', '%' . $request->port_name . '%');
         }
-        $query->where('status', 'activated');
+        $query->where('status', 'active');
         $query = $query->orderBy('id', 'desc')->get();
 
         return response()->json(['status' => true, 'data' => $query], 200);
@@ -78,7 +78,7 @@ class CommonController extends Controller
         if ($request->has('destination_name')) {
             $query->where('name', 'LIKE', '%' . $request->destination_name . '%');
         }
-        $query->where('status', 'activated');
+        $query->where('status', 'active');
         $query = $query->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $query], 200);
     }
@@ -90,7 +90,7 @@ class CommonController extends Controller
         if ($request->has('customer_name')) {
             $query->where('company_name', 'LIKE', '%' . $request->customer_name . '%');
         }
-        $query->where('status', 'activated');
+        $query->where('status', 'active');
         $query = $query->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $query], 200);
     }

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
@@ -22,22 +23,41 @@ class UserController extends Controller
     // Register a new user
     public function store(Request $request)
     {
-        try {
-            $validatedData = $request->validate([
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                // 'username' => ['required',function ($attribute, $value, $fail) { if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^[a-zA-Z0-9_]+$/', $value)) {$fail('The ' . $attribute . ' must be a valid email or username.');}},],
-                'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:8',
-                'mobile_number' => 'required|string|min:10|max:15|unique:users', // Add mobile number validation
-                'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
-            ]);
-        } catch (ValidationException $e) {
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            // 'username' => ['required',function ($attribute, $value, $fail) { if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^[a-zA-Z0-9_]+$/', $value)) {$fail('The ' . $attribute . ' must be a valid email or username.');}},],
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'mobile_number' => 'required|string|min:10|max:15|unique:users', // Add mobile number validation
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
+        ]);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            // return  $validator->errors();
             return response()->json([
                 'status' => false,
-                'error' => $e->errors()
+                'message' => 'User validation failed',
+                'error' => $validator->errors()
             ], 422);
         }
+        // try {
+        //     $validatedData = $request->validate([
+        //         'first_name' => 'required|string|max:255',
+        //         'last_name' => 'required|string|max:255',
+        //         // 'username' => ['required',function ($attribute, $value, $fail) { if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^[a-zA-Z0-9_]+$/', $value)) {$fail('The ' . $attribute . ' must be a valid email or username.');}},],
+        //         'email' => 'required|string|email|max:255|unique:users',
+        //         'password' => 'required|string|min:8',
+        //         'mobile_number' => 'required|string|min:10|max:15|unique:users', // Add mobile number validation
+        //         'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
+        //     ]);
+        // } catch (ValidationException $e) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'error' => $e->errors()
+        //     ], 422);
+        // }
 
         // Determine whether the input is an email or username
         //$loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
@@ -98,21 +118,42 @@ class UserController extends Controller
             return $user;  // Return the not found response
         }
 
-        try {
-            $validatedData = $request->validate([
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255',
-                'password' => 'required|string|min:8',
-                'mobile_number' => 'required|string|min:10|max:15', // Add mobile number validation
-                'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
-            ]);
-        } catch (ValidationException $e) {
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            // 'username' => ['required',function ($attribute, $value, $fail) { if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^[a-zA-Z0-9_]+$/', $value)) {$fail('The ' . $attribute . ' must be a valid email or username.');}},],
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'mobile_number' => 'required|string|min:10|max:15|unique:users', // Add mobile number validation
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
+        ]);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            // return  $validator->errors();
             return response()->json([
                 'status' => false,
-                'error' => $e->errors()
+                'message' => 'User validation failed',
+                'error' => $validator->errors()
             ], 422);
         }
+
+        $validatedData = $validator->validated();
+        // try {
+        //     $validatedData = $request->validate([
+        //         'first_name' => 'required|string|max:255',
+        //         'last_name' => 'required|string|max:255',
+        //         'email' => 'required|string|email|max:255',
+        //         'password' => 'required|string|min:8',
+        //         'mobile_number' => 'required|string|min:10|max:15', // Add mobile number validation
+        //         'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
+        //     ]);
+        // } catch (ValidationException $e) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'error' => $e->errors()
+        //     ], 422);
+        // }
 
         if ($image = $request->file('profile_image')) {
             $destinationPath = 'images/profiles/';

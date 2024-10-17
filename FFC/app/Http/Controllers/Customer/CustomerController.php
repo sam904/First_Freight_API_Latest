@@ -39,7 +39,7 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
-
+        Log::info("Saving Customer Details...");
         $validatedData = $this->customerValidateData($request);
 
         // Check if the validated data is an array (i.e., no validation errors)
@@ -203,16 +203,16 @@ class CustomerController extends Controller
             'company_tax_id' => 'required|string',
             'payment_terms' => 'required|string',
             'credit_limit' => 'required|string',
-            'contact_name' => 'required|string',
-            'phone' => [
-                'required',
-                'string',
-                'min:10',
-                'max:15',
-                Rule::unique('customers')->ignore($customerId),
-            ],
+            // 'contact_name' => 'required|string',
+            // 'phone' => [
+            //     'required',
+            //     'string',
+            //     'min:10',
+            //     'max:15',
+            //     Rule::unique('customers')->ignore($customerId),
+            // ],
             'email' => [
-                'required',
+                'nullable',
                 'string',
                 'email',
                 'max:255',

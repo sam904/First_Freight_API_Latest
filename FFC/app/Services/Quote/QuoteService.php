@@ -23,7 +23,7 @@ class QuoteService
         $quote = Quote::create([
             "customer_id" => $request['customerId'],
             "quote_status" => $request["quoteStatus"],
-            "shipment_type" => $request["shipmentType"],
+            // "shipment_type" => $request["shipmentType"],
             "created_by" =>  $this->loginUser->id,
         ]);
 
@@ -44,7 +44,7 @@ class QuoteService
         $quote->update([
             "customer_id" => $request['customerId'],
             "quote_status" => $request["quoteStatus"],
-            "shipment_type" => $request["shipmentType"],
+            // "shipment_type" => $request["shipmentType"],
             "created_by" =>  $this->loginUser->id,
         ]);
 
