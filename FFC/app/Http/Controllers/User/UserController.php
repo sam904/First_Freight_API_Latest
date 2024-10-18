@@ -6,14 +6,48 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy("id", "desc")->paginate(10);
+        $searchTerm = $request->input('searchTerm');
+        $filterBy = $request->input('filterBy');
+
+        // Get all column names of the 'users' table
+        $userModel = new User();
+        $searchableColumns = $userModel->getSearchableColumns();
+
+        $query = User::query();
+        if (!empty($searchTerm)) {
+            if (!empty($filterBy)) {
+                // Retrieve the column map from the User model
+                // $columnMap = User::$columnMap;
+                // if (isset($columnMap[$filterBy])) {
+                Log::info('Data is searched based on FilterBy and SearchTerm...' . $filterBy . '==' . $searchTerm);
+                //     $query->where($columnMap[$filterBy], 'LIKE', "%{$searchTerm}%");
+                // }
+                $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+            } else {
+                Log::info('Data is searched based on SearchTerm Only ==> ' . $searchTerm);
+                foreach ($searchableColumns as $column) {
+                    $query->orWhere($column, 'LIKE', "%{$searchTerm}%");
+                }
+            }
+        }
+
+        // Check if the startDate and endDate are provided in the request
+        if ($request->has('startDate') && $request->has('endDate')) {
+            $endDate = \Carbon\Carbon::parse($request->input('endDate'))->endOfDay();
+            $query->whereBetween('created_at', [$request->input('startDate'), $endDate]);
+        }
+
+        // Paginate the results
+        $users = $query->orderBy("id", "desc")->paginate(10);
+
         return response()->json([
             'status' => true,
             'data' => $users

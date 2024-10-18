@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
@@ -55,6 +56,36 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Example of columns to exclude
+    protected $excludedColumns = [
+        'id',
+        'username',
+        'email_verified_at',
+        'password',
+        'role',
+        'profile_image',
+        'access_token',
+        'access_token_expires_at',
+        'refresh_token',
+        'refresh_token_expires_at',
+        'remember_token',
+        'secret_password',
+        'secret_key',
+        'updated_at',
+        'created_at',
+    ];
+
+    // Map user-friendly names to actual database columns
+    // public static $columnMap = ['First Name' => 'first_name','Last Name' => 'last_name','Email' => 'email','Contact Number' => 'mobile_number','Status' => 'status'];
+
+    public function getSearchableColumns()
+    {
+        // Fetch all columns of the table dynamically, and exclude specific ones
+        $table = $this->getTable();
+        $columns = Schema::getColumnListing($table);
+        return array_diff($columns, $this->excludedColumns);
     }
 
     public function permissions()

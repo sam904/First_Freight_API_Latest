@@ -60,7 +60,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('user')->group(
             function () {
                 Route::controller(UserController::class)->group(function () {
-                    Route::get('/index', 'index');
+                    Route::post('/index', 'index');
                     Route::post('/update/{id}', 'update');
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/status/{id}', 'status');
