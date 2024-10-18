@@ -58,7 +58,6 @@ class User extends Authenticatable
         ];
     }
 
-    // Example of columns to exclude
     protected $excludedColumns = [
         'id',
         'username',
@@ -80,9 +79,9 @@ class User extends Authenticatable
     // Map user-friendly names to actual database columns
     // public static $columnMap = ['First Name' => 'first_name','Last Name' => 'last_name','Email' => 'email','Contact Number' => 'mobile_number','Status' => 'status'];
 
+    // Fetch all columns of the table dynamically, and exclude specific ones
     public function getSearchableColumns()
     {
-        // Fetch all columns of the table dynamically, and exclude specific ones
         $table = $this->getTable();
         $columns = Schema::getColumnListing($table);
         return array_diff($columns, $this->excludedColumns);

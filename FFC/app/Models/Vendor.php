@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Vendor extends Model
 {
@@ -36,6 +37,18 @@ class Vendor extends Model
         'email',
         'payment_term'
     ];
+
+    protected $excludedColumns = [
+        'id',
+    ];
+
+    public function getSearchableColumns()
+    {
+        // Fetch all columns of the table dynamically, and exclude specific ones
+        $table = $this->getTable();
+        $columns = Schema::getColumnListing($table);
+        return array_diff($columns, $this->excludedColumns);
+    }
 
     public function sales()
     {

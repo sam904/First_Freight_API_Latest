@@ -42,12 +42,22 @@ class VendorController extends Controller
 
     public function index(Request $request)
     {
-        $vendors = Vendor::with([
+        $searchTerm = $request->input('searchTerm');
+        $filterBy = $request->input('filterBy');
+
+        // Get all column names of the 'users' table
+        $model = new Vendor();
+        $searchableColumns = $model->getSearchableColumns();
+
+        $query = Vendor::with([
             'country:id,name',
             'state:id,name',
             'sales',
             'finance'
-        ])->paginate(10);
+        ]);
+
+        // Get the paginated results
+        $vendors = $query->paginate(10);
 
         // Modify each vendor to flatten 'sales' and 'finance' into the main array
         // $vendors->through(function ($vendor) {

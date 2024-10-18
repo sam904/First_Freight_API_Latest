@@ -73,7 +73,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('vendor')->group(
             function () {
                 Route::controller(VendorController::class)->group(function () {
-                    Route::get('/index', 'index');
+                    Route::post('/index', 'index');
                     Route::post('/save', action: 'store');
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', action: 'update');

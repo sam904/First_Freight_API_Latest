@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Helpers\SearchHelper;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -16,34 +17,17 @@ class UserController extends Controller
     {
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
 
         // Get all column names of the 'users' table
-        $userModel = new User();
-        $searchableColumns = $userModel->getSearchableColumns();
+        $model = new User();
+        $searchableColumns = $model->getSearchableColumns();
 
         $query = User::query();
-        if (!empty($searchTerm)) {
-            if (!empty($filterBy)) {
-                // Retrieve the column map from the User model
-                // $columnMap = User::$columnMap;
-                // if (isset($columnMap[$filterBy])) {
-                Log::info('Data is searched based on FilterBy and SearchTerm...' . $filterBy . '==' . $searchTerm);
-                //     $query->where($columnMap[$filterBy], 'LIKE', "%{$searchTerm}%");
-                // }
-                $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
-            } else {
-                Log::info('Data is searched based on SearchTerm Only ==> ' . $searchTerm);
-                foreach ($searchableColumns as $column) {
-                    $query->orWhere($column, 'LIKE', "%{$searchTerm}%");
-                }
-            }
-        }
 
-        // Check if the startDate and endDate are provided in the request
-        if ($request->has('startDate') && $request->has('endDate')) {
-            $endDate = \Carbon\Carbon::parse($request->input('endDate'))->endOfDay();
-            $query->whereBetween('created_at', [$request->input('startDate'), $endDate]);
-        }
+        // Apply search filters
+        $query = SearchHelper::applySearchFilters($query, $searchTerm, $filterBy, $searchableColumns, $startDate, $endDate);
 
         // Paginate the results
         $users = $query->orderBy("id", "desc")->paginate(10);
@@ -105,6 +89,7 @@ class UserController extends Controller
             $validatedData['profile_image'] = "$profileImage";
         }
 
+        Log::info('Generating password...');
         // Generate key
         $key = generateSecretKey(32); // Make sure to use a strong key
         // Encrypt the password
