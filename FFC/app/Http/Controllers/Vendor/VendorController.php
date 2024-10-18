@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers\Vendor;
 
+use App\Helpers\SearchHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VendorResource;
 use App\Imports\VendorImport;
+use App\Models\Country;
+use App\Models\State;
 use App\Models\Vendor;
+use App\Models\VendorFinances;
+use App\Models\VendorSales;
 use App\Models\VendorType;
 use App\Services\Vendor\VendorService;
 use Illuminate\Http\Request;
@@ -47,7 +52,6 @@ class VendorController extends Controller
 
         // Get all column names of the 'users' table
         $model = new Vendor();
-        $searchableColumns = $model->getSearchableColumns();
 
         $query = Vendor::with([
             'country:id,name',
@@ -56,8 +60,115 @@ class VendorController extends Controller
             'finance'
         ]);
 
+        $saleFlag = false;
+        $financeFlag = false;
+        $countryFlag = false;
+        $stateFlag = false;
+
+        // Check if filterBy contains sales. or finance. and adjust accordingly
+        if (
+            strpos($filterBy, 'sales.') === 0 ||
+            strpos($filterBy, 'finance.') === 0 ||
+            strpos($filterBy, 'country.') === 0 ||
+            strpos($filterBy, 'state.') === 0
+        ) {
+            // Set filterBy to null in the request
+            $request->merge(['filterBy' => null]);
+            if (strpos($filterBy, 'sales.') === 0) {
+                $filterBy = substr($filterBy, strlen('sales.'));
+                $saleFlag = true;
+            } elseif (strpos($filterBy, 'finance.') === 0) {
+                $filterBy = substr($filterBy, strlen('finance.'));
+                $financeFlag = true;
+            } elseif (strpos($filterBy, 'country.') === 0) {
+                $filterBy = substr($filterBy, strlen('country.'));
+                $countryFlag = true;
+            } elseif (strpos($filterBy, 'state.') === 0) {
+                $filterBy = substr($filterBy, strlen('state.'));
+                $stateFlag = true;
+            }
+        }
+
+        if ($filterBy == null) {
+            Log::info('filter by is null');
+            $saleFlag = true;
+            $financeFlag = true;
+            $stateFlag = true;
+            $countryFlag = true;
+        }
+
+        // Apply search filters
+        $query = SearchHelper::applySearchFilters($query, $model, $request);
+
+        // Search within related Sales fields
+        if ($saleFlag) {
+            $saleModel = new VendorSales();
+            $searchableSalesColumns = $saleModel->getSearchableColumns();
+            $query->orWhereHas('sales', function ($query) use ($searchTerm, $filterBy, $searchableSalesColumns) {
+                if ($filterBy && in_array($filterBy, $searchableSalesColumns)) {
+                    Log::info('sales FilterBy =' . $filterBy);
+                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                } else {
+                    Log::info('Sales Search on whole table =' . $searchTerm);
+                    $query->where('sales_name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('sales_designation', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('sales_phone', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('sales_email', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('sales_fax', 'LIKE', "%{$searchTerm}%");
+                }
+            });
+        }
+
+        // Search within related Finance fields
+        if ($financeFlag) {
+            $financeModel = new VendorFinances();
+            $searchableFinanceColumns = $financeModel->getSearchableColumns();
+            $query->orWhereHas('finance', function ($query) use ($searchTerm, $filterBy, $searchableFinanceColumns) {
+                if ($filterBy && in_array($filterBy, $searchableFinanceColumns)) {
+                    Log::info('finance FilterBy =' . $filterBy);
+                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                } else {
+                    Log::info('finance Search on whole table =' . $searchTerm);
+                    $query->where('finance_name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('finance_designation', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('finance_phone', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('finance_email', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('finance_fax', 'LIKE', "%{$searchTerm}%");
+                }
+            });
+        }
+
+        if ($countryFlag) {
+            $countryModel = new Country();
+            $searchableCountryColumns = $countryModel->getSearchableColumns();
+            $query->orWhereHas('country', function ($query) use ($searchTerm, $filterBy, $searchableCountryColumns) {
+                if ($filterBy && in_array($filterBy, $searchableCountryColumns)) {
+                    Log::info('country FilterBy =' . $filterBy);
+                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                } else {
+                    Log::info('country Search on whole table =' . $searchTerm);
+                    $query->where('name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('iso_code', 'LIKE', "%{$searchTerm}%");
+                }
+            });
+        }
+
+        if ($stateFlag) {
+            $stateModel = new State();
+            $searchableStateColumns = $stateModel->getSearchableColumns();
+            $query->orWhereHas('state', function ($query) use ($searchTerm, $filterBy, $searchableStateColumns) {
+                if ($filterBy && in_array($filterBy, $searchableStateColumns)) {
+                    Log::info('state FilterBy =' . $filterBy);
+                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                } else {
+                    Log::info('state Search on whole table =' . $searchTerm);
+                    $query->where('name', 'LIKE', "%{$searchTerm}%");
+                }
+            });
+        }
+
         // Get the paginated results
-        $vendors = $query->paginate(10);
+        $vendors = $query->orderBy("id", "desc")->paginate(10);
 
         // Modify each vendor to flatten 'sales' and 'finance' into the main array
         // $vendors->through(function ($vendor) {
@@ -73,32 +184,6 @@ class VendorController extends Controller
                 $vendor->setAttribute('state_name', $vendor->state->name);
                 unset($vendor->state); // Remove the original nested state object
             }
-
-            // Merge each sales record into the main vendor array
-            // foreach ($vendor->sales as $sale) {
-            //     $vendor->setAttribute('sales_' . $sale->id, [
-            //         'sales_name' => $sale->sales_name,
-            //         'sales_designation' => $sale->sales_designation,
-            //         'sales_phone' => $sale->sales_phone,
-            //         'sales_email' => $sale->sales_email,
-            //         'sales_fax' => $sale->sales_fax,
-            //         'created_at' => $sale->created_at,
-            //         'updated_at' => $sale->updated_at,
-            //     ]);
-            // }
-
-            // // Merge each finance record into the main vendor array
-            // foreach ($vendor->finance as $finance) {
-            //     $vendor->setAttribute('finance_' . $finance->id, [
-            //         'finance_name' => $finance->finance_name,
-            //         'finance_designation' => $finance->finance_designation,
-            //         'finance_phone' => $finance->finance_phone,
-            //         'finance_email' => $finance->finance_email,
-            //         'finance_fax' => $finance->finance_fax,
-            //         'created_at' => $finance->created_at,
-            //         'updated_at' => $finance->updated_at,
-            //     ]);
-            // }
 
             // Flatten sales fields into the main vendor array
             foreach ($vendor->sales as $index => $sale) {

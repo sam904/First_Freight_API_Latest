@@ -15,19 +15,13 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $searchTerm = $request->input('searchTerm');
-        $filterBy = $request->input('filterBy');
-        $startDate = $request->input('startDate');
-        $endDate = $request->input('endDate');
+        $query = User::query();
 
         // Get all column names of the 'users' table
         $model = new User();
-        $searchableColumns = $model->getSearchableColumns();
-
-        $query = User::query();
 
         // Apply search filters
-        $query = SearchHelper::applySearchFilters($query, $searchTerm, $filterBy, $searchableColumns, $startDate, $endDate);
+        $query = SearchHelper::applySearchFilters($query, $model, $request);
 
         // Paginate the results
         $users = $query->orderBy("id", "desc")->paginate(10);

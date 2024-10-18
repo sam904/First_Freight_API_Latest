@@ -40,6 +40,8 @@ class Vendor extends Model
 
     protected $excludedColumns = [
         'id',
+        'created_at',
+        'updated_at'
     ];
 
     public function getSearchableColumns()
@@ -47,6 +49,7 @@ class Vendor extends Model
         // Fetch all columns of the table dynamically, and exclude specific ones
         $table = $this->getTable();
         $columns = Schema::getColumnListing($table);
+        // $columns = array_merge($columns, ['sales_name']);
         return array_diff($columns, $this->excludedColumns);
     }
 
