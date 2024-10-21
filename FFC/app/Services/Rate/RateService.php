@@ -4,6 +4,7 @@ namespace App\Services\Rate;
 
 use App\Models\Rate\Rate;
 use App\Models\Rate\RateCharge;
+use App\Models\Rate\RateNotes;
 use Illuminate\Http\Request;
 
 class RateService
@@ -61,5 +62,29 @@ class RateService
 
         // Save all charges related to rate
         $rate->charges()->saveMany($charge);
+    }
+
+    public function saveNotes(Request $request)
+    {
+        RateNotes::create([
+            'title' => $request['title'],
+            'description' => $request['description'],
+            'rate_id' => $request['rateId'],
+            'tag' => $request['tag'],
+            'pin' => $request['pin'],
+        ]);
+        return true;
+    }
+
+    public function updateNote(Request $request, RateNotes $rateNotes)
+    {
+        $rateNotes->update([
+            'title' => $request['title'],
+            'description' => $request['description'],
+            'rate_id' => $request['rateId'],
+            'tag' => $request['tag'],
+            'pin' => $request['pin'],
+        ]);
+        return true;
     }
 }

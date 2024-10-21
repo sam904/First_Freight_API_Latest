@@ -168,6 +168,12 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::post('/update/{id}', 'update');
                     Route::delete('/delete/{id}', action: 'destroy');
                     Route::post('/status/{id}', 'status');
+                    Route::get('/rateNotes/{id}', 'getRateNote');
+                    Route::post('/saveNote', 'storeNote');
+                    Route::post('/updateNote/{id}', 'updateNote');
+                    Route::get('/editNote/{id}', 'editNote');
+                    Route::delete('/deleteNote/{id}', action: 'destroyNote');
+                    Route::post('/statusNote/{id}', 'statusNote');
                 });
             }
         );

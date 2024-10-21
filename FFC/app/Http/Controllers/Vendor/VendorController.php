@@ -306,7 +306,6 @@ class VendorController extends Controller
 
     public function storeVendorType(Request $request)
     {
-        Log::info($request);
         $validator = Validator::make($request->all(), [
             'type' => 'required|string'
         ]);

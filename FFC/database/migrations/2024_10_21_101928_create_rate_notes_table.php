@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('rate_notes', function (Blueprint $table) {
             $table->id();
+            $table->string('title')->nullable();
+            $table->string('description')->nullable();
+            $table->string('tag')->nullable();
+            $table->boolean('pin')->default(false)->nullable();
+            $table->string('status')->default('active')->nullable();
             $table->timestamps();
+            $table->foreignId('rate_id')->constrained()->onDelete('cascade');
         });
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Rate;
 
 use App\Http\Controllers\Controller;
 use App\Models\Rate\Rate;
+use App\Models\Rate\RateNotes;
 use App\Services\Rate\RateService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -201,5 +202,142 @@ class RateController extends Controller
 
         // Return validated data
         return $validator->validated();
+    }
+
+    // Rate Notes
+    public function getRateNote($id)
+    {
+        // Use the findModel helper to retrieve the customer
+        $rate = findModel(Rate::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rate instanceof \Illuminate\Http\JsonResponse) {
+            return $rate;  // Return the not found response
+        }
+
+        $rateNote = RateNotes::where('rate_id', $id)->orderBy('id', 'desc')->get();
+        return response()->json(['status' => true, 'data' => $rateNote], 200);
+    }
+
+    public function storeNote(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'rateId' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Rate Note Validation Failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();  // Start the transaction
+        try {
+            $this->rateService->saveNotes($request);
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => "Rate Notes created successfully"
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to insert rate note data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to insert rate note',
+                "error" => $e->getMessage()
+            ], 500); // Return error response
+        }
+    }
+
+    public function updateNote(Request $request, $id)
+    {
+        // Use the findModel helper to retrieve the customer
+        $rateNotes = findModel(RateNotes::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rateNotes instanceof \Illuminate\Http\JsonResponse) {
+            return $rateNotes;  // Return the not found response
+        }
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'rateId' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Rate Note Validation Failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();  // Start the transaction
+        try {
+            $this->rateService->updateNote($request, $rateNotes);
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => "Rate Notes updated successfully"
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to update rate note data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update rate note',
+                "error" => $e->getMessage()
+            ], 500); // Return error response
+        }
+    }
+
+    public function editNote($id)
+    {
+        // Use the findModel helper to retrieve the customer
+        $rateNotes = findModel(RateNotes::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rateNotes instanceof \Illuminate\Http\JsonResponse) {
+            return $rateNotes;  // Return the not found response
+        }
+
+        $rateNote = RateNotes::find($id);
+        return response()->json(['status' => true, 'data' => $rateNote], 200);
+    }
+
+    public function destroyNote($id)
+    {
+        // Use the findModel helper to retrieve the rate
+        $rateNotes = findModel(RateNotes::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rateNotes instanceof \Illuminate\Http\JsonResponse) {
+            return $rateNotes;  // Return the not found response
+        }
+
+        DB::transaction(function () use ($rateNotes) {
+            $rateNotes->delete();
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Rate Note deleted successfully'
+        ], 200);
+    }
+
+    public function statusNote(Request $request, $id)
+    {
+        // Use the statusUpdate helper to update status
+        return statusUpdate(RateNotes::class, $id, [
+            'status' => $request->status
+        ]);
     }
 }
