@@ -17,4 +17,9 @@ class VendorType extends Model
     {
         return self::select('id', 'type')->where('status', 'active')->orderBy('id', 'desc')->get();
     }
+
+    public function vendors()
+    {
+        return $this->belongsToMany(Vendor::class, 'vendor_vendor_type', 'vendor_type_id', 'vendor_id');
+    }
 }

@@ -44,10 +44,15 @@ class SearchHelper
                 // Retrieve the column map from the User model
                 // $columnMap = User::$columnMap;
                 // if (isset($columnMap[$filterBy])) {
-                Log::info('Data is searched based on FilterBy and SearchTerm...' . $filterBy . '==' . $searchTerm);
                 //     $query->where($columnMap[$filterBy], 'LIKE', "%{$searchTerm}%");
                 // }
-                $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                if (in_array($filterBy, $searchableColumns)) {
+                    Log::info('Data is searched based on FilterBy and SearchTerm...' . $filterBy . '==' . $searchTerm);
+                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                } else {
+                    // Log or handle the case where filterBy is not in searchableColumns
+                    Log::info('FilterBy value "' . $filterBy . '" is not in searchableColumns. Skipping to next iteration.');
+                }
             } else {
                 Log::info('Data is searched based on SearchTerm Only ==> ' . $searchTerm);
                 foreach ($searchableColumns as $column) {

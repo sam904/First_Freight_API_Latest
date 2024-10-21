@@ -11,7 +11,7 @@ class Vendor extends Model
     use HasFactory;
 
     protected $fillable = [
-        'vendor_type',
+        // 'vendor_type_id',
         'company_name',
         'address',
         'city',
@@ -41,7 +41,7 @@ class Vendor extends Model
     protected $excludedColumns = [
         'id',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
     public function getSearchableColumns()
@@ -73,8 +73,8 @@ class Vendor extends Model
         return $this->belongsTo(State::class);
     }
 
-    public function type()
+    public function vendorTypes()
     {
-        return $this->belongsTo(VendorType::class);
+        return $this->belongsToMany(VendorType::class, 'vendor_vendor_type', 'vendor_id', 'vendor_type_id');
     }
 }
