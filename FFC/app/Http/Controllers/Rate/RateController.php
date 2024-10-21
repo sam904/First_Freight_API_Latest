@@ -205,17 +205,18 @@ class RateController extends Controller
     }
 
     // Rate Notes
-    public function getRateNote($id)
+    // Passing RateId
+    public function getRateNote($rateId)
     {
         // Use the findModel helper to retrieve the customer
-        $rate = findModel(Rate::class, $id);
+        $rate = findModel(Rate::class, $rateId);
 
         // Check if the returned value is a JSON response (meaning the model was not found)
         if ($rate instanceof \Illuminate\Http\JsonResponse) {
             return $rate;  // Return the not found response
         }
 
-        $rateNote = RateNotes::where('rate_id', $id)->orderBy('id', 'desc')->get();
+        $rateNote = RateNotes::where('rate_id', $rateId)->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $rateNote], 200);
     }
 

@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Quote;
 
 use App\Http\Controllers\Controller;
 use App\Models\Quote\Quote;
+use App\Models\Quote\QuoteNotes;
 use App\Services\Quote\QuoteService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class QuoteController extends Controller
 {
@@ -275,6 +277,144 @@ class QuoteController extends Controller
         return statusUpdate(Quote::class, $id, [
             'status' => $request->status,
             'created_by' => Auth::user()->id,
+        ]);
+    }
+
+    // Quote Notes
+    // Passing QuoteId
+    public function getQuoteNote($quoteId)
+    {
+        // Use the findModel helper to retrieve the customer
+        $quote = findModel(Quote::class, $quoteId);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($quote instanceof \Illuminate\Http\JsonResponse) {
+            return $quote;  // Return the not found response
+        }
+
+        $quoteNote = QuoteNotes::where('quote_id', $quoteId)->orderBy('id', 'desc')->get();
+        return response()->json(['status' => true, 'data' => $quoteNote], 200);
+    }
+
+
+    public function storeNote(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'quoteId' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Quote Note Validation Failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();  // Start the transaction
+        try {
+            $this->quoteService->saveNotes($request);
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => "Quote Notes created successfully"
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to insert Quote note data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to insert Quote note',
+                "error" => $e->getMessage()
+            ], 500); // Return error response
+        }
+    }
+
+    public function updateNote(Request $request, $id)
+    {
+        // Use the findModel helper to retrieve the customer
+        $quoteNotes = findModel(QuoteNotes::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($quoteNotes instanceof \Illuminate\Http\JsonResponse) {
+            return $quoteNotes;  // Return the not found response
+        }
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'quoteId' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Quote Note Validation Failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();  // Start the transaction
+        try {
+            $this->quoteService->updateNote($request, $quoteNotes);
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => "Quote Notes updated successfully"
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to update Quote note data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update Quote note',
+                "error" => $e->getMessage()
+            ], 500); // Return error response
+        }
+    }
+
+    public function editNote($id)
+    {
+        // Use the findModel helper to retrieve the customer
+        $quoteNotes = findModel(QuoteNotes::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($quoteNotes instanceof \Illuminate\Http\JsonResponse) {
+            return $quoteNotes;  // Return the not found response
+        }
+
+        $quoteNote = QuoteNotes::find($id);
+        return response()->json(['status' => true, 'data' => $quoteNote], 200);
+    }
+    public function destroyNote($id)
+    {
+        // Use the findModel helper to retrieve the rate
+        $quoteNotes = findModel(QuoteNotes::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($quoteNotes instanceof \Illuminate\Http\JsonResponse) {
+            return $quoteNotes;  // Return the not found response
+        }
+
+        DB::transaction(function () use ($quoteNotes) {
+            $quoteNotes->delete();
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quote Note deleted successfully'
+        ], 200);
+    }
+
+    public function statusNote(Request $request, $id)
+    {
+        // Use the statusUpdate helper to update status
+        return statusUpdate(QuoteNotes::class, $id, [
+            'status' => $request->status
         ]);
     }
 }

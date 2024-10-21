@@ -3,6 +3,7 @@
 namespace App\Services\Quote;
 
 use App\Models\Quote\Quote;
+use App\Models\Quote\QuoteNotes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -101,6 +102,30 @@ class QuoteService
             $quote->delete();
         }
 
+        return true;
+    }
+
+    public function saveNotes(Request $request)
+    {
+        QuoteNotes::create([
+            'title' => $request['title'],
+            'description' => $request['description'],
+            'quote_id' => $request['quoteId'],
+            'tag' => $request['tag'],
+            'pin' => $request['pin'],
+        ]);
+        return true;
+    }
+
+    public function updateNote(Request $request, QuoteNotes $quoteNotes)
+    {
+        $quoteNotes->update([
+            'title' => $request['title'],
+            'description' => $request['description'],
+            'quote_id' => $request['quoteId'],
+            'tag' => $request['tag'],
+            'pin' => $request['pin'],
+        ]);
         return true;
     }
 }
