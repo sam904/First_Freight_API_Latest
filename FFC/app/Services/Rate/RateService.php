@@ -9,21 +9,23 @@ use App\Models\Rate\RateNotes;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RateService
 {
     public function getAllRateData(Request $request)
     {
-        $today = Carbon::now()->toDateString();
 
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
+        Log::info("Start Date = " . $startDate);
+        Log::info("End Date = " . $endDate);
+        Log::info("filterBy = " . $filterBy);
+        Log::info("searchTerm = " . $searchTerm);
 
-        // Get all column names of the 'users' table
-        $model = new Rate();
-
+        $today = Carbon::now()->toDateString();
         $query = DB::table('rates')
             ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
             ->join('ports', 'rates.port_id', '=', 'ports.id')
@@ -60,19 +62,34 @@ class RateService
                         END
                     ) as rate_validity"),
                 'rates.status',
+                'rates.created_at'
             );
         // Apply search filters
-        // $query = SearchHelper::applySearchFilters($query, $model, $request);
+        if (!empty($searchTerm)) {
+            Log::info("\n********************\nAppling Search filter for this model = Rate\n********************");
+            if (!empty($filterBy) && $filterBy == "Port") {
+                $query->where('ports.name', 'LIKE', "%{$searchTerm}%");
+            } elseif (!empty($filterBy) && $filterBy == "Destination") {
+                $query->where('destinations.name', 'LIKE', "%{$searchTerm}%");
+            } elseif (!empty($filterBy) && $filterBy == "Vendor") {
+                $query->where('vendors.company_name', 'LIKE', "%{$searchTerm}%");
+            } else {
 
+                // When filterBy is null, search in all three fields
+                $query->where(function ($query) use ($searchTerm) {
+                    $query->where('ports.name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('destinations.name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('vendors.company_name', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+        }
         // Check if the startDate and endDate are provided in the request
         if ($startDate && $endDate) {
             $endDate = Carbon::parse($endDate)->endOfDay();
-            $query->whereBetween('created_at', [$startDate, $endDate]);
+            $query->whereBetween('rates.created_at', [$startDate, $endDate]);
         }
 
-        $query->orderBy('id', 'desc')->paginate(10);
-
-        return $query;
+        return $query->orderBy('rate_id', 'desc')->paginate(10);
     }
     public function createRate(Request $request)
     {
