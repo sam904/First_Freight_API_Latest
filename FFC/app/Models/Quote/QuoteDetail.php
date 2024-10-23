@@ -21,7 +21,7 @@ class QuoteDetail extends Model
         'rate_id',
         'freight',
         'fsc',
-        'shipment_type'
+        'service_type_id',
     ];
 
 

@@ -2,6 +2,7 @@
 
 namespace App\Models\Rate;
 
+use App\Models\Common\ServiceType;
 use App\Models\Destination\Destination;
 use App\Models\Port\Port;
 use App\Models\Vendor;
@@ -20,7 +21,8 @@ class Rate extends Model
         'expiry',
         'status',
         'freight',
-        'fsc'
+        'fsc',
+        'service_type_id'
     ];
 
     public function vendor()
@@ -41,5 +43,9 @@ class Rate extends Model
     public function charges()
     {
         return $this->hasMany(RateCharge::class);
+    }
+    public function serviceType()
+    {
+        return $this->belongsTo(ServiceType::class, 'service_type_id');
     }
 }

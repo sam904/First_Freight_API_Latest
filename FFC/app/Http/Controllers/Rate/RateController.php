@@ -21,48 +21,9 @@ class RateController extends Controller
         $this->rateService = $rateService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $today = Carbon::now()->toDateString();
-
-        $rates = DB::table('rates')
-            ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
-            ->join('ports', 'rates.port_id', '=', 'ports.id')
-            ->join('destinations', 'rates.destination_id', '=', 'destinations.id')
-            ->select(
-                'rates.id as rate_id',
-                'vendors.company_name as vendor_name',
-                'ports.name as port_name',
-                'destinations.name as destination_name',
-                'freight',
-                'expiry',
-                // DB::raw("DATEDIFF('$today', rates.start_date) as days_passed"),
-                DB::raw("DATE_FORMAT(rates.start_date, '%m/%d/%y') as rate_received"),
-                // DB::raw('DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY) as expiry_date'),
-                // DB::raw('GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0) as expiry_days'),
-                // DB::raw("CONCAT(
-                //     DATE_FORMAT(DATE_ADD(rates.start_date, INTERVAL GREATEST(rates.expiry - DATEDIFF('$today', rates.start_date), 0) DAY), '%m/%d/%Y'),
-                //     ', ',
-                //     GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0),
-                //     ' Days Left'
-                // ) as rate_validity"),
-                DB::raw("CONCAT(
-                        DATE_FORMAT(
-                            DATE_ADD(
-                                rates.start_date, 
-                                INTERVAL GREATEST(rates.expiry - DATEDIFF('$today', rates.start_date), 0) DAY
-                            ), '%m/%d/%Y'
-                        ),
-                        ', ',
-                        CASE 
-                            WHEN GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0) = 0 
-                            THEN 'Expired' 
-                            ELSE CONCAT(GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0), ' Days Left')
-                        END
-                    ) as rate_validity"),
-                'rates.status',
-            )->paginate(10);
-
+        $rates = $this->rateService->getAllRateData($request);
         return response()->json(['status' => true, 'data' => $rates], 200);
     }
 
@@ -192,7 +153,8 @@ class RateController extends Controller
             'start_date' => 'required|date',
             'expiry' => 'required',
             'freight' => 'required',
-            'fsc' => 'nullable'
+            'fsc' => 'nullable',
+            'serviceType' => 'nullable',
         ]);
 
         // Check if validation fails
@@ -204,7 +166,10 @@ class RateController extends Controller
         return $validator->validated();
     }
 
-    // Rate Notes
+    /*
+    * Start Rate Notes
+    */
+
     // Passing RateId
     public function getRateNote($rateId)
     {
@@ -341,4 +306,8 @@ class RateController extends Controller
             'status' => $request->status
         ]);
     }
+
+    /*
+    * End Rate Notes
+    */
 }

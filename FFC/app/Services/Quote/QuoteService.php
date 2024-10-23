@@ -20,40 +20,30 @@ class QuoteService
     public function createQuote(Request $request)
     {
         Log::info("Creating Quoates by = " . $this->loginUser->id);
-
         $quote = Quote::create([
             "customer_id" => $request['customerId'],
             "quote_status" => $request["quoteStatus"],
-            // "shipment_type" => $request["shipmentType"],
             "created_by" =>  $this->loginUser->id,
         ]);
-
         Log::info($quote->id . " Quotes created succussfully");
         // Continue processing
         $this->storeQuoteDetails($request, $quote);
-
         return true;
     }
 
     public function updateQuote(Request $request, Quote $quote)
     {
-        Log::info(message: "Updating Quoates..." . $quote);
-
+        Log::info(message: "Quoate Request => " . $request);
         // delete all quote
         $this->deleteQuote($quote->id, 'Update');
-
         $quote->update([
             "customer_id" => $request['customerId'],
             "quote_status" => $request["quoteStatus"],
-            // "shipment_type" => $request["shipmentType"],
             "created_by" =>  $this->loginUser->id,
         ]);
-
         Log::info($quote->id . " Quotes created succussfully");
-
         // Continue processing
         $this->storeQuoteDetails($request, $quote);
-
         return true;
     }
     public function storeQuoteDetails(Request $request, $quote)
@@ -63,18 +53,18 @@ class QuoteService
             $quoteDetail = $quote->quoteDetails()->create([
                 "freight" => $detail['freight'],
                 "fsc" => $detail['fsc'],
-                "container_weight" => $detail['containerWeight'],
-                "shipment_type" => $detail['shipmentType'],
                 "quote_id" => $quote->id,
+                "rate_id" => $detail['rateId'],
+                'service_type_id' => $detail['serviceType'],
+                "container_weight" => $detail['containerWeight'] ?? null,
+                // "shipment_type" => $detail['shipmentType'],
                 // "port_id" => $detail['portId'],
                 // "destination_id" => $detail['destinationId'],
                 // "vendor_id" => $detail['vendorId'],
-                "rate_id" => $detail['rateId'],
             ]);
             Log::info("QuoteDetails stored successfully" . $quoteDetail->id);
-
             // Save charges for each detail
-            Log::info("Storing Quote Charges");
+            Log::info("Storing Quote Charges....");
             foreach ($detail['charges'] as $charge) {
                 $quoteDetail->charges()->create([
                     'charge_name' => $charge['chargeName'],
@@ -84,6 +74,14 @@ class QuoteService
         }
     }
 
+    /**
+     * Summary of deleteQuote
+     * @param mixed $id
+     * @param mixed $operation => Operation can be update && delete.
+     * When Operation = 'Update' that time delete only quote_details table.
+     * When Operation = 'Delete' that time delete from quotes, quote_details, quote_charge tables.
+     * @return bool
+     */
     public function deleteQuote($id, $operation)
     {
         Log::info("Find the quote with its details and charges : " . $operation);

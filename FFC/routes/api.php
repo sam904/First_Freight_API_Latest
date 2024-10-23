@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Common\CommonController;
+use App\Http\Controllers\Common\ServiceTypeController;
 use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Destination\DestinationController;
 use App\Http\Controllers\Permission\PermissionController;
@@ -162,7 +163,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('rate')->group(
             function () {
                 Route::controller(RateController::class)->group(function () {
-                    Route::get('/index', 'index');
+                    Route::post('/index', 'index');
                     Route::post('/save', 'store');
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', 'update');
@@ -195,6 +196,20 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::get('/editNote/{id}', 'editNote');
                     Route::delete('/deleteNote/{id}', action: 'destroyNote');
                     Route::post('/statusNote/{id}', 'statusNote');
+                });
+            }
+        );
+
+        // Service Type
+        Route::prefix('service')->group(
+            function (): void {
+                Route::controller(ServiceTypeController::class)->group(function () {
+                    Route::get('/index', 'index');
+                    Route::post('/save', 'store');
+                    Route::get('/edit/{id}', 'edit');
+                    Route::post('/update/{id}', 'update');
+                    Route::post('/status/{id}', 'status');
+                    Route::delete('/delete/{id}', action: 'destroy');
                 });
             }
         );

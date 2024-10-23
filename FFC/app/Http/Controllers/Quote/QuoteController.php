@@ -212,7 +212,7 @@ class QuoteController extends Controller
             // 'quoteDetails.rate.port:id,name',
             // 'quoteDetails.rate.destination:id,name',
             'quoteDetails.charges:quote_detail_id,charge_name,amount',
-        ])->get();
+        ])->find($id);
 
         return response()->json(['status' => true, 'data' => $quotes], 200);
     }
@@ -280,7 +280,10 @@ class QuoteController extends Controller
         ]);
     }
 
-    // Quote Notes
+    /**
+     * Quote Notes
+     */
+
     // Passing QuoteId
     public function getQuoteNote($quoteId)
     {
@@ -295,7 +298,6 @@ class QuoteController extends Controller
         $quoteNote = QuoteNotes::where('quote_id', $quoteId)->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $quoteNote], 200);
     }
-
 
     public function storeNote(Request $request)
     {
