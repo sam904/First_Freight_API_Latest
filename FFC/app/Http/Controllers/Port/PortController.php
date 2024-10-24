@@ -8,6 +8,7 @@ use App\Models\Port\PortType;
 use App\Services\Port\PortService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class PortController extends Controller
@@ -19,11 +20,13 @@ class PortController extends Controller
         $this->portService = $portService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $ports = Port::paginate(10);
+        $ports = $this->portService->getAllPort($request);
+        // $ports = Port::paginate(10);
         return response()->json(['status' => true, 'data' => $ports], 200);
     }
+
     public function store(Request $request)
     {
         DB::beginTransaction();  // Start the transaction
@@ -108,6 +111,7 @@ class PortController extends Controller
             ], 500); // Return error response
         }
     }
+
     public function destroy($portId)
     {
         // Use the findModel helper to retrieve the port
@@ -121,7 +125,7 @@ class PortController extends Controller
 
             // Delete all related records
             $port->portTerminals()->delete();
-
+            Log::info("Port Terminal Deleted successfully.");
             // Delete the vendor record
             $port->delete();
         });

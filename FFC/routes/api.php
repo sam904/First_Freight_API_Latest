@@ -134,7 +134,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
             function () {
                 Route::controller(PortController::class)->group(function () {
                     Route::get('/port-type', 'portType');
-                    Route::get('/index', 'index');
+                    Route::post('/index', 'index');
                     Route::post('/save', 'store');
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', 'update');
