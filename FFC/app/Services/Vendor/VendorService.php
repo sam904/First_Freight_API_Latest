@@ -15,7 +15,8 @@ class VendorService
 {
     public function getAllVendorData(Request $request)
     {
-
+        $page = $request->input('page', 1);
+        $limit = $request->input('limit', 10);
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
 
@@ -146,7 +147,7 @@ class VendorService
         }
 
         // Get the paginated results
-        $vendors = $query->orderBy("id", "desc")->paginate(10);
+        $vendors = $query->orderBy("id", "desc")->paginate($limit, ['*'], 'page', $page);
 
         // Modify each vendor to flatten 'sales' and 'finance' into the main array
         // $vendors->through(function ($vendor) {

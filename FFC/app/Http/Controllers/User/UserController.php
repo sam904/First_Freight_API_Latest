@@ -24,7 +24,9 @@ class UserController extends Controller
         $query = SearchHelper::applySearchFilters($query, $model, $request);
 
         // Paginate the results
-        $users = $query->orderBy("id", "desc")->paginate(10);
+        $page = $request->input('page', 1);
+        $limit = $request->input('limit', 10);
+        $users = $query->orderBy("id", "desc")->paginate($limit, ['*'], 'page', $page);
 
         return response()->json([
             'status' => true,

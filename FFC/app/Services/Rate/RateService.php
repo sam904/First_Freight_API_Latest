@@ -2,7 +2,6 @@
 
 namespace App\Services\Rate;
 
-use App\Helpers\SearchHelper;
 use App\Models\Rate\Rate;
 use App\Models\Rate\RateCharge;
 use App\Models\Rate\RateNotes;
@@ -15,7 +14,8 @@ class RateService
 {
     public function getAllRateData(Request $request)
     {
-
+        $page = $request->input('page', 1);
+        $limit = $request->input('limit', 10);
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
         $startDate = $request->input('startDate');
@@ -89,7 +89,7 @@ class RateService
             $query->whereBetween('rates.created_at', [$startDate, $endDate]);
         }
 
-        return $query->orderBy('rate_id', 'desc')->paginate(10);
+        return $query->orderBy('rate_id', 'desc')->paginate($limit, ['*'], 'page', $page);
     }
     public function createRate(Request $request)
     {
