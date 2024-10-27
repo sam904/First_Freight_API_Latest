@@ -20,6 +20,8 @@ class RateService
         $filterBy = $request->input('filterBy');
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
+        $sortColumn = $request->input('sortColumn', 'rate_id');
+        $sortDirection = $request->input('sortDirection', 'desc');
         Log::info("Start Date = " . $startDate);
         Log::info("End Date = " . $endDate);
         Log::info("filterBy = " . $filterBy);
@@ -30,6 +32,7 @@ class RateService
             ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
             ->join('ports', 'rates.port_id', '=', 'ports.id')
             ->join('destinations', 'rates.destination_id', '=', 'destinations.id')
+            ->join('service_types', 'rates.service_type_id', '=', 'service_types.id')
             ->select(
                 'rates.id as rate_id',
                 'vendors.company_name as vendor_name',
@@ -62,24 +65,29 @@ class RateService
                         END
                     ) as rate_validity"),
                 'rates.status',
-                'rates.created_at'
+                'rates.created_at',
+                'service_types.name as serviceType'
             );
         // Apply search filters
         if (!empty($searchTerm)) {
             Log::info("\n********************\nAppling Search filter for this model = Rate\n********************");
-            if (!empty($filterBy) && $filterBy == "Port") {
+            if (!empty($filterBy) && $filterBy == "port") {
                 $query->where('ports.name', 'LIKE', "%{$searchTerm}%");
-            } elseif (!empty($filterBy) && $filterBy == "Destination") {
+            } elseif (!empty($filterBy) && $filterBy == "destination") {
                 $query->where('destinations.name', 'LIKE', "%{$searchTerm}%");
-            } elseif (!empty($filterBy) && $filterBy == "Vendor") {
+            } elseif (!empty($filterBy) && $filterBy == "vendor") {
                 $query->where('vendors.company_name', 'LIKE', "%{$searchTerm}%");
+            } elseif (!empty($filterBy) && $filterBy == "serviceType") {
+                $query->where('service_types.name', 'LIKE', "%{$searchTerm}%");
             } else {
 
                 // When filterBy is null, search in all three fields
                 $query->where(function ($query) use ($searchTerm) {
-                    $query->where('ports.name', 'LIKE', "%{$searchTerm}%")
+                    $query->where('rates.status', 'LIKE', "%{$searchTerm}%")
+                        ->orwhere('ports.name', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('destinations.name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('vendors.company_name', 'LIKE', "%{$searchTerm}%");
+                        ->orWhere('vendors.company_name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('service_types.name', 'LIKE', "%{$searchTerm}%");
                 });
             }
         }
@@ -89,7 +97,7 @@ class RateService
             $query->whereBetween('rates.created_at', [$startDate, $endDate]);
         }
 
-        return $query->orderBy('rate_id', 'desc')->paginate($limit, ['*'], 'page', $page);
+        return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
     }
     public function createRate(Request $request)
     {

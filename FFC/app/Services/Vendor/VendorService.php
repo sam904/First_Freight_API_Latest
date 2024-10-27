@@ -19,6 +19,8 @@ class VendorService
         $limit = $request->input('limit', 10);
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
+        $sortColumn = $request->input('sortColumn', 'id');
+        $sortDirection = $request->input('sortDirection', 'desc');
 
         // Get all column names of the 'users' table
         $model = new Vendor();
@@ -71,7 +73,7 @@ class VendorService
         $query = SearchHelper::applySearchFilters($query, $model, $request);
 
         // Search by vendor type if filterBy is 'vendor_type'
-        if (!empty($searchTerm) && $filterBy === 'vendor_type') {
+        if (!empty($searchTerm) && $filterBy === 'vendorType') {
             $query->whereHas('vendorTypes', function ($q) use ($searchTerm) {
                 Log::info('vendorTypes => ' . $searchTerm);
                 // Search in vendor_types table based on the search term
@@ -147,7 +149,7 @@ class VendorService
         }
 
         // Get the paginated results
-        $vendors = $query->orderBy("id", "desc")->paginate($limit, ['*'], 'page', $page);
+        $vendors = $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
 
         // Modify each vendor to flatten 'sales' and 'finance' into the main array
         // $vendors->through(function ($vendor) {

@@ -23,57 +23,9 @@ class PortService
         $filterBy = $request->input('filterBy');
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
+        $sortColumn = $request->input('sortColumn', 'id');
+        $sortDirection = $request->input('sortDirection', 'desc');
 
-        /*$query = Port::select('id', 'name', 'port_type_id', 'country_id', 'state_id')  // Select specific columns from ports table
-            ->with([
-                'portType' => function ($query) {
-                    $query->select('id', 'name'); // Select specific columns from portType table
-                },
-                'country' => function ($query) {
-                    $query->select('id', 'name'); // Select specific columns from country table
-                },
-                'states' => function ($query) {
-                    $query->select('id', 'name'); // Select specific columns from state table
-                }
-            ]);
-        // Get all column names of the 'Port' table
-        $model = new Port();
-        // Apply search filters
-        $query = SearchHelper::applySearchFilters($query, $model, $request);
-        $query->orWhereHas('portType', function ($query) use ($searchTerm, $filterBy) {
-            if ($filterBy && $searchTerm) {
-                Log::info('PortType FilterBy =' . $filterBy);
-                $query->where('name', 'LIKE', "%{$searchTerm}%");
-            } else {
-                Log::info('PortType Search on whole table =' . $searchTerm);
-                $query->where('name', 'LIKE', "%{$searchTerm}%");
-            }
-        });
-        $countryModel = new Country();
-        $searchableCountryColumns = $countryModel->getSearchableColumns();
-        $query->orWhereHas('country', function ($query) use ($searchTerm, $filterBy, $searchableCountryColumns) {
-            if ($filterBy && in_array($filterBy, $searchableCountryColumns)) {
-                Log::info('country FilterBy =' . $filterBy);
-                $query->where('name', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('iso_code', 'LIKE', "%{$searchTerm}%");
-            } else {
-                Log::info('country Search on whole table =' . $searchTerm);
-                $query->where('name', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('iso_code', 'LIKE', "%{$searchTerm}%");
-            }
-        });
-        $stateModel = new State();
-        $searchableStateColumns = $stateModel->getSearchableColumns();
-        $query->orWhereHas('state', function ($query) use ($searchTerm, $filterBy, $searchableStateColumns) {
-            if ($filterBy && in_array($filterBy, $searchableStateColumns)) {
-                Log::info('state FilterBy =' . $filterBy);
-                $query->where('name', 'LIKE', "%{$searchTerm}%");
-            } else {
-                Log::info('state Search on whole table =' . $searchTerm);
-                $query->where('name', 'LIKE', "%{$searchTerm}%");
-            }
-        });
-*/
         $query = DB::table('ports')
             ->join('port_types', 'ports.port_type_id', '=', 'port_types.id')
             ->join('countries', 'ports.country_id', '=', 'countries.id')
@@ -118,7 +70,7 @@ class PortService
             $endDate = Carbon::parse($endDate)->endOfDay();
             $query->whereBetween('ports.created_at', [$startDate, $endDate]);
         }
-        return $query->orderBy("portId", "desc")->paginate($limit, ['*'], 'page', $page);
+        return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
     }
     public function createPort(Request $request)
     {

@@ -15,6 +15,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
+
         $query = User::query();
 
         // Get all column names of the 'users' table
@@ -26,7 +27,9 @@ class UserController extends Controller
         // Paginate the results
         $page = $request->input('page', 1);
         $limit = $request->input('limit', 10);
-        $users = $query->orderBy("id", "desc")->paginate($limit, ['*'], 'page', $page);
+        $sortColumn = $request->input('sortColumn', 'id');
+        $sortDirection = $request->input('sortDirection', 'desc');
+        $users = $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
 
         return response()->json([
             'status' => true,
