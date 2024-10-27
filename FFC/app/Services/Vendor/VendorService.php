@@ -151,6 +151,7 @@ class VendorService
         // Get the paginated results
         $vendors = $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
 
+        /*
         // Modify each vendor to flatten 'sales' and 'finance' into the main array
         // $vendors->through(function ($vendor) {
         $vendors->getCollection()->each(function ($vendor) {
@@ -159,13 +160,11 @@ class VendorService
                 $vendor->setAttribute('country_name', $vendor->country->name);
                 unset($vendor->country); // Remove the original nested country object
             }
-
             // Flatten state fields into the main vendor array
             if ($vendor->state) {
                 $vendor->setAttribute('state_name', $vendor->state->name);
                 unset($vendor->state); // Remove the original nested state object
             }
-
             // Flatten sales fields into the main vendor array
             foreach ($vendor->sales as $index => $sale) {
                 $vendor->setAttribute('sales_name_' . ($index + 1), $sale->sales_name);
@@ -176,7 +175,6 @@ class VendorService
                 $vendor->setAttribute('sales_created_at_' . ($index + 1), $sale->created_at);
                 $vendor->setAttribute('sales_updated_at_' . ($index + 1), $sale->updated_at);
             }
-
             // Flatten finance fields into the main vendor array
             foreach ($vendor->finance as $index => $finance) {
                 $vendor->setAttribute('finance_name_' . ($index + 1), $finance->finance_name);
@@ -187,12 +185,11 @@ class VendorService
                 $vendor->setAttribute('finance_created_at_' . ($index + 1), $finance->created_at);
                 $vendor->setAttribute('finance_updated_at_' . ($index + 1), $finance->updated_at);
             }
-
             // Remove the original sales and finance arrays
             unset($vendor->sales, $vendor->finance);
-
             return $vendor;
-        });
+        }); 
+        */
 
         return $vendors;
     }
@@ -224,10 +221,14 @@ class VendorService
             'bank_account_number' => $request['bank_account_number'],
             'bank_routing' => $request['bank_routing'],
             'bank_address' => $request['bank_address'],
+            'bank_country_id' => $request['bankCountry'],
+            'bank_swift_code' => $request['bankSwiftCode'],
+            'bank_iban_number' => $request['bankIBANNumber'],
+            'bank_ifsc_code' => $request['bankIFSCCode'],
             'remarks' => $request['remarks'],
             // 'contact_name' => $request['contact_name'],
             // 'phone' => $request['phone'],
-            'email' => $request['email'],
+            // 'email' => $request['email'],
             'payment_term' => $request['paymentTerm'],
         ]);
 
@@ -293,6 +294,10 @@ class VendorService
             'bank_account_number' => $request['bank_account_number'],
             'bank_routing' => $request['bank_routing'],
             'bank_address' => $request['bank_address'],
+            'bank_country_id' => $request['bankCountry'],
+            'bank_swift_code' => $request['bankSwiftCode'],
+            'bank_iban_number' => $request['bankIBANNumber'],
+            'bank_ifsc_code' => $request['bankIFSCCode'],
             'remarks' => $request['remarks'],
             // 'contact_name' => $request['contact_name'],
             // 'phone' => $request['phone'],

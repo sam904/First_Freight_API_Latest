@@ -11,7 +11,6 @@ class Vendor extends Model
     use HasFactory;
 
     protected $fillable = [
-        // 'vendor_type_id',
         'company_name',
         'address',
         'city',
@@ -30,13 +29,19 @@ class Vendor extends Model
         'bank_account_number',
         'bank_routing',
         'bank_address',
+        'bank_country_id',
+        'bank_swift_code',
+        'bank_iban_number',
+        'bank_ifsc_code',
         'remarks',
         'status',
         // 'contact_name',
         // 'phone',
-        'email',
-        'payment_term'
+        // 'email',
+        'payment_term',
     ];
+
+    protected $hidden = ['date_of_expiration', 'email'];
 
     protected $excludedColumns = [
         'id',
