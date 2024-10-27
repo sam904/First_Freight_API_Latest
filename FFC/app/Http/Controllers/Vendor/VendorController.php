@@ -206,7 +206,7 @@ class VendorController extends Controller
 
         $request->validate([
             'uploadFile' => 'required|mimes:xlsx,xls,csv',
-            'updatedColumns' => 'required|array'
+            // 'updatedColumns' => 'required|array'
         ]);
         Log::info($request);
 

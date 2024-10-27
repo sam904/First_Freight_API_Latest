@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('bank_swift_code')->nullable();
             $table->string('bank_iban_number')->nullable();
             $table->string('bank_ifsc_code')->nullable();
+            $table->dropColumn(['date_of_expiration']);
         });
     }
 
@@ -29,6 +30,7 @@ return new class extends Migration
             $table->dropColumn('bank_swift_code');
             $table->dropColumn('bank_iban_number');
             $table->dropColumn('bank_ifsc_code');
+            $table->dropColumn('date_of_expiration');
         });
     }
 };
