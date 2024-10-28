@@ -8,6 +8,7 @@ use App\Models\Destination\Destination;
 use App\Services\Destination\DestinationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class DestinationController extends Controller
@@ -19,9 +20,9 @@ class DestinationController extends Controller
         $this->destinationService = $destinationService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $destinations = Destination::paginate(10);
+        $destinations = $this->destinationService->getAllDestination($request);
         return response()->json(['status' => true, 'data' => $destinations], 200);
     }
 
@@ -50,33 +51,34 @@ class DestinationController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => false,
-                'message' => 'Failed to destination vendor data',
+                'message' => 'Failed to insert destination data',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function edit($destinationId)
+    public function edit($id)
     {
         // Use the findModel helper to retrieve the destination
-        $destination = findModel(Destination::class, $destinationId);
-
+        $destination = findModel(Destination::class, $id);
         // Check if the returned value is a JSON response (meaning the model was not found)
         if ($destination instanceof \Illuminate\Http\JsonResponse) {
             return $destination;  // Return the not found response
         }
-
         return response()->json(['status' => true, 'data' => $destination], 200);
     }
 
     public function update(Request $request, $id)
     {
+        // Use the findModel helper to retrieve the destination
+        $destination = findModel(Destination::class, $id);
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($destination instanceof \Illuminate\Http\JsonResponse) {
+            return $destination;  // Return the not found response
+        }
         DB::beginTransaction();  // Start the transaction
-
         try {
-
             $validatedData = $this->destinationValidateData($request);
-
             // Check if the validated data is an array (i.e., no validation errors)
             if (!is_array($validatedData)) {
                 return response()->json([
@@ -85,36 +87,27 @@ class DestinationController extends Controller
                     'error' => $validatedData
                 ], 422);
             }
-
-            $destinationMsg = $this->destinationService->updateDestination($request, $id);
-
+            $this->destinationService->updateDestination($request, $destination);
             DB::commit();
-
-            if (isset($destinationMsg['errorMsg'])) {
-                return response()->json([
-                    'status' => false,
-                    'message' => $destinationMsg['errorMsg']
-                ], 404); // Return only the error message
-            }
-
             return response()->json([
                 'status' => true,
-                'message' => "Destination updated successfully",
+                'message' => "Destination updated successfully"
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to update Destination data: ', ['error' => $e->getMessage()]);
             return response()->json([
                 'status' => false,
-                'message' => 'Failed to update destination data',
+                'message' => 'Failed to update Destination data',
                 'error' => $e->getMessage()
             ], 500); // Return error response
         }
     }
-    public function destroy($destinationId)
+
+    public function destroy($id)
     {
         // Use the findModel helper to retrieve the destination
-        $destination = findModel(Destination::class, $destinationId);
-
+        $destination = findModel(Destination::class, $id);
         // Check if the returned value is a JSON response (meaning the model was not found)
         if ($destination instanceof \Illuminate\Http\JsonResponse) {
             return $destination;  // Return the not found response
@@ -126,17 +119,11 @@ class DestinationController extends Controller
         return response()->json(['status' => true, 'message' => 'Destination deleted successfully'], 200);
     }
 
-    public function status(Request $request, $destinationId)
+    public function status(Request $request, $id)
     {
-        return statusUpdate(Destination::class, $destinationId, [
+        return statusUpdate(Destination::class, $id, [
             'status' => $request->status
         ]);
-    }
-
-    public function county()
-    {
-        $county = County::all();
-        return response()->json(['status' => true, 'data' => $county], 200);
     }
 
     public function destinationValidateData(Request $request)
@@ -145,7 +132,6 @@ class DestinationController extends Controller
             'name' => 'required|string',
             'state' => 'required|string',
             'country' => 'required|string',
-            'county' => 'required|string',
         ]);
 
         // Check if validation fails

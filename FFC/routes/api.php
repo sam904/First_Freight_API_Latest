@@ -148,8 +148,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('destination')->group(
             function () {
                 Route::controller(DestinationController::class)->group(function () {
-                    Route::get('/county', 'county');
-                    Route::get('/index', 'index');
+                    Route::post('/index', 'index');
                     Route::post('/save', 'store');
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', 'update');

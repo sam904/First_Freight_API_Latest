@@ -95,9 +95,8 @@ class RateController extends Controller
         DB::beginTransaction();  // Start the transaction
 
         try {
-            $customerMsg = $this->rateService->updateRate($request,  $rate, $id);
+            $this->rateService->updateRate($request,  $rate, $id);
             DB::commit();
-
             return response()->json([
                 'status' => true,
                 'message' => "Rate updated successfully"
