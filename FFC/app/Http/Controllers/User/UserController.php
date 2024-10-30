@@ -143,7 +143,6 @@ class UserController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             // 'username' => ['required',function ($attribute, $value, $fail) { if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^[a-zA-Z0-9_]+$/', $value)) {$fail('The ' . $attribute . ' must be a valid email or username.');}},],
-            // 'email' => 'required|string|email|max:255|unique:users',
             'email' => [
                 'required',
                 'string',
@@ -159,6 +158,7 @@ class UserController extends Controller
                 Rule::unique('users')->ignore($id),
             ],
             'password' => 'required|string|min:8',
+            // 'email' => 'required|string|email|max:255|unique:users',
             // 'mobile_number' => 'required|string|min:10|max:15|unique:users', // Add mobile number validation
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
         ]);

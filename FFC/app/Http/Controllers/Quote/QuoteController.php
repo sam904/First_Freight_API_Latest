@@ -342,17 +342,12 @@ class QuoteController extends Controller
 
     public function storeNote(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string',
-            'description' => 'required|string',
-            'quoteId' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
+        $validatedData = $this->quoteNoteValidation($request);
+        if (!is_array($validatedData)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Quote Note Validation Failed',
-                'errors' => $validator->errors()
+                'message' => 'Quote Note validation failed',
+                'error' => $validatedData
             ], 422);
         }
 
@@ -386,17 +381,12 @@ class QuoteController extends Controller
             return $quoteNotes;  // Return the not found response
         }
 
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string',
-            'description' => 'required|string',
-            'quoteId' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
+        $validatedData = $this->quoteNoteValidation($request);
+        if (!is_array($validatedData)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Quote Note Validation Failed',
-                'errors' => $validator->errors()
+                'message' => 'Quote Note validation failed',
+                'error' => $validatedData
             ], 422);
         }
 
@@ -461,4 +451,22 @@ class QuoteController extends Controller
             'status' => $request->status
         ]);
     }
+
+
+    private function quoteNoteValidation(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'quoteId' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        return $validator->validated();
+    }
+
+    /**
+     * Quotes Note End
+     */
 }

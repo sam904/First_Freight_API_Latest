@@ -185,17 +185,12 @@ class RateController extends Controller
 
     public function storeNote(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string',
-            'description' => 'required|string',
-            'rateId' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
+        $validatedData = $this->rateNoteValidation($request);
+        if (!is_array($validatedData)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Rate Note Validation Failed',
-                'errors' => $validator->errors()
+                'message' => 'Rate Note validation failed',
+                'error' => $validatedData
             ], 422);
         }
 
@@ -229,17 +224,12 @@ class RateController extends Controller
             return $rateNotes;  // Return the not found response
         }
 
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string',
-            'description' => 'required|string',
-            'rateId' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
+        $validatedData = $this->rateNoteValidation($request);
+        if (!is_array($validatedData)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Rate Note Validation Failed',
-                'errors' => $validator->errors()
+                'message' => 'Rate Note validation failed',
+                'error' => $validatedData
             ], 422);
         }
 
@@ -305,7 +295,19 @@ class RateController extends Controller
         ]);
     }
 
-    /*
-    * End Rate Notes
-    */
+    private function rateNoteValidation(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'rateId' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        return $validator->validated();
+    }
+    /** 
+     * End Rate Notes
+     */
 }
