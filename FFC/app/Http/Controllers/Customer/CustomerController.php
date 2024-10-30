@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Imports\CustomerImport;
 use App\Models\Customer\Customer;
 use App\Services\Customer\CustomerService;
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerController extends Controller
 {
@@ -103,7 +105,6 @@ class CustomerController extends Controller
         ], 200);
     }
 
-
     public function update(Request $request, $id)
     {
         // Use the findModel helper to retrieve the customer
@@ -144,7 +145,6 @@ class CustomerController extends Controller
             ], 400); // Return error response
         }
     }
-
     public function destroy($customerId)
     {
         // Use the findModel helper to retrieve the customer
@@ -173,7 +173,6 @@ class CustomerController extends Controller
             'message' => 'Customer deleted successfully'
         ], 200);
     }
-
     public function status(Request $request, $customerId)
     {
         // Use the statusUpdate helper to update status
@@ -181,7 +180,6 @@ class CustomerController extends Controller
             'status' => $request->status
         ]);
     }
-
     public function customerValidateData(Request $request, $customerId = null)
     {
         $validator = Validator::make($request->all(), [
@@ -263,5 +261,28 @@ class CustomerController extends Controller
 
         // Return validated data
         return $validator->validated();
+    }
+
+
+    public function excelUpload(Request $request)
+    {
+        Log::info('Importing Customer Excel sheet...');
+
+        $request->validate([
+            'uploadFile' => 'required|mimes:xlsx,xls,csv',
+            // 'updatedColumns' => 'required|array'
+        ]);
+
+        $updatedColumns = $request->input('updatedColumns');
+
+        try {
+            DB::beginTransaction();
+            Excel::import(new CustomerImport($updatedColumns), $request->file('uploadFile'));
+            DB::commit();
+            return response()->json(['status' => true, 'message' => 'Excel Upload Successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
+        }
     }
 }

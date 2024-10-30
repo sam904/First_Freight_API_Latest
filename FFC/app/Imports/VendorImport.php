@@ -37,6 +37,7 @@ class VendorImport implements ToCollection, WithHeadingRow
     {
         Log::info('Vendor update Columns Data => ' . json_encode($this->updatedColumns));
         foreach ($rows as $row) {
+            Log::info($row);
             $this->currentVendor = $this->updateOrCreateVendor($row);
         }
     }

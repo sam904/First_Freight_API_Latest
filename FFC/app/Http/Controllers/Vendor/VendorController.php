@@ -208,7 +208,6 @@ class VendorController extends Controller
             'uploadFile' => 'required|mimes:xlsx,xls,csv',
             // 'updatedColumns' => 'required|array'
         ]);
-        Log::info($request);
 
         $updatedColumns = $request->input('updatedColumns');
 
