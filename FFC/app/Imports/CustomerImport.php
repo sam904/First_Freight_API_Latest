@@ -37,9 +37,13 @@ class CustomerImport implements OnEachRow, WithStartRow
     public function onRow(Row $row)
     {
         $rowData = $row->toArray();
+        if (empty($rowData[0])) {
+            Log::info("Skipping row because Company Name is empty.");
+            return; // Skip the current iteration
+        }
+
         Log::info("Checking Comapny name is exist or not => " . $rowData[0]);
         $customer = Customer::where('company_name', $rowData[0])->first();
-
         if (empty($customer)) {
             // Find state
             Log::info("state =>" . $row[4]);
