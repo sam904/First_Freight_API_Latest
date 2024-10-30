@@ -23,16 +23,6 @@ class CustomerController extends Controller
     {
         $customer = $this->customerService->getAllCustomer($request);
 
-        // $customer = Customer::with([
-        //     'country',
-        //     'state',
-        //     'warehouse',
-        //     'shipping',
-        //     'delivery',
-        //     'contact',
-        //     'finance'
-        // ])->paginate(10);
-
         return response()->json([
             'status' => true,
             'data' => $customer
@@ -85,8 +75,8 @@ class CustomerController extends Controller
         }
 
         $customer = Customer::with([
-            'warehouse',
-            'shipping',
+            // 'warehouse',
+            // 'shipping',
             'delivery',
             'contact',
             'finance'
@@ -168,8 +158,8 @@ class CustomerController extends Controller
         DB::transaction(function () use ($customer) {
 
             // Delete all related records
-            $customer->warehouse()->delete();
-            $customer->shipping()->delete();
+            // $customer->warehouse()->delete();
+            // $customer->shipping()->delete();
             $customer->delivery()->delete();
             $customer->contact()->delete();
             $customer->finance()->delete();

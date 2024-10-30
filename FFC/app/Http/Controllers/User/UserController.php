@@ -25,10 +25,10 @@ class UserController extends Controller
         $query = SearchHelper::applySearchFilters($query, $model, $request);
 
         // Paginate the results
-        $page = $request->input('page', 1);
-        $limit = $request->input('limit', 10);
-        $sortColumn = $request->input('sortColumn', 'id');
-        $sortDirection = $request->input('sortDirection', 'desc');
+        $page = $request->input('page') ?: 1;
+        $limit = $request->input('limit') ?: 10;
+        $sortColumn = $request->input('sortColumn') ?: 'id';
+        $sortDirection = $request->input('sortDirection') ?: 'desc';
         $users = $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
 
         return response()->json([

@@ -15,8 +15,8 @@ class QuoteDetail extends Model
     protected $fillable = [
         'quote_id',
         'container_weight',
-        // 'port_id',
-        // 'destination_id',
+        'port_id',
+        'destination_id',
         // 'vendor_id',
         'rate_id',
         'freight',

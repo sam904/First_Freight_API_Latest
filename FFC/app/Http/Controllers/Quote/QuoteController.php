@@ -191,7 +191,7 @@ class QuoteController extends Controller
                 'status' => false,
                 'message' => 'Failed to save quotation data',
                 "error" => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -241,7 +241,7 @@ class QuoteController extends Controller
                 'status' => false,
                 'message' => 'Failed to update quotation data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -331,7 +331,7 @@ class QuoteController extends Controller
                 'status' => false,
                 'message' => 'Failed to insert Quote note',
                 "error" => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 
@@ -375,7 +375,7 @@ class QuoteController extends Controller
                 'status' => false,
                 'message' => 'Failed to update Quote note',
                 "error" => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 
@@ -392,6 +392,7 @@ class QuoteController extends Controller
         $quoteNote = QuoteNotes::find($id);
         return response()->json(['status' => true, 'data' => $quoteNote], 200);
     }
+
     public function destroyNote($id)
     {
         // Use the findModel helper to retrieve the rate

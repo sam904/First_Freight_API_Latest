@@ -11,9 +11,7 @@ use App\Models\Customer\CustomerFinanceDetails;
 use App\Models\Customer\CustomerShippingAddress;
 use App\Models\Customer\CustomerWarehouseAddress;
 use App\Models\State;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CustomerService
@@ -200,10 +198,10 @@ class CustomerService
         Log::info("Custome save successfully...");
 
         // Create Warehouse Address
-        $this->storeWarehouseAddress($request, $customer);
+        // $this->storeWarehouseAddress($request, $customer);
 
         // Create Warehouse Address
-        $this->storeShippingAddress($request, $customer);
+        // $this->storeShippingAddress($request, $customer);
 
         // Create Warehouse Address
         $this->storeDeliveryAddress($request, $customer);
@@ -244,10 +242,10 @@ class CustomerService
         ]);
 
         // Create Warehouse Address
-        $this->storeWarehouseAddress($request, $customer);
+        // $this->storeWarehouseAddress($request, $customer);
 
-        // Create Warehouse Address
-        $this->storeShippingAddress($request, $customer);
+        // Create shipping Address
+        // $this->storeShippingAddress($request, $customer);
 
         // Create Warehouse Address
         $this->storeDeliveryAddress($request, $customer);

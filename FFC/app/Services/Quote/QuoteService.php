@@ -54,13 +54,13 @@ class QuoteService
                 "freight" => $detail['freight'],
                 "fsc" => $detail['fsc'],
                 "quote_id" => $quote->id,
-                "rate_id" => $detail['rateId'],
+                "rate_id" => $detail['rateId'] ?? null,
                 'service_type_id' => $detail['serviceType'],
                 "container_weight" => $detail['containerWeight'] ?? null,
-                // "shipment_type" => $detail['shipmentType'],
-                // "port_id" => $detail['portId'],
-                // "destination_id" => $detail['destinationId'],
+                "port_id" => $detail['portId'] ?? null,
+                "destination_id" => $detail['destinationId'] ?? null,
                 // "vendor_id" => $detail['vendorId'],
+                // "shipment_type" => $detail['shipmentType'],
             ]);
             Log::info("QuoteDetails stored successfully" . $quoteDetail->id);
             // Save charges for each detail
