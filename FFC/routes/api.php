@@ -92,7 +92,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('customer')->group(
             function () {
                 Route::controller(CustomerController::class)->group(function () {
-                    Route::get('/index', 'index');
+                    Route::post('/index', 'index');
                     Route::post('/save', 'store');
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', 'update');

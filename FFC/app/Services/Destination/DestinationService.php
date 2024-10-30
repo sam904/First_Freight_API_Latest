@@ -62,7 +62,7 @@ class DestinationService
             $endDate = Carbon::parse($endDate)->endOfDay();
             $query->whereBetween('destinations.created_at', [$startDate, $endDate]);
         }
-        Log::info($query->toSql());
+        // Log::info($query->toSql());
         return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
     }
 

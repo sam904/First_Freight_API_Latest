@@ -13,7 +13,6 @@ class Country extends Model
     protected $fillable = ['name', 'iso_code'];
     protected $hidden = ['created_at', 'updated_at'];
 
-
     protected $excludedColumns = [
         'id',
         'created_at',

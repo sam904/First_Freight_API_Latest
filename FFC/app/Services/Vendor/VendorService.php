@@ -22,7 +22,7 @@ class VendorService
         $sortColumn = $request->input('sortColumn', 'id');
         $sortDirection = $request->input('sortDirection', 'desc');
 
-        // Get all column names of the 'users' table
+        // Get all column names of the 'Vendors' table
         $model = new Vendor();
 
         $query = Vendor::with([

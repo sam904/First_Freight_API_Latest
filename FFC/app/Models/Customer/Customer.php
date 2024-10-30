@@ -11,6 +11,7 @@ use App\Models\Customer\CustomerWarehouseAddress;
 use App\Models\State;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Customer extends Model
 {
@@ -19,7 +20,7 @@ class Customer extends Model
     protected $fillable = [
         "company_name",
         "customer_type",
-        "material_type",
+        // "material_type",
         "address",
         "city",
         "state_id",
@@ -31,12 +32,27 @@ class Customer extends Model
         "status",
         // 'contact_name',
         // 'phone',
+        // 'email',
+    ];
+
+    protected $hidden = ['email', 'material_type'];
+
+    protected $excludedColumns = [
+        'id',
+        'created_at',
+        'updated_at',
+        'country_id',
+        'state_id',
+        'material_type',
         'email',
     ];
 
-    public function delivery()
+    public function getSearchableColumns()
     {
-        return $this->hasMany(CustomerDeliveryAddress::class, 'customer_id');
+        // Fetch all columns of the table dynamically, and exclude specific ones
+        $table = $this->getTable();
+        $columns = Schema::getColumnListing($table);
+        return array_diff($columns, $this->excludedColumns);
     }
 
     public function contact()
@@ -48,14 +64,20 @@ class Customer extends Model
     {
         return $this->hasMany(CustomerFinanceDetails::class, 'customer_id');
     }
-    public function shipping()
+
+    public function delivery()
     {
-        return $this->hasMany(CustomerShippingAddress::class, 'customer_id');
+        return $this->hasMany(CustomerDeliveryAddress::class, 'customer_id');
     }
-    public function warehouse()
-    {
-        return $this->hasMany(CustomerWarehouseAddress::class, 'customer_id');
-    }
+
+    // public function shipping()
+    // {
+    //     return $this->hasMany(CustomerShippingAddress::class, 'customer_id');
+    // }
+    // public function warehouse()
+    // {
+    //     return $this->hasMany(CustomerWarehouseAddress::class, 'customer_id');
+    // }
 
     public function country()
     {

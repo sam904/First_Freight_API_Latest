@@ -21,15 +21,17 @@ class CustomerController extends Controller
 
     public function index(Request $request)
     {
-        $customer = Customer::with([
-            'country',
-            'state',
-            'warehouse',
-            'shipping',
-            'delivery',
-            'contact',
-            'finance'
-        ])->paginate(10);
+        $customer = $this->customerService->getAllCustomer($request);
+
+        // $customer = Customer::with([
+        //     'country',
+        //     'state',
+        //     'warehouse',
+        //     'shipping',
+        //     'delivery',
+        //     'contact',
+        //     'finance'
+        // ])->paginate(10);
 
         return response()->json([
             'status' => true,
@@ -211,13 +213,13 @@ class CustomerController extends Controller
             //     'max:15',
             //     Rule::unique('customers')->ignore($customerId),
             // ],
-            'email' => [
-                'nullable',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('customers')->ignore($customerId),
-            ],
+            // 'email' => [
+            //     'nullable',
+            //     'string',
+            //     'email',
+            //     'max:255',
+            //     Rule::unique('customers')->ignore($customerId),
+            // ],
 
             // Warehouse validation for each item in the array
             // 'warehouse' => 'required|array',
@@ -230,12 +232,12 @@ class CustomerController extends Controller
 
             // shipping validation for each item in the array
             // 'shipping' => 'required|array',
-            'shipping.*.shipping_name' => 'required|string',
-            'shipping.*.shipping_address' => 'required|string',
-            'shipping.*.shipping_city' => 'required|string',
-            'shipping.*.shipping_state' => 'required|string',
-            'shipping.*.shipping_country' => 'required|string',
-            'shipping.*.shipping_zip_code' => 'required|string',
+            // 'shipping.*.shipping_name' => 'required|string',
+            // 'shipping.*.shipping_address' => 'required|string',
+            // 'shipping.*.shipping_city' => 'required|string',
+            // 'shipping.*.shipping_state' => 'required|string',
+            // 'shipping.*.shipping_country' => 'required|string',
+            // 'shipping.*.shipping_zip_code' => 'required|string',
 
             // delivery validation for each item in the array
             'delivery' => 'required|array',
