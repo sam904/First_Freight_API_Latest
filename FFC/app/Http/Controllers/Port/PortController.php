@@ -53,7 +53,7 @@ class PortController extends Controller
                 'status' => false,
                 'message' => 'Failed to save vendor data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -108,7 +108,7 @@ class PortController extends Controller
                 'status' => false,
                 'message' => 'Failed to update port data',
                 'error' => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 

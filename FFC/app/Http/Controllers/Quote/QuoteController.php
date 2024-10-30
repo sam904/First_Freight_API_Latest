@@ -177,6 +177,17 @@ class QuoteController extends Controller
 
     public function store(Request $request)
     {
+        $validatedData = $this->quoteValidation($request);
+
+        // Check if the validated data is an array (i.e., no validation errors)
+        if (!is_array($validatedData)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Quotes validation failed',
+                'error' => $validatedData
+            ], 422);
+        }
+
         try {
             DB::beginTransaction();
             $this->quoteService->createQuote($request);
@@ -225,6 +236,17 @@ class QuoteController extends Controller
         // Check if the returned value is a JSON response (meaning the model was not found)
         if ($quote instanceof \Illuminate\Http\JsonResponse) {
             return $quote;  // Return the not found response
+        }
+
+        $validatedData = $this->quoteValidation($request);
+
+        // Check if the validated data is an array (i.e., no validation errors)
+        if (!is_array($validatedData)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Quotes validation failed',
+                'error' => $validatedData
+            ], 422);
         }
 
         DB::beginTransaction();
@@ -278,6 +300,25 @@ class QuoteController extends Controller
             'status' => $request->status,
             'created_by' => Auth::user()->id,
         ]);
+    }
+
+    private function quoteValidation(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'customerId' => 'required|string',
+            'quoteDetails' => 'required|array',
+            'quoteDetails.*.serviceType' => 'required|integer',
+            'quoteDetails.*.portId' => 'required|integer',
+            'quoteDetails.*.destinationId' => 'required|integer',
+        ]);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+
+        // Return validated data
+        return $validator->validated();
     }
 
     /**

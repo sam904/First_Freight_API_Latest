@@ -46,6 +46,7 @@ class QuoteService
         $this->storeQuoteDetails($request, $quote);
         return true;
     }
+
     public function storeQuoteDetails(Request $request, $quote)
     {
         Log::info("Storing QuoteDetails...");
