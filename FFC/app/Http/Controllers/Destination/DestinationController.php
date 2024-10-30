@@ -53,7 +53,7 @@ class DestinationController extends Controller
                 'status' => false,
                 'message' => 'Failed to insert destination data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -100,7 +100,7 @@ class DestinationController extends Controller
                 'status' => false,
                 'message' => 'Failed to update Destination data',
                 'error' => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 

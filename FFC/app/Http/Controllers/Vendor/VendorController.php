@@ -86,7 +86,7 @@ class VendorController extends Controller
                 'status' => false,
                 'message' => 'Failed to save vendor data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -161,7 +161,7 @@ class VendorController extends Controller
                 'status' => false,
                 'message' => 'Failed to update vendor data',
                 'error' => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 
@@ -219,7 +219,7 @@ class VendorController extends Controller
             return response()->json(['status' => true, 'message' => 'Excel Upload Successfully']);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
         }
     }
 
@@ -320,7 +320,7 @@ class VendorController extends Controller
         if ($vendorType) {
             return response()->json(['status' => true, 'message' => 'Vendor Type created successfully'], 200);
         } else {
-            return response()->json(['status' => false, 'message' => 'Failed to Save Vendor Type data'], 500);
+            return response()->json(['status' => false, 'message' => 'Failed to Save Vendor Type data'], 400);
         }
     }
 

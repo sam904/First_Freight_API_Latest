@@ -54,7 +54,7 @@ class ServiceTypeController extends Controller
                 'status' => false,
                 'message' => 'Failed to insert Service Type data',
                 "error" => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 
@@ -105,7 +105,7 @@ class ServiceTypeController extends Controller
                 'status' => false,
                 'message' => 'Failed to update Service Type data',
                 "error" => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 

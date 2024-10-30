@@ -40,7 +40,7 @@ class PermissionController extends Controller
         if ($master) {
             return response()->json(['status' => true, 'message' => 'Master created successfully'], 201);
         } else {
-            return response()->json(['status' => false, 'message' => 'Failed to create Master data'], 500);
+            return response()->json(['status' => false, 'message' => 'Failed to create Master data'], 400);
         }
     }
 

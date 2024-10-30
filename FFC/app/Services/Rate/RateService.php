@@ -14,14 +14,15 @@ class RateService
 {
     public function getAllRateData(Request $request)
     {
-        $page = $request->input('page', 1);
-        $limit = $request->input('limit', 10);
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
-        $sortColumn = $request->input('sortColumn', 'rate_id');
-        $sortDirection = $request->input('sortDirection', 'desc');
+        $page = $request->input('page') ?: 1;
+        $limit = $request->input('limit') ?: 10;
+        $sortColumn = $request->input('sortColumn') ?: 'rate_id';
+        $sortDirection = $request->input('sortDirection') ?: 'desc';
+
         Log::info("Start Date = " . $startDate);
         Log::info("End Date = " . $endDate);
         Log::info("filterBy = " . $filterBy);

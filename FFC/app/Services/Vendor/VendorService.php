@@ -15,13 +15,12 @@ class VendorService
 {
     public function getAllVendorData(Request $request)
     {
-        $page = $request->input('page', 1);
-        $limit = $request->input('limit', 10);
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
-        $sortColumn = $request->input('sortColumn', 'id');
-        $sortDirection = $request->input('sortDirection', 'desc');
-
+        $page = $request->input('page') ?: 1;
+        $limit = $request->input('limit') ?: 10;
+        $sortColumn = $request->input('sortColumn') ?: 'id';
+        $sortDirection = $request->input('sortDirection') ?: 'desc';
         // Get all column names of the 'Vendors' table
         $model = new Vendor();
 

@@ -54,7 +54,7 @@ class RateController extends Controller
                 'status' => false,
                 'message' => 'Failed to insert rate data',
                 "error" => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 
@@ -108,7 +108,7 @@ class RateController extends Controller
                 'status' => false,
                 'message' => 'Failed to update rate data',
                 'error' => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 
@@ -215,7 +215,7 @@ class RateController extends Controller
                 'status' => false,
                 'message' => 'Failed to insert rate note',
                 "error" => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 

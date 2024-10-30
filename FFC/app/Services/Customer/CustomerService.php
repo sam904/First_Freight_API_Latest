@@ -19,14 +19,14 @@ class CustomerService
 
     public function getAllCustomer(Request $request)
     {
-        $page = $request->input('page', 1);
-        $limit = $request->input('limit', 10);
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
-        $sortColumn = $request->input('sortColumn', 'id');
-        $sortDirection = $request->input('sortDirection', 'desc');
+        $page = $request->input('page') ?: 1;
+        $limit = $request->input('limit') ?: 10;
+        $sortColumn = $request->input('sortColumn') ?: 'id';
+        $sortDirection = $request->input('sortDirection') ?: 'desc';
 
         $query = Customer::with([
             'country',

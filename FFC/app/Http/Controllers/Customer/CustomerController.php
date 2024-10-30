@@ -60,7 +60,7 @@ class CustomerController extends Controller
                 'status' => false,
                 'message' => 'Failed to insert customer data',
                 "error" => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 
@@ -141,7 +141,7 @@ class CustomerController extends Controller
                 'status' => false,
                 'message' => 'Failed to update customer data',
                 'error' => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 

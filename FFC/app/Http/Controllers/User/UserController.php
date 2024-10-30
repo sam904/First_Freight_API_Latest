@@ -205,7 +205,7 @@ class UserController extends Controller
                 'status' => false,
                 'message' => 'Failed to update user data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -229,7 +229,7 @@ class UserController extends Controller
             ], 200);
         }
 
-        return abort(500); //Return a server error if the task deletion fails
+        return abort(400); //Return a server error if the task deletion fails
     }
 
     public function status(Request $request, $id)
