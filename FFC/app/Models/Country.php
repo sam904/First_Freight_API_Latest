@@ -33,7 +33,7 @@ class Country extends Model
         try {
             $country = Country::where('name', $name)->firstOrFail();
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            abort(404, 'Country not found at line number : ' . $lineNo);
+            abort(404, "Country : '{$name}' not found at line number : " . $lineNo);
         }
         return $country;
     }

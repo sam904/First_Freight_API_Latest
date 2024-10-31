@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Rate;
 
 use App\Http\Controllers\Controller;
+use App\Imports\RateImport;
 use App\Models\Rate\Rate;
 use App\Models\Rate\RateNotes;
 use App\Services\Rate\RateService;
@@ -10,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RateController extends Controller
 {
@@ -22,12 +24,18 @@ class RateController extends Controller
 
     public function index(Request $request)
     {
+        Log::info("*****************************");
+        Log::info('Rate Search');
+        Log::info("*****************************");
         $rates = $this->rateService->getAllRateData($request);
         return response()->json(['status' => true, 'data' => $rates], 200);
     }
 
     public function store(Request $request)
     {
+        Log::info("*****************************");
+        Log::info('Rate Save');
+        Log::info("*****************************");
         $validatedData = $this->rateValidateData($request);
         // Check if the validated data is an array (i.e., no validation errors)
         if (!is_array($validatedData)) {
@@ -60,6 +68,9 @@ class RateController extends Controller
 
     public function edit($id)
     {
+        Log::info("*****************************");
+        Log::info('Rate Edit');
+        Log::info("*****************************");
         // Use the findModel helper to retrieve the customer
         $rate = findModel(Rate::class, $id);
 
@@ -74,6 +85,9 @@ class RateController extends Controller
 
     public function update(Request $request, $id)
     {
+        Log::info("*****************************");
+        Log::info('Rate Update');
+        Log::info("*****************************");
         // Use the findModel helper to retrieve the customer
         $rate = findModel(Rate::class, $id);
 
@@ -114,6 +128,9 @@ class RateController extends Controller
 
     public function status(Request $request, $id)
     {
+        Log::info("*****************************");
+        Log::info('Rate status');
+        Log::info("*****************************");
         // Use the statusUpdate helper to update status
         return statusUpdate(Rate::class, $id, [
             'status' => $request->status
@@ -122,6 +139,9 @@ class RateController extends Controller
 
     public function destroy($id)
     {
+        Log::info("*****************************");
+        Log::info('Rate Delete');
+        Log::info("*****************************");
         // Use the findModel helper to retrieve the rate
         $rate = findModel(Rate::class, $id);
 
@@ -171,6 +191,9 @@ class RateController extends Controller
     // Passing RateId
     public function getRateNote($rateId)
     {
+        Log::info("*****************************");
+        Log::info('Get Rate Note');
+        Log::info("*****************************");
         // Use the findModel helper to retrieve the customer
         $rate = findModel(Rate::class, $rateId);
 
@@ -185,6 +208,9 @@ class RateController extends Controller
 
     public function storeNote(Request $request)
     {
+        Log::info("*****************************");
+        Log::info('Save Rate Note');
+        Log::info("*****************************");
         $validatedData = $this->rateNoteValidation($request);
         if (!is_array($validatedData)) {
             return response()->json([
@@ -216,6 +242,9 @@ class RateController extends Controller
 
     public function updateNote(Request $request, $id)
     {
+        Log::info("*****************************");
+        Log::info('Update Rate Note');
+        Log::info("*****************************");
         // Use the findModel helper to retrieve the customer
         $rateNotes = findModel(RateNotes::class, $id);
 
@@ -255,6 +284,9 @@ class RateController extends Controller
 
     public function editNote($id)
     {
+        Log::info("*****************************");
+        Log::info('Edit Rate Note');
+        Log::info("*****************************");
         // Use the findModel helper to retrieve the customer
         $rateNotes = findModel(RateNotes::class, $id);
 
@@ -269,6 +301,9 @@ class RateController extends Controller
 
     public function destroyNote($id)
     {
+        Log::info("*****************************");
+        Log::info('Delete Rate Note');
+        Log::info("*****************************");
         // Use the findModel helper to retrieve the rate
         $rateNotes = findModel(RateNotes::class, $id);
 
@@ -289,6 +324,9 @@ class RateController extends Controller
 
     public function statusNote(Request $request, $id)
     {
+        Log::info("*****************************");
+        Log::info('Status Rate Note');
+        Log::info("*****************************");
         // Use the statusUpdate helper to update status
         return statusUpdate(RateNotes::class, $id, [
             'status' => $request->status
@@ -310,4 +348,28 @@ class RateController extends Controller
     /** 
      * End Rate Notes
      */
+
+    public function excelUpload(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Importing Rate Excel sheet...');
+        Log::info("*****************************");
+
+        $request->validate([
+            'uploadFile' => 'required|mimes:xlsx,xls,csv',
+            // 'updatedColumns' => 'required|array'
+        ]);
+
+        $updatedColumns = $request->input('updatedColumns');
+
+        try {
+            DB::beginTransaction();
+            Excel::import(new RateImport($updatedColumns), $request->file('uploadFile'));
+            DB::commit();
+            return response()->json(['status' => true, 'message' => 'Excel Upload Successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
+        }
+    }
 }

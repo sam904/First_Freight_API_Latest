@@ -44,7 +44,7 @@ class State extends Model
         try {
             $state = State::where('name', $name)->firstOrFail();
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            abort(404, 'State not found at line number : ' . $lineNo);
+            abort(404, "State : '{$name}' not found at line number : " . $lineNo);
         }
         return $state;
     }

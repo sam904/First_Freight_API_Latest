@@ -32,4 +32,14 @@ class Port extends Model
     {
         return $this->hasMany(PortTerminal::class);
     }
+
+    public function getPort($name, $lineNo)
+    {
+        try {
+            $port = Port::where('name', $name)->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, "Port : '{$name}' not found at line number : " . $lineNo);
+        }
+        return $port;
+    }
 }

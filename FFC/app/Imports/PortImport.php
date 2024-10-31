@@ -55,7 +55,7 @@ class PortImport implements OnEachRow, WithStartRow, WithHeadingRow
             $portTypeId = $this->portType[$rowData['type']] ?? null;
             if (!$portTypeId) {
                 Log::error("Error on row {$lineNumber}: State '{$rowData['type']}' not found.");
-                return;
+                abort(400, "Port Type : '{$rowData['type']}' not found at line No. " . $lineNumber);
             }
 
             $state = $this->stateModel->getState($rowData['state'], $lineNumber);

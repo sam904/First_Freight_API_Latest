@@ -82,4 +82,14 @@ class Vendor extends Model
     {
         return $this->belongsToMany(VendorType::class, 'vendor_vendor_type', 'vendor_id', 'vendor_type_id');
     }
+
+    public function getVendor($name, $lineNo)
+    {
+        try {
+            $vendor = Vendor::where('company_name', $name)->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, "Vendor : '{$name}' not found at line number : " . $lineNo);
+        }
+        return $vendor;
+    }
 }

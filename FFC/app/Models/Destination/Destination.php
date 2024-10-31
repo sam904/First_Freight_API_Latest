@@ -28,4 +28,14 @@ class Destination extends Model
     {
         return $this->belongsTo(Country::class);
     }
+
+    public function getDestination($name, $lineNo)
+    {
+        try {
+            $destination = Destination::where('name', $name)->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, "Destination : '{$name}' not found at line number : " . $lineNo);
+        }
+        return $destination;
+    }
 }
