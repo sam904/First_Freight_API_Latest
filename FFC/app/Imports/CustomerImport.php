@@ -38,10 +38,10 @@ class CustomerImport implements OnEachRow, WithStartRow
         return 3; // Start from the second row (where the actual headers are located)
     }
 
-    // public function chunkSize(): int
-    // {
-    //     return 100; // Process 100 rows at a time for efficiency
-    // }
+    public function chunkSize(): int
+    {
+        return 100; // Process 100 rows at a time for efficiency
+    }
 
     public function onRow(Row $row)
     {

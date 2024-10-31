@@ -13,140 +13,119 @@ use App\Models\VendorType;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithStartRow;
+use Maatwebsite\Excel\Row;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 
-class VendorImport implements ToCollection, WithHeadingRow
+class VendorImport implements OnEachRow, WithStartRow
 {
-    private $currentVendor = null;
     private $updatedColumns;
-
-    private $saleFlag = true;
-    private $financeFlag = true;
+    protected $stateModel;
+    protected $countryModel;
+    protected $vendorType;
 
     // Constructor to accept the columns to be updated
     public function __construct(array $updatedColumns)
     {
         $this->updatedColumns = $updatedColumns;
+        $this->stateModel = new State();
+        $this->countryModel = new Country();
+        $this->vendorType = VendorType::pluck('id', 'type');
     }
-    /** @Process :
-     * Check company name, If company name exist then do not process anything else insert row
-     */
-    public function collection(Collection $rows)
+
+    public function startRow(): int
     {
-        Log::info('Vendor update Columns Data => ' . json_encode($this->updatedColumns));
-        foreach ($rows as $row) {
-            Log::info($row);
-            $this->currentVendor = $this->updateOrCreateVendor($row);
+        return 3; // Start from the third row (where the actual headers are located)
+    }
+
+    public function chunkSize(): int
+    {
+        return 100; // Process 100 rows at a time for efficiency
+    }
+
+    public function onRow(Row $row)
+    {
+        $rowData = $row->toArray();
+        $lineNumber = $row->getIndex();
+        if (empty($rowData[1])) {
+            Log::info("Skipping line number " . $lineNumber . " because Company Name is empty.");
+            return; // Skip the current iteration
         }
-    }
-
-    private function updateOrCreateVendor($row)
-    {
-        Log::info("Find existing vendor based on unique fields (company_name) => " . $row['company_name']);
-        $vendor = Vendor::where('company_name', $row['company_name'])->first();
-
+        Log::info("Checking " . $rowData[1] . "  is exist or not");
+        $vendor = Vendor::where('company_name', $rowData[1])->first();
         if (empty($vendor)) {
-            Log::info("Creating vendor for => " . $row['company_name']);
-            $vendorData = $this->processVendorData($row);
-            $vendorData['status'] = 'inactive';
-            Log::info('Saving Vendor datails...');
+            $state = $this->stateModel->getState($row[4], $lineNumber);
+            $country = $this->countryModel->getCountry($row[5], $lineNumber);
+            $bankCountry = $this->countryModel->getCountry($row[24], $lineNumber);
+            $vendorTypeId = $this->vendorType[$rowData[0]] ?? null;
+            if (!$vendorTypeId) {
+                Log::error("Error on row {$lineNumber}: Vendor Type '{$rowData[0]}' not found.");
+                abort(400, "Vendor Type : '{$rowData[0]}' not found at line No. " . $lineNumber);
+            }
+            $vendorData = [
+                'company_name' => $rowData[1] ?? null, // 'Company Name'
+                'address' => $rowData[2] ?? null, // 'Address'
+                'city' => $rowData[3] ?? null, // 'City'
+                'state_id' => $state->id, // 'State'
+                'country_id' => $country->id, // 'Country'
+                'zip_code' => $rowData[6] ?? null, // 'Zip Code'
+                'company_tax_id' => $rowData[17] ?? null, // 'Company Tax ID'
+                'mc_number' => $rowData[18] ?? null, // 'MC Number'
+                'scac_number' => $rowData[19] ?? null, // 'SCAC code'
+                'us_dot_number' => $rowData[20] ?? null, // 'US DOT Number'
+                'payment_term' => $rowData[21] ?? null, // 'Payment Terms'
+                'remarks' => $rowData[22] ?? null, // 'Remarks'
+                'bank_name' => $rowData[23] ?? null, // 'Bank Name'
+                'bank_country_id' => $bankCountry->id, // 'Bank Country'
+                'bank_account_number' => $rowData[25] ?? null, // 'Bank Account'
+                'bank_routing' => $rowData[26] ?? null, // 'Bank Routing'
+                'bank_swift_code' => $rowData[27] ?? null, // 'Swift Code'
+                'bank_iban_number' => $rowData[28] ?? null, // 'IBAN No.'
+                'bank_ifsc_code' => $rowData[29] ?? null, // 'IFSC Code'
+                'bank_address' => $rowData[30] ?? null, // 'Bank Address'
+                'status' => 'inactive',
+            ];
+            Log::info($vendorData);
             $vendor = Vendor::create($vendorData);
 
-            // Saving Vendor Type, Sales, Finance data
-            $this->processVendorTypeData($vendor, $row['vendor_type']);
-            $this->processSalesData($row, $vendor);
-            $this->processFinanceData($row, $vendor);
+            // Save vendor type id
+            $vendor->vendorTypes()->attach($vendorTypeId);
+
+            Log::info("Saving sales data");
+            $vendorSaleData = [
+                'vendors_id' => $vendor->id,
+                'sales_name' => $rowData[7],
+                'sales_designation' => $rowData[8],
+                'sales_phone' => $rowData[9],
+                'sales_email' => $rowData[10],
+                'sales_fax' => $rowData[11],
+            ];
+            Log::info($vendorSaleData);
+            VendorSales::create($vendorSaleData);
+
+            Log::info("Saving finance data");
+            $vendorFinanceData = [
+                'vendors_id' => $vendor->id,
+                'finance_name' => $rowData[12],
+                'finance_designation' => $rowData[13],
+                'finance_phone' => $rowData[14],
+                'finance_email' => $rowData[15],
+                'finance_fax' => $rowData[16],
+            ];
+            Log::info($vendorFinanceData);
+            VendorFinances::create($vendorFinanceData);
+
+            Log::info("Vendor creation for :" . $vendor->company_name . " completed.");
         } else {
-            Log::info($vendor->company_name . ' is exit. Skipping to next iteration.');
+            Log::info($vendor->company_name . ' is exit at line no. ' . $lineNumber . ' Skipping to next iteration.');
         }
-
-        return $vendor;
-    }
-
-
-    private function processVendorData($row)
-    {
-        // Find state
-        $state = $this->getState($row['state']);
-        Log::info("State" . json_encode($state));
-        // Find Country
-        $country = $this->getCountry($row['country']);
-        // Find Bank Country
-        $bankCountry = $this->getCountry($row['bank_country']);
-
-        $vendorData = [
-            'company_name' => $row['company_name'],
-            'address' => $row['address'],
-            'city' => $row['city'],
-            'state_id' => $state->id,
-            'country_id' => $country->id,
-            'zip_code' => $row['zip_code'],
-            'company_tax_id' => $row['company_tax_id'],
-            'mc_number' => $row['mc_number'],
-            'scac_number' => $row['scac_number'],
-            'us_dot_number' => $row['us_dot_number'],
-            'payment_term' => $row['payment_term'],
-            'bank_name' => $row['bank_name'],
-            'bank_account_number' => $row['bank_account_number'],
-            'bank_routing' => $row['bank_routing'],
-            'bank_address' => $row['bank_address'],
-            'bank_country_id' => $bankCountry->id,
-            'bank_swift_code' => $row['bank_swift_code'],
-            'bank_iban_number' => $row['bank_iban_number'],
-            'bank_ifsc_code' => $row['bank_ifsc_code'],
-            'remarks' => $row['remarks'],
-        ];
-        return $vendorData;
-    }
-
-    private function processVendorTypeData($vendor, $vendorType)
-    {
-        // Find Vendor Type 
-        $vendorType = $this->getVendorType($vendorType);
-        // Save vendor type id
-        $vendor->vendorTypes()->attach($vendorType->id);
-    }
-
-    private function processSalesData($row, Vendor $vendor = null)
-    {
-        Log::info('Saving Sale data for vendor id = ' . $vendor->id);
-        VendorSales::create([
-            'vendors_id' => $vendor->id,
-            'sales_name' => $row['sales_name'],
-            'sales_designation' => $row['sales_designation'],
-            'sales_phone' => $row['sales_phone'],
-            'sales_email' => $row['sales_email'],
-            'sales_fax' => $row['sales_fax'],
-        ]);
-    }
-
-    private function processFinanceData($row, Vendor $vendor = null)
-    {
-        Log::info('Saving Finance data...' . $vendor->id);
-        VendorFinances::create([
-            'vendors_id' => $vendor->id,
-            'finance_name' => $row['finance_name'],
-            'finance_designation' => $row['finance_designation'],
-            'finance_phone' => $row['finance_phone'],
-            'finance_email' => $row['finance_email'],
-            'finance_fax' => $row['finance_fax'],
-        ]);
     }
 
     private function getVendorType($type)
     {
         return VendorType::where('type', $type)->firstOrFail();
-    }
-
-    private function getState($name)
-    {
-        return State::where('name', $name)->firstOrFail();
-    }
-
-    private function getCountry($name)
-    {
-        return Country::where('name', $name)->firstOrFail();
     }
 }

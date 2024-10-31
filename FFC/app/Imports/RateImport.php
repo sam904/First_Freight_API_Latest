@@ -106,7 +106,7 @@ class RateImport implements ToCollection
                     'charge_name' => $chargeName,
                     'amount' => $chargeAmount
                 ]);
-                Log::info("Saved Charge: {$chargeName} with Amount: {$chargeAmount}");
+                Log::info($chargeName . ' with Amount: ' . $chargeAmount);
             }
         }
     }
