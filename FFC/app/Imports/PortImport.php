@@ -20,12 +20,14 @@ class PortImport implements OnEachRow, WithStartRow, WithHeadingRow
      *
      * @return \Illuminate\Database\Eloquent\Model|null
      */
+    private $updatedColumns;
     protected $portType;
     protected $stateModel;
     protected $countryModel;
 
-    public function __construct()
+    public function __construct(array $updatedColumns)
     {
+        $this->updatedColumns = $updatedColumns;
         // Preload portType to avoid repeated queries
         $this->portType = PortType::pluck('id', 'name');
         $this->stateModel = new State();
