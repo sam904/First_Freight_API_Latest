@@ -156,6 +156,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::post('/update/{id}', 'update');
                     Route::delete('/delete/{id}', action: 'destroy');
                     Route::post('/status/{id}', 'status');
+                    Route::post('/import', 'excelUpload');
                 });
             }
         );

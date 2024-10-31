@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Destination;
 
 use App\Http\Controllers\Controller;
+use App\Imports\DestinationImport;
 use App\Models\Destination\County;
 use App\Models\Destination\Destination;
 use App\Services\Destination\DestinationService;
@@ -10,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DestinationController extends Controller
 {
@@ -141,5 +143,29 @@ class DestinationController extends Controller
 
         // Return validated data
         return $validator->validated();
+    }
+
+    public function excelUpload(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Importing Destination Excel sheet...');
+        Log::info("*****************************");
+
+        $request->validate([
+            'uploadFile' => 'required|mimes:xlsx,xls,csv',
+            // 'updatedColumns' => 'required|array'
+        ]);
+
+        $updatedColumns = $request->input('updatedColumns');
+
+        try {
+            DB::beginTransaction();
+            Excel::import(new DestinationImport($updatedColumns), $request->file('uploadFile'));
+            DB::commit();
+            return response()->json(['status' => true, 'message' => 'Excel Upload Successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
+        }
     }
 }
