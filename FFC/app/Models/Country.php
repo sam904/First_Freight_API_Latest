@@ -27,6 +27,17 @@ class Country extends Model
         return array_diff($columns, $this->excludedColumns);
     }
 
+    // Used in excel import functionality
+    public function getCountry($name, $lineNo)
+    {
+        try {
+            $country = Country::where('name', $name)->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'Country not found at line number : ' . $lineNo);
+        }
+        return $country;
+    }
+
     public function states()
     {
         return $this->hasMany(State::class);

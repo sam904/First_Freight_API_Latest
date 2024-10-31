@@ -37,4 +37,15 @@ class State extends Model
     {
         return $this->hasMany(City::class);
     }
+
+    // Used in excel import functionality
+    public function getState($name, $lineNo)
+    {
+        try {
+            $state = State::where('name', $name)->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'State not found at line number : ' . $lineNo);
+        }
+        return $state;
+    }
 }

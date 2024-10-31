@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Port;
 
 use App\Http\Controllers\Controller;
+use App\Imports\PortImport;
 use App\Models\Port\Port;
 use App\Models\Port\PortType;
 use App\Services\Port\PortService;
@@ -10,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PortController extends Controller
 {
@@ -165,5 +167,30 @@ class PortController extends Controller
 
         // Return validated data
         return $validator->validated();
+    }
+
+
+    public function excelUpload(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Importing Port Excel sheet...');
+        Log::info("*****************************");
+
+        $request->validate([
+            'uploadFile' => 'required|mimes:xlsx,xls,csv',
+            // 'updatedColumns' => 'required|array'
+        ]);
+
+        $updatedColumns = $request->input('updatedColumns');
+
+        try {
+            DB::beginTransaction();
+            Excel::import(new PortImport($updatedColumns), $request->file('uploadFile'));
+            DB::commit();
+            return response()->json(['status' => true, 'message' => 'Excel Upload Successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
+        }
     }
 }

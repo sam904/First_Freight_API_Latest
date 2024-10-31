@@ -22,12 +22,15 @@ class CustomerImport implements OnEachRow, WithStartRow
 {
 
     private $updatedColumns;
-    private $lineNumber;
+    protected $stateModel;
+    protected $countryModel;
 
     // Constructor to accept the columns to be updated
     public function __construct(array $updatedColumns)
     {
         $this->updatedColumns = $updatedColumns;
+        $this->stateModel = new State();
+        $this->countryModel = new Country();
     }
 
     public function startRow(): int
@@ -35,23 +38,25 @@ class CustomerImport implements OnEachRow, WithStartRow
         return 3; // Start from the second row (where the actual headers are located)
     }
 
+    // public function chunkSize(): int
+    // {
+    //     return 100; // Process 100 rows at a time for efficiency
+    // }
+
     public function onRow(Row $row)
     {
         $rowData = $row->toArray();
-        $this->lineNumber = $row->getIndex();
+        $lineNumber = $row->getIndex();
         if (empty($rowData[0])) {
-            Log::info("Skipping row because Company Name is empty.");
+            Log::info("Skipping line number " . $lineNumber . " because Company Name is empty.");
             return; // Skip the current iteration
         }
 
         Log::info("Checking Comapny name is exist or not => " . $rowData[0]);
         $customer = Customer::where('company_name', $rowData[0])->first();
         if (empty($customer)) {
-            // Find state
-            Log::info("state =>" . $row[4]);
-            $state = $this->getState($row[4]);
-            // Find Country
-            $country = $this->getCountry($row[5]);
+            $state = $this->stateModel->getState($row[4], $lineNumber);
+            $country = $this->countryModel->getCountry($row[5], $lineNumber);
 
             $customerData = [
                 'company_name' => $rowData[0] ?? null, // 'Company Name'
@@ -90,10 +95,8 @@ class CustomerImport implements OnEachRow, WithStartRow
             CustomerFinanceDetails::create($financeData);
             Log::info("Customer Finance details created successfully");
 
-            // Find state
-            $deliveryState = $this->getState($row[23]);
-            // Find Country
-            $deliveryCountry = $this->getCountry($row[24]);
+            $deliveryState = $this->stateModel->getState($row[23], $lineNumber);
+            $deliveryCountry = $this->countryModel->getCountry($row[24], $lineNumber);
 
             $deliveryData = [
                 'customer_id' => $customer->id,
@@ -110,28 +113,7 @@ class CustomerImport implements OnEachRow, WithStartRow
 
             Log::info("customer is created for this company" . $customer->company_name);
         } else {
-            Log::info($customer->company_name . ' is exit. Skipping to next iteration.');
+            Log::info($customer->company_name . ' is exit at line no. ' . $lineNumber . ' Skipping to next iteration.');
         }
-    }
-
-
-    private function getState($name)
-    {
-        try {
-            $state = State::where('name', $name)->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            abort(404, 'State not found at line number : ' . $this->lineNumber);
-        }
-        return $state;
-    }
-
-    private function getCountry($name)
-    {
-        try {
-            $country = Country::where('name', $name)->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            abort(404, 'Country not found at line number : ' . $this->lineNumber);
-        }
-        return $country;
     }
 }
