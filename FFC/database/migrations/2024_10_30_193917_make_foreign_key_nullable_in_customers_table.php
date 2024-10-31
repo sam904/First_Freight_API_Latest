@@ -12,8 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('customers', function (Blueprint $table) {
-            $table->unsignedBigInteger('state_id')->nullable()->change();
-            $table->unsignedBigInteger('country_id')->nullable()->change();
+            $table->unsignedBigInteger('state_id')->nullable(false)->change();
+            $table->unsignedBigInteger('country_id')->nullable(false)->change();
+        });
+
+        Schema::table('customer_delivery_addresses', function (Blueprint $table) {
+            $table->unsignedBigInteger('delivery_state')->nullable(false)->change();
+            $table->unsignedBigInteger('delivery_country')->nullable(false)->change();
         });
     }
 
@@ -25,6 +30,10 @@ return new class extends Migration
         Schema::table('customers', function (Blueprint $table) {
             $table->unsignedBigInteger('state_id')->nullable(false)->change();
             $table->unsignedBigInteger('country_id')->nullable(false)->change();
+        });
+        Schema::table('customer_delivery_addresses', function (Blueprint $table) {
+            $table->unsignedBigInteger('delivery_state')->nullable(false)->change();
+            $table->unsignedBigInteger('delivery_country')->nullable(false)->change();
         });
     }
 };

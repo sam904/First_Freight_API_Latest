@@ -22,6 +22,7 @@ class CustomerImport implements OnEachRow, WithStartRow
 {
 
     private $updatedColumns;
+    private $lineNumber;
 
     // Constructor to accept the columns to be updated
     public function __construct(array $updatedColumns)
@@ -37,6 +38,7 @@ class CustomerImport implements OnEachRow, WithStartRow
     public function onRow(Row $row)
     {
         $rowData = $row->toArray();
+        $this->lineNumber = $row->getIndex();
         if (empty($rowData[0])) {
             Log::info("Skipping row because Company Name is empty.");
             return; // Skip the current iteration
@@ -64,6 +66,7 @@ class CustomerImport implements OnEachRow, WithStartRow
                 'credit_limit' => $rowData[19] ?? null, // 'Credit Limit'
             ];
             $customer = Customer::create($customerData);
+            Log::info("Customer created successfully " . $customer->id);
 
             $contactData = [
                 'customer_id' => $customer->id,
@@ -74,6 +77,7 @@ class CustomerImport implements OnEachRow, WithStartRow
                 'contact_fax' => $row[11] ?? null, // 'Fax'
             ];
             CustomerContactDetails::create($contactData);
+            Log::info("Customer contact details created successfully");
 
             $financeData = [
                 'customer_id' => $customer->id,
@@ -84,6 +88,7 @@ class CustomerImport implements OnEachRow, WithStartRow
                 'finance_fax' => $row[16], // 'Fax'
             ];
             CustomerFinanceDetails::create($financeData);
+            Log::info("Customer Finance details created successfully");
 
             // Find state
             $deliveryState = $this->getState($row[23]);
@@ -101,6 +106,8 @@ class CustomerImport implements OnEachRow, WithStartRow
             ];
             CustomerDeliveryAddress::create($deliveryData);
 
+            Log::info("Customer Delivery details created successfully");
+
             Log::info("customer is created for this company" . $customer->company_name);
         } else {
             Log::info($customer->company_name . ' is exit. Skipping to next iteration.');
@@ -110,12 +117,21 @@ class CustomerImport implements OnEachRow, WithStartRow
 
     private function getState($name)
     {
-        Log::info($name);
-        return State::where('name', $name)->first();
+        try {
+            $state = State::where('name', $name)->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'State not found at line number : ' . $this->lineNumber);
+        }
+        return $state;
     }
 
     private function getCountry($name)
     {
-        return Country::where('name', $name)->first();
+        try {
+            $country = Country::where('name', $name)->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'Country not found at line number : ' . $this->lineNumber);
+        }
+        return $country;
     }
 }
