@@ -81,6 +81,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::delete('/delete/{id}', action: 'destroy');
                     Route::post('/status/{id}', 'status');
                     Route::post('/import', 'excelUpload');
+                    Route::post('/export', 'excelExport');
                     Route::get('/vendorType', 'getAllVendorType');
                     Route::post('/saveVendorType', 'storeVendorType');
                     Route::post('/vendorTypeStatus/{id}', 'vendorStatus');
@@ -99,6 +100,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::delete('/delete/{id}', action: 'destroy');
                     Route::post('/status/{id}', 'status');
                     Route::post('/import', 'excelUpload');
+                    Route::post('/export', 'excelExport');
                 });
             }
         );
@@ -142,6 +144,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::delete('/delete/{id}', action: 'destroy');
                     Route::post('/status/{id}', 'status');
                     Route::post('/import', 'excelUpload');
+                    Route::post('/export', 'excelExport');
                 });
             }
         );
@@ -157,6 +160,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::delete('/delete/{id}', action: 'destroy');
                     Route::post('/status/{id}', 'status');
                     Route::post('/import', 'excelUpload');
+                    Route::post('/export', 'excelExport');
                 });
             }
         );
@@ -178,6 +182,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::delete('/deleteNote/{id}', action: 'destroyNote');
                     Route::post('/statusNote/{id}', 'statusNote');
                     Route::post('/import', 'excelUpload');
+                    Route::post('/export', 'excelExport');
                 });
             }
         );

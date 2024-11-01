@@ -2,11 +2,8 @@
 
 namespace App\Services\Port;
 
-use App\Helpers\SearchHelper;
-use App\Models\Country;
 use App\Models\Port\Port;
 use App\Models\Port\PortTerminal;
-use App\Models\State;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

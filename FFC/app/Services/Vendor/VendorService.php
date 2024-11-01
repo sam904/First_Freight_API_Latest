@@ -25,23 +25,27 @@ class VendorService
         $model = new Vendor();
 
         $query = Vendor::with([
+            'bankCountry:id,name',
             'country:id,name',
             'state:id,name',
+            'vendorTypes',
             'sales',
-            'finance'
+            'finance',
         ]);
 
         $saleFlag = false;
         $financeFlag = false;
         $countryFlag = false;
         $stateFlag = false;
+        $vendorTypeFlag = false;
 
         // Check if filterBy contains sales. or finance. and adjust accordingly
         if (
             strpos($filterBy, 'sales.') === 0 ||
             strpos($filterBy, 'finance.') === 0 ||
             strpos($filterBy, 'country.') === 0 ||
-            strpos($filterBy, 'state.') === 0
+            strpos($filterBy, 'state.') === 0 ||
+            $filterBy === 'vendorType'
         ) {
             // Set filterBy to null in the request
             $request->merge(['filterBy' => null]);
@@ -57,6 +61,8 @@ class VendorService
             } elseif (strpos($filterBy, 'state.') === 0) {
                 $filterBy = substr($filterBy, strlen('state.'));
                 $stateFlag = true;
+            } elseif ($filterBy === 'vendorType') {
+                $vendorTypeFlag = true;
             }
         }
 
@@ -66,18 +72,21 @@ class VendorService
             $financeFlag = true;
             $stateFlag = true;
             $countryFlag = true;
+            $vendorTypeFlag = true;
         }
 
         // Apply search filters
         $query = SearchHelper::applySearchFilters($query, $model, $request);
 
         // Search by vendor type if filterBy is 'vendor_type'
-        if (!empty($searchTerm) && $filterBy === 'vendorType') {
+        if ($vendorTypeFlag) {
+            // if (!empty($searchTerm) && $filterBy === 'vendorType') {
             $query->whereHas('vendorTypes', function ($q) use ($searchTerm) {
                 Log::info('vendorTypes => ' . $searchTerm);
                 // Search in vendor_types table based on the search term
                 $q->where('type', 'LIKE', "%{$searchTerm}%");
             });
+            // }
         }
 
         // Search within related Sales fields
@@ -149,46 +158,6 @@ class VendorService
 
         // Get the paginated results
         $vendors = $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
-
-        /*
-        // Modify each vendor to flatten 'sales' and 'finance' into the main array
-        // $vendors->through(function ($vendor) {
-        $vendors->getCollection()->each(function ($vendor) {
-            // Flatten country fields into the main vendor array
-            if ($vendor->country) {
-                $vendor->setAttribute('country_name', $vendor->country->name);
-                unset($vendor->country); // Remove the original nested country object
-            }
-            // Flatten state fields into the main vendor array
-            if ($vendor->state) {
-                $vendor->setAttribute('state_name', $vendor->state->name);
-                unset($vendor->state); // Remove the original nested state object
-            }
-            // Flatten sales fields into the main vendor array
-            foreach ($vendor->sales as $index => $sale) {
-                $vendor->setAttribute('sales_name_' . ($index + 1), $sale->sales_name);
-                $vendor->setAttribute('sales_designation_' . ($index + 1), $sale->sales_designation);
-                $vendor->setAttribute('sales_phone_' . ($index + 1), $sale->sales_phone);
-                $vendor->setAttribute('sales_email_' . ($index + 1), $sale->sales_email);
-                $vendor->setAttribute('sales_fax_' . ($index + 1), $sale->sales_fax);
-                $vendor->setAttribute('sales_created_at_' . ($index + 1), $sale->created_at);
-                $vendor->setAttribute('sales_updated_at_' . ($index + 1), $sale->updated_at);
-            }
-            // Flatten finance fields into the main vendor array
-            foreach ($vendor->finance as $index => $finance) {
-                $vendor->setAttribute('finance_name_' . ($index + 1), $finance->finance_name);
-                $vendor->setAttribute('finance_designation_' . ($index + 1), $finance->finance_designation);
-                $vendor->setAttribute('finance_phone_' . ($index + 1), $finance->finance_phone);
-                $vendor->setAttribute('finance_email_' . ($index + 1), $finance->finance_email);
-                $vendor->setAttribute('finance_fax_' . ($index + 1), $finance->finance_fax);
-                $vendor->setAttribute('finance_created_at_' . ($index + 1), $finance->created_at);
-                $vendor->setAttribute('finance_updated_at_' . ($index + 1), $finance->updated_at);
-            }
-            // Remove the original sales and finance arrays
-            unset($vendor->sales, $vendor->finance);
-            return $vendor;
-        }); 
-        */
 
         return $vendors;
     }

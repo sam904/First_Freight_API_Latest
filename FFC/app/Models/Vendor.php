@@ -83,6 +83,11 @@ class Vendor extends Model
         return $this->belongsToMany(VendorType::class, 'vendor_vendor_type', 'vendor_id', 'vendor_type_id');
     }
 
+    public function bankCountry()
+    {
+        return $this->belongsTo(Country::class, 'bank_country_id');
+    }
+
     public function getVendor($name, $lineNo)
     {
         try {

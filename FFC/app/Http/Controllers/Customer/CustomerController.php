@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Exports\CustomerExport;
 use App\Http\Controllers\Controller;
 use App\Imports\CustomerImport;
 use App\Models\Customer\Customer;
@@ -284,5 +285,17 @@ class CustomerController extends Controller
             DB::rollBack();
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
         }
+    }
+
+
+    public function excelExport(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Exporting Vendor Excel sheet...');
+        Log::info("*****************************");
+
+        $customer = $this->customerService->getAllCustomer($request);
+        // Export to Excel
+        return Excel::download(new CustomerExport($customer), 'Export_Customer.xlsx');
     }
 }

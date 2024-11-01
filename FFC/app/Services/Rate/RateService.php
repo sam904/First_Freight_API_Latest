@@ -2,6 +2,7 @@
 
 namespace App\Services\Rate;
 
+use App\Helpers\SearchHelper;
 use App\Models\Rate\Rate;
 use App\Models\Rate\RateCharge;
 use App\Models\Rate\RateNotes;
@@ -179,5 +180,165 @@ class RateService
             'pin' => $request['pin'],
         ]);
         return true;
+    }
+
+    public function getAllRateExportData_old(Request $request)
+    {
+        $searchTerm = $request->input('searchTerm');
+        $filterBy = $request->input('filterBy');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        $page = $request->input('page') ?: 1;
+        $limit = $request->input('limit') ?: 10;
+        $sortColumn = $request->input('sortColumn') ?: 'rate_id';
+        $sortDirection = $request->input('sortDirection') ?: 'desc';
+        Log::info("filterBy" . $filterBy);
+        $portFlag = false;
+        $destinationFlag = false;
+        $vendorFlag = false;
+        $serviceTypeFlag = false;
+
+        // $query = Rate::with([
+        //     'vendor:id,company_name',
+        //     'port:id,name',
+        //     'destination:id,name',
+        //     'serviceType:id,name',
+        //     'charges:id,charge_name,amount,rate_id',
+        // ]);
+        // // ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
+        // // ->join('ports', 'rates.port_id', '=', 'ports.id')
+        // // ->join('destinations', 'rates.destination_id', '=', 'destinations.id')
+        // // ->join('service_types', 'rates.service_type_id', '=', 'service_types.id')
+        // // ->leftJoin('rate_charges', 'rates.id', '=', 'rate_charges.rate_id') // Left join with charges to fetch amount
+        // // ->select(
+        // //     'rates.id as rate_id',
+        // //     'vendors.company_name as vendor_name',
+        // //     'ports.name as port_name',
+        // //     'destinations.name as destination_name',
+        // //     'freight',
+        // //     'expiry',
+        // //     'rates.status',
+        // //     'rates.created_at',
+        // //     'service_types.name as serviceType'
+        // // );
+
+        if (
+            $filterBy === 'port' || $filterBy === 'destination' ||
+            $filterBy === 'vendor' ||  $filterBy === 'serviceType'
+        ) {
+            // Set filterBy to null in the request
+            // $request->merge(['filterBy' => null]);
+            if ($filterBy === 'port') {
+                $portFlag = true;
+            } elseif ($filterBy === 'destination') {
+                $destinationFlag = true;
+            } elseif ($filterBy === 'vendor') {
+                $vendorFlag = true;
+            } elseif ($filterBy === 'serviceType') {
+                $serviceTypeFlag = true;
+            }
+        }
+
+        // if ($filterBy == null) {
+        //     Log::info('filter by is null');
+        //     $portFlag = true;
+        //     $destinationFlag = true;
+        //     $vendorFlag = true;
+        //     $serviceTypeFlag = true;
+        // }
+
+        // if ($portFlag) {
+        //     $query->whereHas('port', function ($query) use ($searchTerm) {
+        //         $query->where('name', 'LIKE', "%{$searchTerm}%");
+        //     });
+        // }
+        // if ($destinationFlag) {
+        //     $query->whereHas('destination', function ($query) use ($searchTerm) {
+        //         $query->where('name', 'LIKE', "%{$searchTerm}%");
+        //         Log::info('destination query : ' . $query->toSql());
+        //     });
+        // }
+        // if ($vendorFlag) {
+        //     $query->whereHas('vendor', function ($query) use ($searchTerm) {
+        //         $query->where('company_name', 'LIKE', "%{$searchTerm}%");
+        //         Log::info('vendor query : ' . $searchTerm . "///" . $query->toSql());
+        //     });
+        // }
+        // if ($serviceTypeFlag) {
+        //     $query->whereHas('serviceType', function ($query) use ($searchTerm) {
+        //         $query->where('name', 'LIKE', "%{$searchTerm}%");
+        //     });
+        // }
+
+
+        // // Apply search filters
+        // $model = new Rate();
+        // $query = SearchHelper::applySearchFilters($query, $model, $request);
+        // Log::info('Final SQL Query: ' . $query->toSql());
+        // Log::info('Bindings: ' . json_encode($query->getBindings()));
+        // // Check if the startDate and endDate are provided in the request
+        // // if ($startDate && $endDate) {
+        // //     $endDate = Carbon::parse($endDate)->endOfDay();
+        // //     $query->whereBetween('created_at', [$startDate, $endDate]);
+        // // }
+        // // $columnMapping = [
+        // //     'port_name' => 'port.name',
+        // //     'destination_name' => 'destination.name',
+        // //     // Add other mappings as needed
+        // // ];
+        // // $actualColumn = $columnMapping[$sortColumn] ?? 'id'; // Default to 'id' if not found
+        // // Log::info($actualColumn);
+
+        $query = Rate::with([
+            'vendor:id,company_name',
+            'port:id,name',
+            'destination:id,name',
+            'serviceType:id,name',
+            'charges:id,charge_name,amount,rate_id',
+        ]);
+        $query->where(function ($query) use ($portFlag, $destinationFlag, $vendorFlag, $serviceTypeFlag, $searchTerm) {
+            if ($portFlag) {
+                $query->whereHas('port', function ($query) use ($searchTerm) {
+                    $query->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+            if ($destinationFlag) {
+                $query->whereHas('destination', function ($query) use ($searchTerm) {
+                    $query->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+            if ($vendorFlag) {
+                $query->whereHas('vendor', function ($query) use ($searchTerm) {
+                    $query->where('company_name', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+            if ($serviceTypeFlag) {
+                $query->whereHas('serviceType', function ($query) use ($searchTerm) {
+                    $query->where(
+                        'name',
+                        'LIKE',
+                        "%{$searchTerm}%"
+                    );
+                });
+            }
+        })
+            ->where(function ($query) use ($searchTerm) {
+                $query->orWhere('start_date', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere(
+                        'expiry',
+                        'LIKE',
+                        "%{$searchTerm}%"
+                    )
+                    ->orWhere('freight', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere(
+                        'fsc',
+                        'LIKE',
+                        "%{$searchTerm}%"
+                    )
+                    ->orWhere('status', 'LIKE', "%{$searchTerm}%");
+            })
+            ->whereBetween('created_at', [$startDate, Carbon::parse($endDate)->endOfDay()]);
+        $rates = $query->orderBy('id', $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        return $rates;
     }
 }

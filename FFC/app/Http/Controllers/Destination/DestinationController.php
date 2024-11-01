@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Destination;
 
+use App\Exports\DestinationExport;
 use App\Http\Controllers\Controller;
 use App\Imports\DestinationImport;
 use App\Models\Destination\County;
@@ -167,5 +168,16 @@ class DestinationController extends Controller
             DB::rollBack();
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
         }
+    }
+
+    public function excelExport(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Exporting Destination Excel sheet...');
+        Log::info("*****************************");
+
+        $destinations = $this->destinationService->getAllDestination($request);
+        // Export to Excel
+        return Excel::download(new DestinationExport($destinations), 'Export_Destination.xlsx');
     }
 }

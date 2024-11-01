@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Vendor;
 
+use App\Exports\VendorExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VendorResource;
 use App\Imports\VendorImport;
@@ -202,8 +203,9 @@ class VendorController extends Controller
 
     public function excelUpload(Request $request)
     {
+        Log::info("*****************************");
         Log::info('Importing Vendor Excel sheet...');
-
+        Log::info("*****************************");
         $request->validate([
             'uploadFile' => 'required|mimes:xlsx,xls,csv',
             // 'updatedColumns' => 'required|array'
@@ -220,6 +222,17 @@ class VendorController extends Controller
             DB::rollBack();
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
         }
+    }
+
+    public function excelExport(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Exporting Vendor Excel sheet...');
+        Log::info("*****************************");
+
+        $vendors = $this->vendorService->getAllVendorData($request);
+        // Export to Excel
+        return Excel::download(new VendorExport($vendors), 'Export_Venodrs.xlsx');
     }
 
     public function vendorValidateData(Request $request, $vendorId = null)

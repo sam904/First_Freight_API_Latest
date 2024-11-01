@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Rate;
 
+use App\Exports\RateExport;
 use App\Http\Controllers\Controller;
 use App\Imports\RateImport;
 use App\Models\Rate\Rate;
@@ -371,5 +372,18 @@ class RateController extends Controller
             DB::rollBack();
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
         }
+    }
+
+
+    public function excelExport(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Exporting Rate Excel sheet...');
+        Log::info("*****************************");
+
+        $rates = $this->rateService->getAllRateData($request);
+        // return response()->json(['status' => true, 'data' => $rates], 200);
+        // Export to Excel
+        return Excel::download(new RateExport($rates), 'Export_Rate.xlsx');
     }
 }

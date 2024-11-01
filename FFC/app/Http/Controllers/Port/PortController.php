@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Port;
 
+use App\Exports\PortExport;
 use App\Http\Controllers\Controller;
 use App\Imports\PortImport;
 use App\Models\Port\Port;
@@ -192,5 +193,16 @@ class PortController extends Controller
             DB::rollBack();
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
         }
+    }
+
+    public function excelExport(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Exporting Port Excel sheet...');
+        Log::info("*****************************");
+
+        $port = $this->portService->getAllPort($request);
+        // Export to Excel
+        return Excel::download(new PortExport($port), 'Export_Port.xlsx');
     }
 }
