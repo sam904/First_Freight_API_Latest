@@ -27,6 +27,7 @@ class CustomerService
         $limit = $request->input('limit') ?: 10;
         $sortColumn = $request->input('sortColumn') ?: 'id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
+        $isExport = $request->input('export') ?? false;
 
         $query = Customer::with([
             'country',
@@ -144,8 +145,6 @@ class CustomerService
             });
         }
 
-
-
         if ($countryFlag) {
             $countryModel = new Country();
             $searchableCountryColumns = $countryModel->getSearchableColumns();
@@ -175,7 +174,13 @@ class CustomerService
             });
         }
 
-        return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        if ($isExport && empty($limit)) {
+            // Fetch all data without pagination
+            Log::info("export is true and limit is empty");
+            return $query->orderBy($sortColumn, $sortDirection)->get();
+        } else {
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        }
     }
     public function createCustomer(Request $request)
     {

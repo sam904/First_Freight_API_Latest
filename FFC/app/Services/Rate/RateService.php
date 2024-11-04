@@ -23,6 +23,7 @@ class RateService
         $limit = $request->input('limit') ?: 10;
         $sortColumn = $request->input('sortColumn') ?: 'rate_id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
+        $isExport = $request->input('export') ?? false;
 
         Log::info("Start Date = " . $startDate);
         Log::info("End Date = " . $endDate);
@@ -99,7 +100,13 @@ class RateService
             $query->whereBetween('rates.created_at', [$startDate, $endDate]);
         }
 
-        return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        if ($isExport && empty($limit)) {
+            // Fetch all data without pagination
+            Log::info("export is true and limit is empty");
+            return $query->orderBy($sortColumn, $sortDirection)->get();
+        } else {
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        }
     }
     public function createRate(Request $request)
     {

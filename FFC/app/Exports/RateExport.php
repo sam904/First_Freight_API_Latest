@@ -70,7 +70,7 @@ class RateExport implements FromArray, WithHeadings, WithCustomStartCell, WithSt
     // 3. Define the data as an array (custom data mapping to match columns)
     public function array(): array
     {
-        Log::info($this->data);
+        // Log::info($this->data);
         $exportData = [];
         foreach ($this->data as $filterData) {
             $data = (array) $filterData; // Cast to array, because Object of class stdClass could not be converted to string,
@@ -86,7 +86,7 @@ class RateExport implements FromArray, WithHeadings, WithCustomStartCell, WithSt
                 '',
             ];
             $rateCharge = RateCharge::where('rate_id', $data['rate_id'])->get();
-            Log::info($rateCharge);
+            // Log::info($rateCharge);
             $amounts = array_fill_keys($this->chargeNameArray, '');
             foreach ($rateCharge as $charge) {
                 Log::info($charge);
@@ -94,7 +94,7 @@ class RateExport implements FromArray, WithHeadings, WithCustomStartCell, WithSt
                     $amounts[$charge['charge_name']] = $charge['amount'];
                 }
             }
-            Log::info($amounts);
+            // Log::info($amounts);
             // Append the amounts to the export row in the order specified by $chargeArray
             $exportRow = array_merge($exportRow, array_values($amounts));
 

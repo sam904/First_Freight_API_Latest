@@ -21,6 +21,7 @@ class DestinationService
         $limit = $request->input('limit') ?: 10;
         $sortColumn = $request->input('sortColumn') ?: 'id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
+        $isExport = $request->input('export') ?? false;
 
         $query = DB::table('destinations')
             ->join('countries', 'destinations.country_id', '=', 'countries.id')
@@ -62,8 +63,13 @@ class DestinationService
             $endDate = Carbon::parse($endDate)->endOfDay();
             $query->whereBetween('destinations.created_at', [$startDate, $endDate]);
         }
-        // Log::info($query->toSql());
-        return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        if ($isExport && empty($limit)) {
+            // Fetch all data without pagination
+            Log::info("export is true and limit is empty");
+            return $query->orderBy($sortColumn, $sortDirection)->get();
+        } else {
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        }
     }
 
     public function createDestination(Request $request)

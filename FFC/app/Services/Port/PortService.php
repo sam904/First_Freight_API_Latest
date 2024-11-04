@@ -22,6 +22,7 @@ class PortService
         $limit = $request->input('limit') ?: 10;
         $sortColumn = $request->input('sortColumn') ?: 'portId';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
+        $isExport = $request->input('export') ?? false;
 
         $query = DB::table('ports')
             ->join('port_types', 'ports.port_type_id', '=', 'port_types.id')
@@ -67,7 +68,13 @@ class PortService
             $endDate = Carbon::parse($endDate)->endOfDay();
             $query->whereBetween('ports.created_at', [$startDate, $endDate]);
         }
-        return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        if ($isExport || empty($limit)) {
+            // Fetch all data without pagination
+            Log::info("export is true and limit is empty");
+            return $query->orderBy($sortColumn, $sortDirection)->get();
+        } else {
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        }
     }
     public function createPort(Request $request)
     {
