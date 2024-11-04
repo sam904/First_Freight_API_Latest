@@ -24,6 +24,7 @@ class RateService
         $sortColumn = $request->input('sortColumn') ?: 'rate_id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
         $isExport = $request->input('export') ?? false;
+        $ids = $request->input('ids');
 
         Log::info("Start Date = " . $startDate);
         Log::info("End Date = " . $endDate);
@@ -71,6 +72,12 @@ class RateService
                 'rates.created_at',
                 'service_types.name as serviceType'
             );
+
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('rates.id', $ids);
+        }
+
         // Apply search filters
         if (!empty($searchTerm)) {
             Log::info("\n********************\nAppling Search filter for this model = Rate\n********************");

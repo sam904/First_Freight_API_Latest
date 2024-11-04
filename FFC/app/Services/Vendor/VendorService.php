@@ -22,6 +22,7 @@ class VendorService
         $sortColumn = $request->input('sortColumn') ?: 'id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
         $isExport = $request->input('export') ?? false;
+        $ids = $request->input('ids');
 
         // Get all column names of the 'Vendors' table
         $model = new Vendor();
@@ -34,6 +35,11 @@ class VendorService
             'sales',
             'finance',
         ]);
+
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('id', $ids);
+        }
 
         $saleFlag = false;
         $financeFlag = false;
@@ -80,83 +86,87 @@ class VendorService
         // Apply search filters
         $query = SearchHelper::applySearchFilters($query, $model, $request);
 
-        // Search by vendor type if filterBy is 'vendor_type'
-        if ($vendorTypeFlag) {
-            // if (!empty($searchTerm) && $filterBy === 'vendorType') {
-            $query->whereHas('vendorTypes', function ($q) use ($searchTerm) {
-                Log::info('vendorTypes => ' . $searchTerm);
-                // Search in vendor_types table based on the search term
-                $q->where('type', 'LIKE', "%{$searchTerm}%");
-            });
-            // }
-        }
-
-        // Search within related Sales fields
-        if ($saleFlag) {
-            $saleModel = new VendorSales();
-            $searchableSalesColumns = $saleModel->getSearchableColumns();
-            $query->orWhereHas('sales', function ($query) use ($searchTerm, $filterBy, $searchableSalesColumns) {
-                if ($filterBy && in_array($filterBy, $searchableSalesColumns)) {
-                    Log::info('sales FilterBy =' . $filterBy);
-                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
-                } else {
-                    Log::info('Sales Search on whole table =' . $searchTerm);
-                    $query->where('sales_name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('sales_designation', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('sales_phone', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('sales_email', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('sales_fax', 'LIKE', "%{$searchTerm}%");
+        $query->where(
+            function ($query) use ($searchTerm, $filterBy, $vendorTypeFlag, $saleFlag, $financeFlag, $countryFlag, $stateFlag) {
+                // Search by vendor type if filterBy is 'vendor_type'
+                if ($vendorTypeFlag) {
+                    // if (!empty($searchTerm) && $filterBy === 'vendorType') {
+                    $query->whereHas('vendorTypes', function ($q) use ($searchTerm) {
+                        Log::info('vendorTypes => ' . $searchTerm);
+                        // Search in vendor_types table based on the search term
+                        $q->where('type', 'LIKE', "%{$searchTerm}%");
+                    });
+                    // }
                 }
-            });
-        }
 
-        // Search within related Finance fields
-        if ($financeFlag) {
-            $financeModel = new VendorFinances();
-            $searchableFinanceColumns = $financeModel->getSearchableColumns();
-            $query->orWhereHas('finance', function ($query) use ($searchTerm, $filterBy, $searchableFinanceColumns) {
-                if ($filterBy && in_array($filterBy, $searchableFinanceColumns)) {
-                    Log::info('finance FilterBy =' . $filterBy);
-                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
-                } else {
-                    Log::info('finance Search on whole table =' . $searchTerm);
-                    $query->where('finance_name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('finance_designation', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('finance_phone', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('finance_email', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('finance_fax', 'LIKE', "%{$searchTerm}%");
+                // Search within related Sales fields
+                if ($saleFlag) {
+                    $saleModel = new VendorSales();
+                    $searchableSalesColumns = $saleModel->getSearchableColumns();
+                    $query->orWhereHas('sales', function ($query) use ($searchTerm, $filterBy, $searchableSalesColumns) {
+                        if ($filterBy && in_array($filterBy, $searchableSalesColumns)) {
+                            Log::info('sales FilterBy =' . $filterBy);
+                            $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                        } else {
+                            Log::info('Sales Search on whole table =' . $searchTerm);
+                            $query->where('sales_name', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('sales_designation', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('sales_phone', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('sales_email', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('sales_fax', 'LIKE', "%{$searchTerm}%");
+                        }
+                    });
                 }
-            });
-        }
 
-        if ($countryFlag) {
-            $countryModel = new Country();
-            $searchableCountryColumns = $countryModel->getSearchableColumns();
-            $query->orWhereHas('country', function ($query) use ($searchTerm, $filterBy, $searchableCountryColumns) {
-                if ($filterBy && in_array($filterBy, $searchableCountryColumns)) {
-                    Log::info('country FilterBy =' . $filterBy);
-                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
-                } else {
-                    Log::info('country Search on whole table =' . $searchTerm);
-                    $query->where('name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('iso_code', 'LIKE', "%{$searchTerm}%");
+                // Search within related Finance fields
+                if ($financeFlag) {
+                    $financeModel = new VendorFinances();
+                    $searchableFinanceColumns = $financeModel->getSearchableColumns();
+                    $query->orWhereHas('finance', function ($query) use ($searchTerm, $filterBy, $searchableFinanceColumns) {
+                        if ($filterBy && in_array($filterBy, $searchableFinanceColumns)) {
+                            Log::info('finance FilterBy =' . $filterBy);
+                            $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                        } else {
+                            Log::info('finance Search on whole table =' . $searchTerm);
+                            $query->where('finance_name', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('finance_designation', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('finance_phone', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('finance_email', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('finance_fax', 'LIKE', "%{$searchTerm}%");
+                        }
+                    });
                 }
-            });
-        }
 
-        if ($stateFlag) {
-            $stateModel = new State();
-            $searchableStateColumns = $stateModel->getSearchableColumns();
-            $query->orWhereHas('state', function ($query) use ($searchTerm, $filterBy, $searchableStateColumns) {
-                if ($filterBy && in_array($filterBy, $searchableStateColumns)) {
-                    Log::info('state FilterBy =' . $filterBy);
-                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
-                } else {
-                    Log::info('state Search on whole table =' . $searchTerm);
-                    $query->where('name', 'LIKE', "%{$searchTerm}%");
+                if ($countryFlag) {
+                    $countryModel = new Country();
+                    $searchableCountryColumns = $countryModel->getSearchableColumns();
+                    $query->orWhereHas('country', function ($query) use ($searchTerm, $filterBy, $searchableCountryColumns) {
+                        if ($filterBy && in_array($filterBy, $searchableCountryColumns)) {
+                            Log::info('country FilterBy =' . $filterBy);
+                            $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                        } else {
+                            Log::info('country Search on whole table =' . $searchTerm);
+                            $query->where('name', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('iso_code', 'LIKE', "%{$searchTerm}%");
+                        }
+                    });
                 }
-            });
-        }
+
+                if ($stateFlag) {
+                    $stateModel = new State();
+                    $searchableStateColumns = $stateModel->getSearchableColumns();
+                    $query->orWhereHas('state', function ($query) use ($searchTerm, $filterBy, $searchableStateColumns) {
+                        if ($filterBy && in_array($filterBy, $searchableStateColumns)) {
+                            Log::info('state FilterBy =' . $filterBy);
+                            $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                        } else {
+                            Log::info('state Search on whole table =' . $searchTerm);
+                            $query->where('name', 'LIKE', "%{$searchTerm}%");
+                        }
+                    });
+                }
+            }
+        );
         if ($isExport && empty($limit)) {
             // Fetch all data without pagination
             Log::info("export is true and limit is empty");

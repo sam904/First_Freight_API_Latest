@@ -28,6 +28,7 @@ class CustomerService
         $sortColumn = $request->input('sortColumn') ?: 'id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
         $isExport = $request->input('export') ?? false;
+        $ids = $request->input('ids');
 
         $query = Customer::with([
             'country',
@@ -37,6 +38,11 @@ class CustomerService
             'delivery.state',
             'delivery.country',
         ]);
+
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('id', $ids);
+        }
 
         $contactFlag = false;
         $financeFlag = false;
@@ -83,97 +89,101 @@ class CustomerService
         // Apply search filters
         $query = SearchHelper::applySearchFilters($query, $model, $request);
 
-        // Search within related Contact fields
-        if ($contactFlag) {
-            $contactModel = new CustomerContactDetails();
-            $searchableContactColumns = $contactModel->getSearchableColumns();
-            $query->orWhereHas('contact', function ($query) use ($searchTerm, $filterBy, $searchableContactColumns) {
-                if ($filterBy && in_array($filterBy, $searchableContactColumns)) {
-                    Log::info('contact FilterBy =' . $filterBy);
-                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
-                } else {
-                    Log::info('contact Search on whole table =' . $searchTerm);
-                    $query->where('contact_name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('contact_designation', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('contact_phone', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('contact_email', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('contact_fax', 'LIKE', "%{$searchTerm}%");
-                }
-            });
-        }
+        $query->where(
+            function ($query) use ($searchTerm, $filterBy, $contactFlag, $financeFlag, $deliveryFlag, $countryFlag, $stateFlag) {
 
-        // Search within related Finance fields
-        if ($financeFlag) {
-            $financeModel = new CustomerFinanceDetails();
-            $searchableFinanceColumns = $financeModel->getSearchableColumns();
-            $query->orWhereHas('finance', function ($query) use ($searchTerm, $filterBy, $searchableFinanceColumns) {
-                if ($filterBy && in_array($filterBy, $searchableFinanceColumns)) {
-                    Log::info('finance FilterBy =' . $filterBy);
-                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
-                } else {
-                    Log::info('finance Search on whole table =' . $searchTerm);
-                    $query->where('finance_name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('finance_designation', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('finance_phone', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('finance_email', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('finance_fax', 'LIKE', "%{$searchTerm}%");
+                // Search within related Contact fields
+                if ($contactFlag) {
+                    $contactModel = new CustomerContactDetails();
+                    $searchableContactColumns = $contactModel->getSearchableColumns();
+                    $query->orWhereHas('contact', function ($query) use ($searchTerm, $filterBy, $searchableContactColumns) {
+                        if ($filterBy && in_array($filterBy, $searchableContactColumns)) {
+                            Log::info('contact FilterBy =' . $filterBy);
+                            $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                        } else {
+                            Log::info('contact Search on whole table =' . $searchTerm);
+                            $query->where('contact_name', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('contact_designation', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('contact_phone', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('contact_email', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('contact_fax', 'LIKE', "%{$searchTerm}%");
+                        }
+                    });
                 }
-            });
-        }
 
-        // Search within related Delivery fields
-        if ($deliveryFlag) {
-            $deliveryModel = new CustomerDeliveryAddress();
-            $searchableDeliveryColumns = $deliveryModel->getSearchableColumns();
-            $query->orWhereHas('delivery', function ($query) use ($searchTerm, $filterBy, $searchableDeliveryColumns) {
-                if ($filterBy && in_array($filterBy, $searchableDeliveryColumns)) {
-                    Log::info('Delivery FilterBy =' . $filterBy);
-                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
-                } else {
-                    Log::info('delivery Search on whole table =' . $searchTerm);
-                    $query->where('delivery_name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('delivery_address', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('delivery_city', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('delivery_zip_code', 'LIKE', "%{$searchTerm}%");
+                // Search within related Finance fields
+                if ($financeFlag) {
+                    $financeModel = new CustomerFinanceDetails();
+                    $searchableFinanceColumns = $financeModel->getSearchableColumns();
+                    $query->orWhereHas('finance', function ($query) use ($searchTerm, $filterBy, $searchableFinanceColumns) {
+                        if ($filterBy && in_array($filterBy, $searchableFinanceColumns)) {
+                            Log::info('finance FilterBy =' . $filterBy);
+                            $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                        } else {
+                            Log::info('finance Search on whole table =' . $searchTerm);
+                            $query->where('finance_name', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('finance_designation', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('finance_phone', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('finance_email', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('finance_fax', 'LIKE', "%{$searchTerm}%");
+                        }
+                    });
                 }
-            })->orWhereHas('delivery.state', function ($query) use ($searchTerm) {
-                Log::info("delivery.state Search on state table = {$searchTerm}");
-                $query->where('name', 'LIKE', "%{$searchTerm}%");
-            })->orWhereHas('delivery.country', function ($query) use ($searchTerm) {
-                Log::info('delivery.country Search on country table =' . $searchTerm);
-                $query->where('name', 'LIKE', "%{$searchTerm}%");
-            });
-        }
 
-        if ($countryFlag) {
-            $countryModel = new Country();
-            $searchableCountryColumns = $countryModel->getSearchableColumns();
-            $query->orWhereHas('country', function ($query) use ($searchTerm, $filterBy, $searchableCountryColumns) {
-                if ($filterBy && in_array($filterBy, $searchableCountryColumns)) {
-                    Log::info('country FilterBy =' . $filterBy);
-                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
-                } else {
-                    Log::info('country Search on whole table =' . $searchTerm);
-                    $query->where('name', 'LIKE', "%{$searchTerm}%")
-                        ->orWhere('iso_code', 'LIKE', "%{$searchTerm}%");
+                // Search within related Delivery fields
+                if ($deliveryFlag) {
+                    $deliveryModel = new CustomerDeliveryAddress();
+                    $searchableDeliveryColumns = $deliveryModel->getSearchableColumns();
+                    $query->orWhereHas('delivery', function ($query) use ($searchTerm, $filterBy, $searchableDeliveryColumns) {
+                        if ($filterBy && in_array($filterBy, $searchableDeliveryColumns)) {
+                            Log::info('Delivery FilterBy =' . $filterBy);
+                            $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                        } else {
+                            Log::info('delivery Search on whole table =' . $searchTerm);
+                            $query->where('delivery_name', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('delivery_address', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('delivery_city', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('delivery_zip_code', 'LIKE', "%{$searchTerm}%");
+                        }
+                    })->orWhereHas('delivery.state', function ($query) use ($searchTerm) {
+                        Log::info("delivery.state Search on state table = {$searchTerm}");
+                        $query->where('name', 'LIKE', "%{$searchTerm}%");
+                    })->orWhereHas('delivery.country', function ($query) use ($searchTerm) {
+                        Log::info('delivery.country Search on country table =' . $searchTerm);
+                        $query->where('name', 'LIKE', "%{$searchTerm}%");
+                    });
                 }
-            });
-        }
 
-        if ($stateFlag) {
-            $stateModel = new State();
-            $searchableStateColumns = $stateModel->getSearchableColumns();
-            $query->orWhereHas('state', function ($query) use ($searchTerm, $filterBy, $searchableStateColumns) {
-                if ($filterBy && in_array($filterBy, $searchableStateColumns)) {
-                    Log::info('state FilterBy =' . $filterBy);
-                    $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
-                } else {
-                    Log::info('state Search on whole table =' . $searchTerm);
-                    $query->where('name', 'LIKE', "%{$searchTerm}%");
+                if ($countryFlag) {
+                    $countryModel = new Country();
+                    $searchableCountryColumns = $countryModel->getSearchableColumns();
+                    $query->orWhereHas('country', function ($query) use ($searchTerm, $filterBy, $searchableCountryColumns) {
+                        if ($filterBy && in_array($filterBy, $searchableCountryColumns)) {
+                            Log::info('country FilterBy =' . $filterBy);
+                            $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                        } else {
+                            Log::info('country Search on whole table =' . $searchTerm);
+                            $query->where('name', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('iso_code', 'LIKE', "%{$searchTerm}%");
+                        }
+                    });
                 }
-            });
-        }
 
+                if ($stateFlag) {
+                    $stateModel = new State();
+                    $searchableStateColumns = $stateModel->getSearchableColumns();
+                    $query->orWhereHas('state', function ($query) use ($searchTerm, $filterBy, $searchableStateColumns) {
+                        if ($filterBy && in_array($filterBy, $searchableStateColumns)) {
+                            Log::info('state FilterBy =' . $filterBy);
+                            $query->where($filterBy, 'LIKE', "%{$searchTerm}%");
+                        } else {
+                            Log::info('state Search on whole table =' . $searchTerm);
+                            $query->where('name', 'LIKE', "%{$searchTerm}%");
+                        }
+                    });
+                }
+            }
+        );
         if ($isExport && empty($limit)) {
             // Fetch all data without pagination
             Log::info("export is true and limit is empty");

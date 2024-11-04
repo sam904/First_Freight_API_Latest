@@ -22,6 +22,7 @@ class DestinationService
         $sortColumn = $request->input('sortColumn') ?: 'id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
         $isExport = $request->input('export') ?? false;
+        $ids = $request->input('ids');
 
         $query = DB::table('destinations')
             ->join('countries', 'destinations.country_id', '=', 'countries.id')
@@ -34,6 +35,10 @@ class DestinationService
                 'destinations.status',
                 'destinations.created_at'
             );
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('destinations.id', $ids);
+        }
 
         // Apply search filters
         if (!empty($searchTerm)) {

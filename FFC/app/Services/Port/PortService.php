@@ -23,6 +23,7 @@ class PortService
         $sortColumn = $request->input('sortColumn') ?: 'portId';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
         $isExport = $request->input('export') ?? false;
+        $ids = $request->input('ids');
 
         $query = DB::table('ports')
             ->join('port_types', 'ports.port_type_id', '=', 'port_types.id')
@@ -37,6 +38,11 @@ class PortService
                 'ports.status',
                 'ports.created_at'
             );
+
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('ports.id', $ids);
+        }
 
         // Apply search filters
         if (!empty($searchTerm)) {
@@ -68,7 +74,7 @@ class PortService
             $endDate = Carbon::parse($endDate)->endOfDay();
             $query->whereBetween('ports.created_at', [$startDate, $endDate]);
         }
-        if ($isExport || empty($limit)) {
+        if ($isExport && empty($limit)) {
             // Fetch all data without pagination
             Log::info("export is true and limit is empty");
             return $query->orderBy($sortColumn, $sortDirection)->get();
