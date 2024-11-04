@@ -174,6 +174,11 @@ class RateController extends Controller
             'freight' => 'required',
             'fsc' => 'nullable',
             'serviceType' => 'nullable',
+            'rateNotes' => 'sometimes|array',
+            // 'rateNotes.title' => 'sometimes|string',
+            // 'rateNotes.description' => 'sometimes|string',
+            'rateNotes.title' => 'required_with:rateNotes|string', // Ensure title is required if rateNotes exists
+            'rateNotes.description' => 'required_with:rateNotes|string',
         ]);
 
         // Check if validation fails

@@ -130,6 +130,22 @@ class RateService
 
         $this->storeCharges($request, $rate);
 
+        // Save the notes
+        // Check if rateNotes is not empty
+        if (!empty($request->input('rateNotes'))) {
+            // Modify the request to only keep required inputs
+            $request->merge([
+                'title' => $request->input('rateNotes.title'),
+                'description' => $request->input('rateNotes.description'),
+                'tag' => $request->input('rateNotes.tag'),
+                'pin' => $request->input('rateNotes.pin'),
+                'rateId' => $rate->id, // Use the saved rate ID
+            ]);
+
+            // Now you can call the saveNotes method or do any further processing
+            $this->saveNotes($request);
+        }
+
         return true;
     }
 
@@ -174,6 +190,7 @@ class RateService
 
     public function saveNotes(Request $request)
     {
+        Log::info("****** save Note *******");
         RateNotes::create([
             'title' => $request['title'],
             'description' => $request['description'],
