@@ -2,6 +2,7 @@
 
 namespace App\Models\Quote;
 
+use App\Models\Common\ServiceType;
 use App\Models\Destination\Destination;
 use App\Models\Port\Port;
 use App\Models\Rate\Rate;
@@ -53,5 +54,10 @@ class QuoteDetail extends Model
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);
+    }
+
+    public function serviceType()
+    {
+        return $this->belongsTo(ServiceType::class, 'service_type_id');
     }
 }

@@ -23,12 +23,19 @@ class QuoteController extends Controller
 
     public function getVendorList(Request $request)
     {
+        Log::info("*************************");
+        Log::info("Getting Vendor list for quotes");
+        Log::info("*************************");
         /*
         Process:
-        1. First, it searches for vendors based on the provided port_id and destination_id.
+        1. First, it searches for vendors based on the provided port_id, destination_id, serviceType
         2. During the edit operation, when the rate_id and vendor_id are provided, it retrieves the data matching 
             those values and adds it to the existing dataset. This step is specifically for the edit functionality.
         */
+
+        $isPortId = $request->input('port_id') ?? false;
+        $isDestinationId = $request->input('destination_id') ?? false;
+        $isServiceType = $request->input('serviceType') ?? false;
         $today = Carbon::now()->toDateString();
         // Main query
         $query = DB::table('rates')
@@ -58,12 +65,14 @@ class QuoteController extends Controller
                 DB::raw("0 as temp_sort_column")
             );
 
-        if ($request->has('port_id')) {
+        if ($isPortId) {
             $query->where('rates.port_id', $request->port_id);
         }
-
-        if ($request->has('destination_id')) {
+        if ($isDestinationId) {
             $query->where('rates.destination_id', $request->destination_id);
+        }
+        if ($isServiceType) {
+            $query->where('rates.service_type_id', $request->serviceType);
         }
 
         $query->where('rates.status', 'active');
@@ -123,7 +132,7 @@ class QuoteController extends Controller
         ], 200);
     }
 
-    public function index(Request $request)
+    public function index_old(Request $request)
     {
         Log::info('Quote Index...');
         // $quotes = DB::table('quotes')
@@ -150,12 +159,13 @@ class QuoteController extends Controller
             'customer:id,company_name',  // Load customer and only select 'id' and 'company_name'
             'user:id,first_name,last_name,profile_image',
             'quoteDetails.rate:id,start_date,vendor_id,port_id,destination_id',
-            'quoteDetails.rate.vendor:id,company_name',
+            // 'quoteDetails.rate.vendor:id,company_name',
             // 'quoteDetails.vendor:id,company_name',  // Load vendor inside quoteDetails and select only 'id' and 'name'
-            // 'quoteDetails.port:id,name',  // Load port inside quoteDetails and select only 'id' and 'name'
-            // 'quoteDetails.destination:id,name',  // Load destination inside quoteDetails and select only 'id' and 'name'
+            'quoteDetails.port:id,name',  // Load port inside quoteDetails and select only 'id' and 'name'
+            'quoteDetails.destination:id,name',  // Load destination inside quoteDetails and select only 'id' and 'name'
             // 'quoteDetails.charges:quote_detail_id,charge_name,amount',
-            // 'quoteDetails.rate:id,start_date'
+            'quoteDetails.rate:id,start_date',
+            'quoteDetails.serviceType:id,name'
         ])
             ->paginate(10);
 
@@ -175,6 +185,14 @@ class QuoteController extends Controller
         return response()->json($quotes);
     }
 
+    public function index(Request $request)
+    {
+        $quotes = $this->quoteService->getAllQuotes($request);
+        return response()->json([
+            'status' => true,
+            'data' => $quotes
+        ], 200);
+    }
     public function store(Request $request)
     {
         $validatedData = $this->quoteValidation($request);
@@ -307,7 +325,7 @@ class QuoteController extends Controller
         $validator = Validator::make($request->all(), [
             'customerId' => 'required|string',
             'quoteDetails' => 'required|array',
-            'quoteDetails.*.serviceType' => 'required|integer',
+            // 'quoteDetails.*.serviceType' => 'required|integer',
             'quoteDetails.*.portId' => 'required|integer',
             'quoteDetails.*.destinationId' => 'required|integer',
         ]);
@@ -451,7 +469,6 @@ class QuoteController extends Controller
             'status' => $request->status
         ]);
     }
-
 
     private function quoteNoteValidation(Request $request)
     {

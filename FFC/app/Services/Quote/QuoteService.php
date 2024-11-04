@@ -2,6 +2,7 @@
 
 namespace App\Services\Quote;
 
+use App\Helpers\SearchHelper;
 use App\Models\Quote\Quote;
 use App\Models\Quote\QuoteNotes;
 use Illuminate\Http\Request;
@@ -15,6 +16,80 @@ class QuoteService
     public function __construct()
     {
         $this->loginUser =  Auth::user();
+    }
+
+    public function getAllQuotes(Request $request)
+    {
+        Log::info("*******************");
+        Log::info("Quotes Search");
+        Log::info("*******************");
+        $searchTerm = $request->input('searchTerm');
+        $filterBy = $request->input('filterBy');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        $page = $request->input('page') ?: 1;
+        $limit = $request->input('limit') ?: 10;
+        $sortColumn = $request->input('sortColumn') ?: 'id';
+        $sortDirection = $request->input('sortDirection') ?: 'desc';
+        $isExport = $request->input('export') ?? false;
+        $ids = $request->input('ids');
+
+        $query = Quote::with([
+            'customer:id,company_name',  // Load customer and only select 'id' and 'company_name'
+            'user:id,first_name,last_name,profile_image',
+            'quoteDetails.rate:id,start_date,vendor_id,port_id,destination_id',
+            // 'quoteDetails.rate.vendor:id,company_name',
+            // 'quoteDetails.vendor:id,company_name',  // Load vendor inside quoteDetails and select only 'id' and 'name'
+            'quoteDetails.port:id,name',  // Load port inside quoteDetails and select only 'id' and 'name'
+            'quoteDetails.destination:id,name',  // Load destination inside quoteDetails and select only 'id' and 'name'
+            // 'quoteDetails.charges:quote_detail_id,charge_name,amount',
+            'quoteDetails.rate:id,start_date',
+            'quoteDetails.serviceType:id,name'
+        ]);
+
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('id', $ids);
+        }
+
+        // Get all column names of the 'Customers' table
+        $model = new Quote();
+        // Apply search filters
+        $query = SearchHelper::applySearchFilters($query, $model, $request);
+
+        if ($request->input('filterBy') == "port") {
+            $query->whereHas('quoteDetails.port', function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        if ($request->input('filterBy') == "destination") {
+            $query->whereHas('quoteDetails.destination', function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        if ($request->input('filterBy') == "customer") {
+            $query->whereHas('customer', function ($q) use ($searchTerm) {
+                $q->where('company_name', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        if ($request->input('filterBy') == "serviceType") {
+            $query->whereHas('quoteDetails.serviceType', function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // // Define the columns for sorting
+        // $sortColumn = $sortColumn === 'customer_name' ? 'customers.company_name' : $sortColumn;
+        // // Add a join if sorting by customer name
+        // if ($sortColumn === 'customers.company_name') {
+        //     $query->join('customers', 'quotes.customer_id', '=', 'customers.id');
+        // }
+
+        // Execute the query and get results
+        return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
     }
 
     public function createQuote(Request $request)
@@ -56,10 +131,10 @@ class QuoteService
                 "fsc" => $detail['fsc'],
                 "quote_id" => $quote->id,
                 "rate_id" => $detail['rateId'] ?? null,
-                'service_type_id' => $detail['serviceType'],
+                'service_type_id' => $detail['serviceType'] ?? null,
                 "container_weight" => $detail['containerWeight'] ?? null,
-                "port_id" => $detail['portId'] ?? null,
-                "destination_id" => $detail['destinationId'] ?? null,
+                "port_id" => $detail['portId'],
+                "destination_id" => $detail['destinationId'],
                 // "vendor_id" => $detail['vendorId'],
                 // "shipment_type" => $detail['shipmentType'],
             ]);
