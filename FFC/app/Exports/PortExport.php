@@ -43,7 +43,7 @@ class PortExport implements FromArray, WithHeadings, WithCustomStartCell, WithSt
     // 3. Define the data as an array (custom data mapping to match columns)
     public function array(): array
     {
-        Log::info('Data structure before processing:', (array) $this->data);
+        // Log::info('Data structure before processing:', (array) $this->data);
         $ports = $this->data->items(); // Use the public method to access items
 
         return $ports ? array_map(function ($port) {

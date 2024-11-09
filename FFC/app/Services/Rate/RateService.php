@@ -20,7 +20,7 @@ class RateService
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
         $page = $request->input('page') ?: 1;
-        $limit = $request->input('limit') ?: 10;
+        $limit = $request->input('limit');
         $sortColumn = $request->input('sortColumn') ?: 'rate_id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
         $isExport = $request->input('export') ?? false;
@@ -36,7 +36,7 @@ class RateService
             ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
             ->join('ports', 'rates.port_id', '=', 'ports.id')
             ->join('destinations', 'rates.destination_id', '=', 'destinations.id')
-            ->join('service_types', 'rates.service_type_id', '=', 'service_types.id')
+            ->leftJoin('service_types', 'rates.service_type_id', '=', 'service_types.id')
             ->select(
                 'rates.id as rate_id',
                 'vendors.company_name as vendor_name',
@@ -110,8 +110,14 @@ class RateService
         if ($isExport && empty($limit)) {
             // Fetch all data without pagination
             Log::info("export is true and limit is empty");
-            return $query->orderBy($sortColumn, $sortDirection)->get();
+            $startTime = microtime(true);
+            $limit = $query->count();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            Log::info("Rate Query Count = {$limit} && execution time: {$executionTime} seconds");
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
         } else {
+            $limit = $limit ?: 10;
             return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
         }
     }

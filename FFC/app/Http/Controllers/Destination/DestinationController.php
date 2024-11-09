@@ -133,8 +133,8 @@ class DestinationController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
-            'state' => 'required|string',
-            'country' => 'required|string',
+            'state' => 'required|integer',
+            'country' => 'required|integer',
         ]);
 
         // Check if validation fails

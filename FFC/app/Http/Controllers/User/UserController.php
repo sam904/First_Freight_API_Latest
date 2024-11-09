@@ -41,25 +41,38 @@ class UserController extends Controller
     // Register a new user
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            // 'username' => ['required',function ($attribute, $value, $fail) { if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^[a-zA-Z0-9_]+$/', $value)) {$fail('The ' . $attribute . ' must be a valid email or username.');}},],
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-            'mobile_number' => 'required|string|min:10|max:15|unique:users', // Add mobile number validation
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
-        ]);
 
-        // Check if validation fails
-        if ($validator->fails()) {
-            // return  $validator->errors();
+        Log::info("Saving Customer Details...");
+        $validatedData = $this->userValidation($request);
+
+        // Check if the validated data is an array (i.e., no validation errors)
+        if (!is_array($validatedData)) {
             return response()->json([
                 'status' => false,
                 'message' => 'User validation failed',
-                'error' => $validator->errors()
+                'error' => $validatedData
             ], 422);
         }
+
+        // $validator = Validator::make($request->all(), [
+        //     'first_name' => 'required|string|max:255',
+        //     'last_name' => 'required|string|max:255',
+        //     // 'username' => ['required',function ($attribute, $value, $fail) { if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^[a-zA-Z0-9_]+$/', $value)) {$fail('The ' . $attribute . ' must be a valid email or username.');}},],
+        //     'email' => 'required|string|email|max:255|unique:users',
+        //     'password' => 'required|string|min:8',
+        //     'mobile_number' => 'required|string|min:10|max:15|unique:users', // Add mobile number validation
+        //     'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
+        // ]);
+        // // Check if validation fails
+        // if ($validator->fails()) {
+        //     // return  $validator->errors();
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'User validation failed',
+        //         'error' => $validator->errors()
+        //     ], 422);
+        // }
+
         // try {
         //     $validatedData = $request->validate([
         //         'first_name' => 'required|string|max:255',
@@ -80,7 +93,7 @@ class UserController extends Controller
         // Determine whether the input is an email or username
         //$loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        $validatedData = $validator->validated();
+        // $validatedData = $validator->validated();
 
         if ($image = $request->file('profile_image')) {
             $destinationPath = 'images/profiles/';
@@ -139,41 +152,40 @@ class UserController extends Controller
             return $user;  // Return the not found response
         }
 
-        $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            // 'username' => ['required',function ($attribute, $value, $fail) { if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^[a-zA-Z0-9_]+$/', $value)) {$fail('The ' . $attribute . ' must be a valid email or username.');}},],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users')->ignore($id),
-            ],
-            'mobile_number' => [
-                'required',
-                'string',
-                'min:10',
-                'max:15',
-                Rule::unique('users')->ignore($id),
-            ],
-            'password' => 'required|string|min:8',
-            // 'email' => 'required|string|email|max:255|unique:users',
-            // 'mobile_number' => 'required|string|min:10|max:15|unique:users', // Add mobile number validation
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
-        ]);
+        // $validator = Validator::make($request->all(), [
+        //     'first_name' => 'required|string|max:255',
+        //     'last_name' => 'required|string|max:255',
+        //     // 'username' => ['required',function ($attribute, $value, $fail) { if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^[a-zA-Z0-9_]+$/', $value)) {$fail('The ' . $attribute . ' must be a valid email or username.');}},],
+        //     'email' => [
+        //         'required',
+        //         'string',
+        //         'email',
+        //         'max:255',
+        //         Rule::unique('users')->ignore($id),
+        //     ],
+        //     'mobile_number' => [
+        //         'required',
+        //         'numeric',
+        //         'min:10',
+        //         'max:15',
+        //         Rule::unique('users')->ignore($id),
+        //     ],
+        //     'password' => 'required|string|min:8',
+        //     // 'email' => 'required|string|email|max:255|unique:users',
+        //     // 'mobile_number' => 'required|string|min:10|max:15|unique:users', // Add mobile number validation
+        //     'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
+        // ]);
+        // // Check if validation fails
+        // if ($validator->fails()) {
+        //     // return  $validator->errors();
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'User validation failed',
+        //         'error' => $validator->errors()
+        //     ], 422);
+        // }
+        // $validatedData = $validator->validated();
 
-        // Check if validation fails
-        if ($validator->fails()) {
-            // return  $validator->errors();
-            return response()->json([
-                'status' => false,
-                'message' => 'User validation failed',
-                'error' => $validator->errors()
-            ], 422);
-        }
-
-        $validatedData = $validator->validated();
         // try {
         //     $validatedData = $request->validate([
         //         'first_name' => 'required|string|max:255',
@@ -189,6 +201,18 @@ class UserController extends Controller
         //         'error' => $e->errors()
         //     ], 422);
         // }
+
+        Log::info("Updating Customer Details...");
+        $validatedData = $this->userValidation($request, $id);
+
+        // Check if the validated data is an array (i.e., no validation errors)
+        if (!is_array($validatedData)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User validation failed',
+                'error' => $validatedData
+            ], 422);
+        }
 
         if ($image = $request->file('profile_image')) {
             $destinationPath = 'images/profiles/';
@@ -253,5 +277,39 @@ class UserController extends Controller
         return statusUpdate(User::class, $id, [
             'status' => $request->status
         ]);
+    }
+
+    public function userValidation(Request $request, $id = null)
+    {
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            // 'username' => ['required',function ($attribute, $value, $fail) { if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^[a-zA-Z0-9_]+$/', $value)) {$fail('The ' . $attribute . ' must be a valid email or username.');}},],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($id),
+            ],
+            'mobile_number' => [
+                'required',
+                'numeric',
+                'digits_between:10,15',
+                // 'min:10',
+                // 'max:15',
+                Rule::unique('users')->ignore($id),
+            ],
+            'password' => 'required|string|min:8',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
+        ]);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+
+        // Return validated data
+        return $validator->validated();
     }
 }

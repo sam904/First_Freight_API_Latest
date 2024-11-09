@@ -151,10 +151,10 @@ class PortController extends Controller
     public function portValidateData(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'port_type' => 'required|string',
+            'port_type' => 'required|integer',
             'name' => 'required|string',
-            'state' => 'required|string',
-            'country' => 'required|string',
+            'state' => 'required|integer',
+            'country' => 'required|integer',
 
             // Terminal validation for each item in the array
             'terminals' => 'nullable|array',

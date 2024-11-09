@@ -89,7 +89,7 @@ class RateExport implements FromArray, WithHeadings, WithCustomStartCell, WithSt
             // Log::info($rateCharge);
             $amounts = array_fill_keys($this->chargeNameArray, '');
             foreach ($rateCharge as $charge) {
-                Log::info($charge);
+                // Log::info($charge);
                 if (in_array($charge['charge_name'], $this->chargeNameArray)) {
                     $amounts[$charge['charge_name']] = $charge['amount'];
                 }

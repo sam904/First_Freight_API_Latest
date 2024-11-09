@@ -323,7 +323,7 @@ class QuoteController extends Controller
     private function quoteValidation(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'customerId' => 'required|string',
+            'customerId' => 'required|integer',
             'quoteDetails' => 'required|array',
             // 'quoteDetails.*.serviceType' => 'required|integer',
             'quoteDetails.*.portId' => 'required|integer',
@@ -475,7 +475,7 @@ class QuoteController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string',
             'description' => 'required|string',
-            'quoteId' => 'required|string',
+            'quoteId' => 'required|integer',
         ]);
         if ($validator->fails()) {
             return $validator->errors();

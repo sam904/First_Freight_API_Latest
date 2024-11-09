@@ -166,14 +166,14 @@ class RateController extends Controller
     public function rateValidateData(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'vendor_id' => 'required',
-            'port_id' => 'required',
-            'destination_id' => 'required',
+            'vendor_id' => 'required|integer',
+            'port_id' => 'required|integer',
+            'destination_id' => 'required|integer',
             'start_date' => 'required|date',
             'expiry' => 'required',
             'freight' => 'required',
             'fsc' => 'nullable',
-            'serviceType' => 'nullable',
+            'serviceType' => 'nullable|integer',
             'rateNotes' => 'sometimes|array',
             // 'rateNotes.title' => 'sometimes|string',
             // 'rateNotes.description' => 'sometimes|string',
@@ -344,7 +344,7 @@ class RateController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string',
             'description' => 'required|string',
-            'rateId' => 'required|string',
+            'rateId' => 'required|integer',
         ]);
         if ($validator->fails()) {
             return $validator->errors();

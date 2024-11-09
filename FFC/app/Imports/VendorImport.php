@@ -88,7 +88,7 @@ class VendorImport implements OnEachRow, WithStartRow
                 'bank_address' => $rowData[30] ?? null, // 'Bank Address'
                 'status' => 'inactive',
             ];
-            Log::info($vendorData);
+            // Log::info($vendorData);
             $vendor = Vendor::create($vendorData);
 
             // Save vendor type id
@@ -103,7 +103,7 @@ class VendorImport implements OnEachRow, WithStartRow
                 'sales_email' => $rowData[10],
                 'sales_fax' => $rowData[11],
             ];
-            Log::info($vendorSaleData);
+            // Log::info($vendorSaleData);
             VendorSales::create($vendorSaleData);
 
             Log::info("Saving finance data");
@@ -115,7 +115,7 @@ class VendorImport implements OnEachRow, WithStartRow
                 'finance_email' => $rowData[15],
                 'finance_fax' => $rowData[16],
             ];
-            Log::info($vendorFinanceData);
+            // Log::info($vendorFinanceData);
             VendorFinances::create($vendorFinanceData);
 
             Log::info("Vendor creation for :" . $vendor->company_name . " completed.");

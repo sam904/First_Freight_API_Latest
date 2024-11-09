@@ -188,9 +188,9 @@ class CustomerController extends Controller
             'customer_type' => 'required|string',
             'address' => 'required|string',
             'city' => 'required|string',
-            'state' => 'required|string',
-            'country' => 'required|string',
-            'zip_code' => 'required|string',
+            'state' => 'required|integer',
+            'country' => 'required|integer',
+            'zip_code' => 'required|integer',
             'company_tax_id' => 'required|string',
             'payment_terms' => 'required|string',
             'credit_limit' => 'required|string',
@@ -212,12 +212,12 @@ class CustomerController extends Controller
 
             // Warehouse validation for each item in the array
             // 'warehouse' => 'required|array',
-            'warehouse.*.warehouse_name' => 'required|string',
-            'warehouse.*.warehouse_address' => 'required|string',
-            'warehouse.*.warehouse_city' => 'required|string',
-            'warehouse.*.warehouse_state' => 'required|string',
-            'warehouse.*.warehouse_country' => 'required|string',
-            'warehouse.*.warehouse_zip_code' => 'required|string',
+            // 'warehouse.*.warehouse_name' => 'required|string',
+            // 'warehouse.*.warehouse_address' => 'required|string',
+            // 'warehouse.*.warehouse_city' => 'required|string',
+            // 'warehouse.*.warehouse_state' => 'required|string',
+            // 'warehouse.*.warehouse_country' => 'required|string',
+            // 'warehouse.*.warehouse_zip_code' => 'required|string',
 
             // shipping validation for each item in the array
             // 'shipping' => 'required|array',
@@ -233,15 +233,15 @@ class CustomerController extends Controller
             'delivery.*.delivery_name' => 'required|string',
             'delivery.*.delivery_address' => 'required|string',
             'delivery.*.delivery_city' => 'required|string',
-            'delivery.*.delivery_state' => 'required|string',
-            'delivery.*.delivery_country' => 'required|string',
-            'delivery.*.delivery_zip_code' => 'required|string',
+            'delivery.*.delivery_state' => 'required|integer',
+            'delivery.*.delivery_country' => 'required|integer',
+            'delivery.*.delivery_zip_code' => 'required|integer',
 
             // contact validation for each item in the array
             'contact' => 'required|array',
             'contact.*.contact_name' => 'required|string',
             'contact.*.contact_designation' => 'required|string',
-            'contact.*.contact_phone' => 'required|string|min:10|max:15',
+            'contact.*.contact_phone' => 'required|numeric|digits_between:10,15',
             'contact.*.contact_email' => 'required|string|email|max:255',
             'contact.*.contact_fax' => 'nullable|string',
 
@@ -249,7 +249,7 @@ class CustomerController extends Controller
             'finance' => 'required|array',
             'finance.*.finance_name' => 'required|string',
             'finance.*.finance_designation' => 'required|string',
-            'finance.*.finance_phone' => 'required|string|min:10|max:15',
+            'finance.*.finance_phone' => 'required|numeric|digits_between:10,15',
             'finance.*.finance_email' => 'required|string|email|max:255',
             'finance.*.finance_fax' => 'nullable|string',
 
@@ -291,7 +291,7 @@ class CustomerController extends Controller
     public function excelExport(Request $request)
     {
         Log::info("*****************************");
-        Log::info('Exporting Vendor Excel sheet...');
+        Log::info('Exporting Customer Excel sheet...');
         Log::info("*****************************");
 
         $customer = $this->customerService->getAllCustomer($request);

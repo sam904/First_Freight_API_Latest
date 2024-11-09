@@ -54,6 +54,9 @@ class VendorController extends Controller
 
     public function store(Request $request)
     {
+        Log::info("*****************************");
+        Log::info('Saving Vendor Details...');
+        Log::info("*****************************");
         DB::beginTransaction();  // Start the transaction
         try {
             $validatedData = $this->vendorValidateData($request);
@@ -93,6 +96,9 @@ class VendorController extends Controller
 
     public function edit($vendorId)
     {
+        Log::info("*****************************");
+        Log::info('Fetching Vendor Details...');
+        Log::info("*****************************");
         // Use the findModel helper to retrieve the vendor
         $vendor = findModel(Vendor::class, $vendorId);
 
@@ -126,6 +132,9 @@ class VendorController extends Controller
 
     public function update(Request $request, $id)
     {
+        Log::info("*****************************");
+        Log::info('Updating Vendor Details...');
+        Log::info("*****************************");
         // Use the findModel helper to retrieve the vendor
         $vendor = findModel(Vendor::class, $id);
 
@@ -168,6 +177,9 @@ class VendorController extends Controller
 
     public function destroy($vendorId)
     {
+        Log::info("*****************************");
+        Log::info('Deleting Vendor Details...');
+        Log::info("*****************************");
         // Use the findModel helper to retrieve the vendor
         $vendor = findModel(Vendor::class, $vendorId);
 
@@ -242,9 +254,9 @@ class VendorController extends Controller
             'company_name' => 'required|string',
             'address' => 'required|string',
             'city' => 'required|string',
-            'state' => 'required|string',
-            'country' => 'required|string',
-            'zip_code' => 'required|string',
+            'state' => 'required|integer',
+            'country' => 'required|integer',
+            'zip_code' => 'required|integer',
             'company_tax_id' => 'nullable|string',
             'mc_number' => 'required|string',
             'scac_number' => 'required|string',
@@ -252,16 +264,16 @@ class VendorController extends Controller
             'upload_w9' => 'required|image|mimes:jpeg,png,jpg,gif|max:3048',
             'void_check' => 'required|image|mimes:jpeg,png,jpg,gif|max:3048',
             'upload_insurance_certificate' => 'required|image|mimes:jpeg,png,jpg,gif|max:3048',
-            // 'date_of_expiration' => 'required|date',
             'bank_name' => 'nullable|string',
             'bank_account_number' => 'nullable|string',
             'bank_routing' => 'nullable|string',
             'bank_address' => 'nullable|string',
             'remarks' => 'nullable|string',
-            'bankCountry' => 'nullable|string',
+            'bankCountry' => 'nullable|integer',
             'bankSwiftCode' => 'nullable|string',
             'bankIBANNumber' => 'nullable|string',
             'bankIFSCCode' => 'nullable|string',
+            // 'date_of_expiration' => 'required|date',
             // 'contact_name' => 'required|string',
             // 'phone' => [
             //     'required',
@@ -283,7 +295,7 @@ class VendorController extends Controller
             'sales' => 'required|array',
             'sales.*.sales_name' => 'required|string',
             'sales.*.sales_designation' => 'required|string',
-            'sales.*.sales_phone' => 'required|string|min:10|max:15',
+            'sales.*.sales_phone' => 'required|numeric|digits_between:10,15',
             'sales.*.sales_email' => 'required|string|email|max:255',
             'sales.*.sales_fax' => 'nullable|string',
 
@@ -291,7 +303,7 @@ class VendorController extends Controller
             'finance' => 'required|array',
             'finance.*.finance_name' => 'required|string',
             'finance.*.finance_designation' => 'required|string',
-            'finance.*.finance_phone' => 'required|string|min:10|max:15',
+            'finance.*.finance_phone' => 'required|numeric|digits_between:10,15',
             'finance.*.finance_email' => 'required|string|email|max:255',
             'finance.*.finance_fax' => 'nullable|string',
 
@@ -307,7 +319,6 @@ class VendorController extends Controller
     }
 
     // Vendor Type API Start...
-
     public function getAllVendorType()
     {
         // Get all active Vendor Type

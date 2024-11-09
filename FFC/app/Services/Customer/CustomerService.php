@@ -24,7 +24,7 @@ class CustomerService
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
         $page = $request->input('page') ?: 1;
-        $limit = $request->input('limit') ?: 10;
+        $limit = $request->input('limit');
         $sortColumn = $request->input('sortColumn') ?: 'id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
         $isExport = $request->input('export') ?? false;
@@ -187,8 +187,14 @@ class CustomerService
         if ($isExport && empty($limit)) {
             // Fetch all data without pagination
             Log::info("export is true and limit is empty");
-            return $query->orderBy($sortColumn, $sortDirection)->get();
+            $startTime = microtime(true);
+            $limit = $query->count();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            Log::info("Customer Query Count = {$limit} && execution time: {$executionTime} seconds");
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
         } else {
+            $limit = $limit ?: 10;
             return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
         }
     }
@@ -208,7 +214,7 @@ class CustomerService
             'credit_limit' => $request['credit_limit'],
             // 'contact_name' => $request['contact_name'],
             // 'phone' => $request['phone'],
-            'email' => $request['email'],
+            // 'email' => $request['email'],
         ]);
         Log::info("Custome save successfully...");
 
@@ -234,8 +240,8 @@ class CustomerService
     public function updateCustomer(Request $request, $id, Customer $customer)
     {
         // Delete existing related records
-        $customer->warehouse()->delete();
-        $customer->shipping()->delete();
+        // $customer->warehouse()->delete();
+        // $customer->shipping()->delete();
         $customer->delivery()->delete();
         $customer->contact()->delete();
         $customer->finance()->delete();
@@ -253,7 +259,7 @@ class CustomerService
             'credit_limit' => $request['credit_limit'],
             // 'contact_name' => $request['contact_name'],
             // 'phone' => $request['phone'],
-            'email' => $request['email'],
+            // 'email' => $request['email'],
         ]);
 
         // Create Warehouse Address

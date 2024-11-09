@@ -18,7 +18,7 @@ class DestinationService
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
         $page = $request->input('page') ?: 1;
-        $limit = $request->input('limit') ?: 10;
+        $limit = $request->input('limit');
         $sortColumn = $request->input('sortColumn') ?: 'id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
         $isExport = $request->input('export') ?? false;
@@ -71,8 +71,14 @@ class DestinationService
         if ($isExport && empty($limit)) {
             // Fetch all data without pagination
             Log::info("export is true and limit is empty");
-            return $query->orderBy($sortColumn, $sortDirection)->get();
+            $startTime = microtime(true);
+            $limit = $query->count();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            Log::info("Destination Query Count = {$limit} && execution time: {$executionTime} seconds");
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
         } else {
+            $limit = $limit ?: 10;
             return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
         }
     }

@@ -18,7 +18,7 @@ class VendorService
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
         $page = $request->input('page') ?: 1;
-        $limit = $request->input('limit') ?: 10;
+        $limit = $request->input('limit');
         $sortColumn = $request->input('sortColumn') ?: 'id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
         $isExport = $request->input('export') ?? false;
@@ -170,9 +170,14 @@ class VendorService
         if ($isExport && empty($limit)) {
             // Fetch all data without pagination
             Log::info("export is true and limit is empty");
-            return $query->orderBy($sortColumn, $sortDirection)->get();
+            $startTime = microtime(true);
+            $limit = $query->count();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            Log::info("Vendor Query Count = {$limit} && execution time: {$executionTime} seconds");
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
         } else {
-            // Get the paginated results
+            $limit = $limit ?: 10;
             $vendors = $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
         }
 
@@ -201,7 +206,6 @@ class VendorService
             'upload_w9' => $vendorImage['upload_w9'],
             'void_check' => $vendorImage['void_check'],
             'upload_insurance_certificate' => $vendorImage['upload_insurance_certificate'],
-            'date_of_expiration' => $request['date_of_expiration'],
             'bank_name' => $request['bank_name'],
             'bank_account_number' => $request['bank_account_number'],
             'bank_routing' => $request['bank_routing'],
@@ -211,6 +215,7 @@ class VendorService
             'bank_iban_number' => $request['bankIBANNumber'],
             'bank_ifsc_code' => $request['bankIFSCCode'],
             'remarks' => $request['remarks'],
+            // 'date_of_expiration' => $request['date_of_expiration'],
             // 'contact_name' => $request['contact_name'],
             // 'phone' => $request['phone'],
             // 'email' => $request['email'],
@@ -274,7 +279,6 @@ class VendorService
             'upload_w9' => $vendorImage['upload_w9'],
             'void_check' => $vendorImage['void_check'],
             'upload_insurance_certificate' => $vendorImage['upload_insurance_certificate'],
-            'date_of_expiration' => $request['date_of_expiration'],
             'bank_name' => $request['bank_name'],
             'bank_account_number' => $request['bank_account_number'],
             'bank_routing' => $request['bank_routing'],
@@ -284,9 +288,10 @@ class VendorService
             'bank_iban_number' => $request['bankIBANNumber'],
             'bank_ifsc_code' => $request['bankIFSCCode'],
             'remarks' => $request['remarks'],
+            // 'date_of_expiration' => $request['date_of_expiration'],
             // 'contact_name' => $request['contact_name'],
             // 'phone' => $request['phone'],
-            'email' => $request['email'],
+            // 'email' => $request['email'],
             'payment_term' => $request['paymentTerm'],
         ]);
 
