@@ -170,8 +170,70 @@ class PortController extends Controller
         return $validator->validated();
     }
 
-
+    /**
+     * Zero Count means there are already record exit while uploading
+     */
     public function excelUpload(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Importing Port Excel sheet...');
+        Log::info("*****************************");
+
+        $validated = $request->validate([
+            'uploadFile' => 'required|mimes:xlsx,xls',
+            // 'updatedColumns' => 'required|array'
+        ]);
+
+        $updatedColumns = $request->input('updatedColumns');
+
+        try {
+            DB::beginTransaction();
+
+            // Instantiate PortImport before the import
+            $portImport = new PortImport($updatedColumns);
+
+            // Perform the import
+            Excel::import($portImport, $request->file('uploadFile'));
+
+            // Get Rows inserted count
+            $validRowcount = $portImport->getValidRowCount();
+            Log::info("Valid rows count : " . $validRowcount);
+
+            // Get Existing row count
+            $existingRowcount = $portImport->getExistingRowCount();
+            Log::info("Existing Row Count : " . $existingRowcount[0]);
+            Log::info("Existing Row Record : ", $existingRowcount[1]);
+
+            // Check for any errors after the import
+            $errorsResponse = $portImport->getErrorsResponse();
+            if ($errorsResponse) {
+                DB::rollBack();
+                return response()->json($errorsResponse, 400);
+            }
+
+            // Manually call afterImport to handle further processing
+            $portImport->afterImport();
+
+            DB::commit();
+            return response()->json([
+                'status' => true,
+                'message' => 'Excel Upload Successfully',
+                // 'inserted_records_count' => $validRowcount,
+                // 'existing_records_count' => $existingRowcount[0],
+                // 'existing_records_row_numbers' => implode(', ', $existingRowcount[1]),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred during the import process.',
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+
+    public function excelUploadOld(Request $request)
     {
         Log::info("*****************************");
         Log::info('Importing Port Excel sheet...');
@@ -203,6 +265,6 @@ class PortController extends Controller
 
         $port = $this->portService->getAllPort($request);
         // Export to Excel
-        return Excel::download(new PortExport($port), 'Export_Port.xlsx');
+        return Excel::download(new PortExport($port), 'Export_Port_' . date('YmdHis') . '.xlsx');
     }
 }

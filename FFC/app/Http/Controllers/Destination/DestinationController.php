@@ -178,6 +178,6 @@ class DestinationController extends Controller
 
         $destinations = $this->destinationService->getAllDestination($request);
         // Export to Excel
-        return Excel::download(new DestinationExport($destinations), 'Export_Destination.xlsx');
+        return Excel::download(new DestinationExport($destinations), 'Export_Destination_' . date('YmdHis') . '.xlsx');
     }
 }

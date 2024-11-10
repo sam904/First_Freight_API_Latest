@@ -389,6 +389,6 @@ class RateController extends Controller
         $rates = $this->rateService->getAllRateData($request);
         // return response()->json(['status' => true, 'data' => $rates], 200);
         // Export to Excel
-        return Excel::download(new RateExport($rates), 'Export_Rate.xlsx');
+        return Excel::download(new RateExport($rates), 'Export_Rate_' . date('YmdHis') . '.xlsx');
     }
 }

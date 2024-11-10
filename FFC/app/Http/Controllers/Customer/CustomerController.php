@@ -296,6 +296,6 @@ class CustomerController extends Controller
 
         $customer = $this->customerService->getAllCustomer($request);
         // Export to Excel
-        return Excel::download(new CustomerExport($customer), 'Export_Customer.xlsx');
+        return Excel::download(new CustomerExport($customer), 'Export_Customer_' . date('YmdHis') . '.xlsx');
     }
 }

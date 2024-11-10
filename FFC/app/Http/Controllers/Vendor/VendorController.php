@@ -244,7 +244,7 @@ class VendorController extends Controller
 
         $vendors = $this->vendorService->getAllVendorData($request);
         // Export to Excel
-        return Excel::download(new VendorExport($vendors), 'Export_Venodrs.xlsx');
+        return Excel::download(new VendorExport($vendors), 'Export_Venodrs_' . date('YmdHis') . '.xlsx');
     }
 
     public function vendorValidateData(Request $request, $vendorId = null)
