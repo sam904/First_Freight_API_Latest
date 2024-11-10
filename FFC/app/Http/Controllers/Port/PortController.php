@@ -190,29 +190,29 @@ class PortController extends Controller
             DB::beginTransaction();
 
             // Instantiate PortImport before the import
-            $portImport = new PortImport($updatedColumns);
+            $excelImport = new PortImport($updatedColumns);
 
             // Perform the import
-            Excel::import($portImport, $request->file('uploadFile'));
+            Excel::import($excelImport, $request->file('uploadFile'));
 
             // Get Rows inserted count
-            $validRowcount = $portImport->getValidRowCount();
+            $validRowcount = $excelImport->getValidRowCount();
             Log::info("Valid rows count : " . $validRowcount);
 
             // Get Existing row count
-            $existingRowcount = $portImport->getExistingRowCount();
+            $existingRowcount = $excelImport->getExistingRowCount();
             Log::info("Existing Row Count : " . $existingRowcount[0]);
             Log::info("Existing Row Record : ", $existingRowcount[1]);
 
             // Check for any errors after the import
-            $errorsResponse = $portImport->getErrorsResponse();
+            $errorsResponse = $excelImport->getErrorsResponse();
             if ($errorsResponse) {
                 DB::rollBack();
                 return response()->json($errorsResponse, 400);
             }
 
             // Manually call afterImport to handle further processing
-            $portImport->afterImport();
+            $excelImport->afterImport();
 
             DB::commit();
             return response()->json([

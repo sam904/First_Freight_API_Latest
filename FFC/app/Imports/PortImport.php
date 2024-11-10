@@ -96,7 +96,6 @@ class PortImport implements OnEachRow, WithStartRow, WithHeadingRow
         $port = Port::where('name', $rowData['name'])->first();
         if ($port) {
             Log::info($port->name . ' already exists at line no. ' . $lineNumber . ' Skipping to next iteration.');
-            // $this->existingRows[] = array_merge($rowData, ['row' => $lineNumber]);
             $this->existingRows[] = $lineNumber;
             return;
         }
