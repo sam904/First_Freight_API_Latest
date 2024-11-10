@@ -29,7 +29,12 @@ class Destination extends Model
         return $this->belongsTo(Country::class);
     }
 
-    public function getDestination($name, $lineNo)
+    public function getDestination($name)
+    {
+        return Destination::where('name', $name)->first();
+    }
+
+    public function getDestinationOld($name, $lineNo)
     {
         try {
             $destination = Destination::where('name', $name)->firstOrFail();

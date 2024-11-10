@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PortController extends Controller
@@ -179,10 +180,18 @@ class PortController extends Controller
         Log::info('Importing Port Excel sheet...');
         Log::info("*****************************");
 
-        $validated = $request->validate([
-            'uploadFile' => 'required|mimes:xlsx,xls',
-            // 'updatedColumns' => 'required|array'
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'uploadFile' => 'required|file|mimes:xlsx,xls',
+                // 'updatedColumns' => 'required|array'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
         $updatedColumns = $request->input('updatedColumns');
 

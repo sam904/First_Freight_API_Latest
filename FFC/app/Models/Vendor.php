@@ -88,7 +88,12 @@ class Vendor extends Model
         return $this->belongsTo(Country::class, 'bank_country_id');
     }
 
-    public function getVendor($name, $lineNo)
+    public function getVendor($name)
+    {
+        return Vendor::where('company_name', $name)->first();
+    }
+
+    public function getVendorOld($name, $lineNo)
     {
         try {
             $vendor = Vendor::where('company_name', $name)->firstOrFail();

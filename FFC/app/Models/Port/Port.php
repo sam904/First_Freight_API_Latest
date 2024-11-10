@@ -33,7 +33,12 @@ class Port extends Model
         return $this->hasMany(PortTerminal::class);
     }
 
-    public function getPort($name, $lineNo)
+    public function getPort($name)
+    {
+        return Port::where('name', $name)->first();
+    }
+
+    public function getPortOld($name, $lineNo)
     {
         try {
             $port = Port::where('name', $name)->firstOrFail();

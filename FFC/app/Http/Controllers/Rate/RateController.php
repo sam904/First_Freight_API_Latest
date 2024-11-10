@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class RateController extends Controller
@@ -170,8 +171,8 @@ class RateController extends Controller
             'port_id' => 'required|integer',
             'destination_id' => 'required|integer',
             'start_date' => 'required|date',
-            'expiry' => 'required',
-            'freight' => 'required',
+            'expiry' => 'required|integer',
+            'freight' => 'required|numeric',
             'fsc' => 'nullable',
             'serviceType' => 'nullable|integer',
             'rateNotes' => 'sometimes|array',
@@ -355,7 +356,68 @@ class RateController extends Controller
      * End Rate Notes
      */
 
+    /**
+     * Zero Count means there are already record exit while uploading
+     */
     public function excelUpload(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Importing Rate Excel sheet...');
+        Log::info("*****************************");
+
+        try {
+            // Validate that the file is required, must be Excel, and not exceed 2MB
+            $validatedData = $request->validate([
+                'uploadFile' => 'required|file|mimes:xlsx,xls',
+                // 'updatedColumns' => 'required|array'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+        $updatedColumns = $request->input('updatedColumns');
+
+        try {
+            DB::beginTransaction();
+
+            // Instantiate PortImport before the import
+            $excelImport = new RateImport($updatedColumns);
+
+            // Perform the import
+            Excel::import($excelImport, $request->file('uploadFile'));
+
+            // Get Rows inserted count
+            $validRowcount = $excelImport->getValidRowCount();
+            Log::info("Valid rows count : " . $validRowcount);
+
+            // Check for any errors after the import
+            $errorsResponse = $excelImport->getErrorsResponse();
+            if ($errorsResponse) {
+                DB::rollBack();
+                return response()->json($errorsResponse, 400);
+            }
+
+            DB::commit();
+            return response()->json([
+                'status' => true,
+                'message' => 'Excel Upload Successfully',
+                // 'inserted_records_count' => $validRowcount,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred during the import process.',
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    public function excelUploadOld(Request $request)
     {
         Log::info("*****************************");
         Log::info('Importing Rate Excel sheet...');
@@ -379,7 +441,6 @@ class RateController extends Controller
         }
     }
 
-
     public function excelExport(Request $request)
     {
         Log::info("*****************************");
@@ -387,7 +448,6 @@ class RateController extends Controller
         Log::info("*****************************");
 
         $rates = $this->rateService->getAllRateData($request);
-        // return response()->json(['status' => true, 'data' => $rates], 200);
         // Export to Excel
         return Excel::download(new RateExport($rates), 'Export_Rate_' . date('YmdHis') . '.xlsx');
     }
