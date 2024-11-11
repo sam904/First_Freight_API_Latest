@@ -2,39 +2,38 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Exports\UserExport;
 use App\Helpers\SearchHelper;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\User\UserService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
 {
+    protected $userService;
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     public function index(Request $request)
     {
+        Log::info("*****************************");
+        Log::info('User Search');
+        Log::info("*****************************");
 
-        $query = User::query();
-
-        // Get all column names of the 'users' table
-        $model = new User();
-
-        // Apply search filters
-        $query = SearchHelper::applySearchFilters($query, $model, $request);
-
-        // Paginate the results
-        $page = $request->input('page') ?: 1;
-        $limit = $request->input('limit') ?: 10;
-        $sortColumn = $request->input('sortColumn') ?: 'id';
-        $sortDirection = $request->input('sortDirection') ?: 'desc';
-        $users = $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        $user = $this->userService->getAllUserData($request);
 
         return response()->json([
             'status' => true,
-            'data' => $users
+            'data' => $user
         ], 200);
     }
 
@@ -311,5 +310,17 @@ class UserController extends Controller
 
         // Return validated data
         return $validator->validated();
+    }
+
+
+    public function excelExport(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Exporting User Excel sheet...');
+        Log::info("*****************************");
+
+        $rates = $this->userService->getAllUserData($request);
+        // Export to Excel
+        return Excel::download(new UserExport($rates), 'Export_User_' . date('YmdHis') . '.xlsx');
     }
 }

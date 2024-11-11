@@ -66,6 +66,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/status/{id}', 'status');
                     Route::delete('/delete/{id}', action: 'destroy');
+                    Route::post('/export', 'excelExport');
                 });
             }
         );
