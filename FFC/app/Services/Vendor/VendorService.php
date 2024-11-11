@@ -249,29 +249,10 @@ class VendorService
     {
         // Get Old Images 
         $vendorOldImages['upload_document'] = $vendor->upload_document;
-        // Store images name in $image array
-        // $vendorOldImages['void_check'] = $vendor->void_check;
-        // $vendorOldImages['upload_insurance_certificate'] = $vendor->upload_insurance_certificate;
 
         // Delete existing related records
         $vendor->sales()->delete();      // Delete all sales records related to this vendor
         $vendor->finance()->delete();   // Delete all finance records related to this vendor
-
-        // if ($image = $request->file('upload_w9')) {
-        //     $vendorImage['upload_w9'] = $this->uploadImages($request->file('upload_w9'));
-        // } else {
-        //     unset($request['upload_w9']);
-        // }
-        // if ($image = $request->file('void_check')) {
-        //     $vendorImage['void_check'] = $this->uploadImages($request->file('void_check'));
-        // } else {
-        //     unset($request['void_check']);
-        // }
-        // if ($image = $request->file('upload_insurance_certificate')) {
-        //     $vendorImage['upload_insurance_certificate'] = $this->uploadImages($request->file('upload_insurance_certificate'));
-        // } else {
-        //     unset($request['upload_insurance_certificate']);
-        // }
 
         // Update vendor details
         $vendor->update([
@@ -319,15 +300,6 @@ class VendorService
         if (isset($vendorOldImages['upload_document'])) {
             $this->unlinkImage($vendorOldImages['upload_document'], $vendor->id);
         }
-        // if (isset($vendorOldImages['upload_w9'])) {
-        //     $this->unlinkImage($vendorOldImages['upload_w9']);
-        // }
-        // if (isset($vendorOldImages['void_check'])) {
-        //     $this->unlinkImage($vendorOldImages['void_check']);
-        // }
-        // if (isset($vendorOldImages['upload_insurance_certificate'])) {
-        //     $this->unlinkImage($vendorOldImages['upload_insurance_certificate']);
-        // }
 
         // Sync the vendor types (this will remove the old types and add the new ones)
         $vendorTypeIds = explode(',', $request->input('vendor_type'));
@@ -419,7 +391,6 @@ class VendorService
             }
         }
     }
-
 
     public function uploadImagesOld($image)
     {

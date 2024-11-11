@@ -193,9 +193,10 @@ class VendorController extends Controller
             $vendor->sales()->delete();
             $vendor->finance()->delete();
             // Unlink images
-            $this->vendorService->unlinkImage($vendor->upload_w9);
-            $this->vendorService->unlinkImage($vendor->void_check);
-            $this->vendorService->unlinkImage($vendor->upload_insurance_certificate);
+            $this->vendorService->unlinkImage($vendor->upload_document, $vendor->id);
+            // $this->vendorService->unlinkImage($vendor->void_check);
+            // $this->vendorService->unlinkImage($vendor->upload_w9);
+            // $this->vendorService->unlinkImage($vendor->upload_insurance_certificate);
             // Delete the vendor record
             $vendor->delete();
         });
