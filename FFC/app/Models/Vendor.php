@@ -24,7 +24,6 @@ class Vendor extends Model
         'upload_w9',
         'void_check',
         'upload_insurance_certificate',
-        'date_of_expiration',
         'bank_name',
         'bank_account_number',
         'bank_routing',
@@ -35,18 +34,24 @@ class Vendor extends Model
         'bank_ifsc_code',
         'remarks',
         'status',
+        // 'date_of_expiration',
         // 'contact_name',
         // 'phone',
         // 'email',
         'payment_term',
+        'upload_document',
     ];
 
-    protected $hidden = ['date_of_expiration', 'email'];
+    protected $hidden = ['email', 'upload_w9', 'void_check', 'upload_insurance_certificate'];
 
     protected $excludedColumns = [
         'id',
         'created_at',
         'updated_at',
+        'upload_w9',
+        'void_check',
+        'upload_insurance_certificate',
+        'upload_document',
     ];
 
     public function getSearchableColumns()
