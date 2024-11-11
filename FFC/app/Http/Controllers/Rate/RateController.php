@@ -176,10 +176,10 @@ class RateController extends Controller
             'fsc' => 'nullable',
             'serviceType' => 'nullable|integer',
             'rateNotes' => 'sometimes|array',
-            // 'rateNotes.title' => 'sometimes|string',
-            // 'rateNotes.description' => 'sometimes|string',
-            'rateNotes.title' => 'required_with:rateNotes|string', // Ensure title is required if rateNotes exists
-            'rateNotes.description' => 'required_with:rateNotes|string',
+            'rateNotes.*.title' => 'required_with:rateNotes|string',
+            'rateNotes.*.description' => 'required_with:rateNotes|string',
+            'rateNotes.*.tag' => 'nullable|string',
+            'rateNotes.*.pin' => 'nullable|boolean',
         ]);
 
         // Check if validation fails

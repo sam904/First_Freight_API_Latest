@@ -136,20 +136,29 @@ class RateService
 
         $this->storeCharges($request, $rate);
 
-        // Save the notes
         // Check if rateNotes is not empty
         if (!empty($request->input('rateNotes'))) {
-            // Modify the request to only keep required inputs
-            $request->merge([
-                'title' => $request->input('rateNotes.title'),
-                'description' => $request->input('rateNotes.description'),
-                'tag' => $request->input('rateNotes.tag'),
-                'pin' => $request->input('rateNotes.pin'),
-                'rateId' => $rate->id, // Use the saved rate ID
-            ]);
-
-            // Now you can call the saveNotes method or do any further processing
-            $this->saveNotes($request);
+            foreach ($request->input('rateNotes') as $note) {
+                RateNotes::create([
+                    'title' => $note['title'],
+                    'description' => $note['description'],
+                    'tag' => $note['tag'],
+                    'pin' => $note['pin'],
+                    'rate_id' => $rate->id, // Use the saved rate ID
+                ]);
+                // // Create a request instance for each note, to format and encapsulate each note’s data as if it's a separate request
+                // $noteRequest = new \Illuminate\Http\Request();
+                // // Merge the note data with the rate ID into the new request instance
+                // $noteRequest->merge([
+                //     'title' => $note['title'],
+                //     'description' => $note['description'],
+                //     'tag' => $note['tag'],
+                //     'pin' => $note['pin'],
+                //     'rateId' => $rate->id, // Use the saved rate ID
+                // ]);
+                // // Now you can call the saveNotes method or do any further processing
+                // $this->saveNotes($noteRequest);
+            }
         }
 
         return true;
