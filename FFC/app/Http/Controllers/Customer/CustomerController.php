@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerController extends Controller
@@ -264,8 +265,78 @@ class CustomerController extends Controller
         return $validator->validated();
     }
 
-
+    /**
+     * Zero Count means there are already record exit while uploading
+     */
     public function excelUpload(Request $request)
+    {
+        Log::info("*******************************");
+        Log::info('Importing Customer Excel sheet...');
+        Log::info("*******************************");
+
+        try {
+            // Validate that the file is required, must be Excel, and not exceed 2MB
+            $validatedData = $request->validate([
+                'uploadFile' => 'required|file|mimes:xlsx,xls',
+                // 'updatedColumns' => 'required|array'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+        $updatedColumns = $request->input('updatedColumns');
+
+        try {
+            DB::beginTransaction();
+
+            // Instantiate PortImport before the import
+            $excelImport = new CustomerImport($updatedColumns);
+
+            // Perform the import
+            Excel::import($excelImport, $request->file('uploadFile'));
+
+            // Get Rows inserted count
+            $validRowcount = $excelImport->getValidRowCount();
+            Log::info("Valid rows count : " . $validRowcount);
+
+            // Get Existing row count
+            $existingRowcount = $excelImport->getExistingRowCount();
+            Log::info("Existing Row Count : " . $existingRowcount[0]);
+            Log::info("Existing Row Record : ", $existingRowcount[1]);
+
+            // Check for any errors after the import
+            $errorsResponse = $excelImport->getErrorsResponse();
+            if ($errorsResponse) {
+                DB::rollBack();
+                return response()->json($errorsResponse, 400);
+            }
+
+            // Manually call afterImport to handle further processing
+            $excelImport->afterImport();
+
+            DB::commit();
+            return response()->json([
+                'status' => true,
+                'message' => 'Excel Upload Successfully',
+                // 'inserted_records_count' => $validRowcount,
+                // 'existing_records_count' => $existingRowcount[0],
+                // 'existing_records_row_numbers' => implode(', ', $existingRowcount[1]),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred during the import process.',
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    public function excelUploadOld(Request $request)
     {
         Log::info('Importing Customer Excel sheet...');
 

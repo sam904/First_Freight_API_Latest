@@ -397,11 +397,6 @@ class VendorImport implements OnEachRow, WithStartRow
         }
     }
 
-    private function getVendorType($type)
-    {
-        return VendorType::where('type', $type)->firstOrFail();
-    }
-
     public function getErrorsResponse()
     {
         if (!empty($this->errors)) {

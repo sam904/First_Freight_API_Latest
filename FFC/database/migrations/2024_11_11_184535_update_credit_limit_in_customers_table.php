@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('rates', function (Blueprint $table) {
-            $table->double('freight', 15, 2)->change();
-            $table->double('fsc', 15, 2)->change();
+        Schema::table('customers', function (Blueprint $table) {
+            $table->double('credit_limit', 15, 2)->nullable()->change();
         });
     }
 
@@ -22,9 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('rates', function (Blueprint $table) {
-            $table->double('freight', 15, 2)->change();
-            $table->double('fsc', 15, 2)->change();
+        Schema::table('customers', function (Blueprint $table) {
+            $table->bigInteger('credit_limit')->nullable(false)->change();
         });
     }
 };
