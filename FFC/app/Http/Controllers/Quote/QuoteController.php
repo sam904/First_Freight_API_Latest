@@ -328,6 +328,11 @@ class QuoteController extends Controller
             // 'quoteDetails.*.serviceType' => 'required|integer',
             'quoteDetails.*.portId' => 'required|integer',
             'quoteDetails.*.destinationId' => 'required|integer',
+            'quoteNotes' => 'sometimes|array',
+            'quoteNotes.*.title' => 'required_with:quoteNotes|string',
+            'quoteNotes.*.description' => 'required_with:quoteNotes|string',
+            'quoteNotes.*.tag' => 'nullable|string',
+            'quoteNotes.*.pin' => 'nullable|boolean',
         ]);
 
         // Check if validation fails

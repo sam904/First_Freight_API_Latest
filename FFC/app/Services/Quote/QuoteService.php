@@ -100,9 +100,22 @@ class QuoteService
             "quote_status" => $request["quoteStatus"],
             "created_by" =>  $this->loginUser->id,
         ]);
-        Log::info($quote->id . " Quotes created succussfully");
-        // Continue processing
+        Log::info("Quotes created succussfully = " . $quote->id);
+
         $this->storeQuoteDetails($request, $quote);
+
+        if (!empty($request->input('quoteNotes'))) {
+            foreach ($request->input('quoteNotes') as $note) {
+                Log::info("Creating notes for quote : " . $quote->id);
+                QuoteNotes::create([
+                    'title' => $note['title'],
+                    'description' => $note['description'],
+                    'tag' => $note['tag'],
+                    'pin' => $note['pin'],
+                    'quote_id' => $quote->id,
+                ]);
+            }
+        }
         return true;
     }
 
