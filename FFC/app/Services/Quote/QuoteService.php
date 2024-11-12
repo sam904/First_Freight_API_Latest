@@ -124,6 +124,7 @@ class QuoteService
                     'tag' => $note['tag'],
                     'pin' => $note['pin'],
                     'quote_id' => $quote->id,
+                    "user_id" =>  $this->loginUser->id,
                 ]);
             }
         }
@@ -211,6 +212,7 @@ class QuoteService
             'quote_id' => $request['quoteId'],
             'tag' => $request['tag'],
             'pin' => $request['pin'],
+            "user_id" =>  $this->loginUser->id,
         ]);
         return true;
     }
@@ -223,6 +225,7 @@ class QuoteService
             'quote_id' => $request['quoteId'],
             'tag' => $request['tag'],
             'pin' => $request['pin'],
+            "user_id" =>  $this->loginUser->id,
         ]);
         return true;
     }

@@ -362,7 +362,7 @@ class QuoteController extends Controller
             return $quote;  // Return the not found response
         }
 
-        $quoteNote = QuoteNotes::where('quote_id', $quoteId)->orderBy('id', 'desc')->get();
+        $quoteNote = QuoteNotes::with('user:id,first_name,last_name')->where('quote_id', $quoteId)->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $quoteNote], 200);
     }
 

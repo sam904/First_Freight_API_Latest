@@ -8,11 +8,19 @@ use App\Models\Rate\RateCharge;
 use App\Models\Rate\RateNotes;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class RateService
 {
+    protected $loginUser;
+
+    public function __construct()
+    {
+        $this->loginUser =  Auth::user();
+    }
+
     public function getAllRateData(Request $request)
     {
         $searchTerm = $request->input('searchTerm');
@@ -145,6 +153,7 @@ class RateService
                     'tag' => $note['tag'],
                     'pin' => $note['pin'],
                     'rate_id' => $rate->id, // Use the saved rate ID
+                    "user_id" =>  $this->loginUser->id,
                 ]);
                 // // Create a request instance for each note, to format and encapsulate each note’s data as if it's a separate request
                 // $noteRequest = new \Illuminate\Http\Request();
@@ -212,6 +221,7 @@ class RateService
             'rate_id' => $request['rateId'],
             'tag' => $request['tag'],
             'pin' => $request['pin'],
+            "user_id" =>  $this->loginUser->id,
         ]);
         return true;
     }
@@ -224,6 +234,7 @@ class RateService
             'rate_id' => $request['rateId'],
             'tag' => $request['tag'],
             'pin' => $request['pin'],
+            "user_id" =>  $this->loginUser->id,
         ]);
         return true;
     }

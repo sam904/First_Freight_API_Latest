@@ -209,7 +209,7 @@ class RateController extends Controller
             return $rate;  // Return the not found response
         }
 
-        $rateNote = RateNotes::where('rate_id', $rateId)->orderBy('id', 'desc')->get();
+        $rateNote = RateNotes::with('user:id,first_name,last_name')->where('rate_id', $rateId)->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $rateNote], 200);
     }
 

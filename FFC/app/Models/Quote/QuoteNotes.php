@@ -2,6 +2,7 @@
 
 namespace App\Models\Quote;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,5 +12,10 @@ class QuoteNotes extends Model
 
     protected $hidden = ['created_at', 'updated_at'];
 
-    protected $fillable = ['description', 'title', 'quote_id', 'tag', 'pin', 'status'];
+    protected $fillable = ['description', 'title', 'quote_id', 'tag', 'pin', 'status', 'user_id'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
