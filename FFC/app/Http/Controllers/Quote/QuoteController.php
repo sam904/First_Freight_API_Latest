@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers\Quote;
 
+use App\Exports\QuoteExport;
 use App\Http\Controllers\Controller;
 use App\Models\Quote\Quote;
 use App\Models\Quote\QuoteNotes;
 use App\Services\Quote\QuoteService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class QuoteController extends Controller
 {
@@ -491,4 +494,39 @@ class QuoteController extends Controller
     /**
      * Quotes Note End
      */
+
+
+    public function excelExport(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Exporting User Excel sheet...');
+        Log::info("*****************************");
+
+        $quotes = $this->quoteService->getAllQuotes($request);
+        // Export to Excel
+        return Excel::download(new QuoteExport($quotes), 'Export_Quote_' . date('YmdHis') . '.xlsx');
+    }
+
+    public function generatePdf($id)
+    {
+        Log::info("*****************************");
+        Log::info('Quote PDF Downloading...');
+        Log::info("*****************************");
+        $data = [
+            'quotes' => [
+                ['port' => 'Baltimore', 'destination' => 'Abingdon', 'dray_fsc' => 12200],
+                ['port' => 'Boston', 'destination' => 'Acworth', 'dray_fsc' => 15000],
+                // Add more quotes as needed
+            ],
+        ];
+
+        $pdf = Pdf::loadView('quote/quote_pdf', compact('data'))->setPaper('a4', 'portrait');
+        // return $pdf->stream('quotation.pdf');
+        // Attempt to download
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'quotation.pdf', [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
 }

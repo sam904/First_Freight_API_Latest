@@ -205,6 +205,8 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::get('/editNote/{id}', 'editNote');
                     Route::delete('/deleteNote/{id}', action: 'destroyNote');
                     Route::post('/statusNote/{id}', 'statusNote');
+                    Route::post('/export', 'excelExport');
+                    Route::get('/pdf/{id}', 'generatePdf');
                 });
             }
         );

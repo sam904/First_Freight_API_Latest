@@ -28,7 +28,7 @@ class QuoteService
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
         $page = $request->input('page') ?: 1;
-        $limit = $request->input('limit') ?: 10;
+        $limit = $request->input('limit');
         $sortColumn = $request->input('sortColumn') ?: 'id';
         $sortDirection = $request->input('sortDirection') ?: 'desc';
         $isExport = $request->input('export') ?? false;
@@ -88,8 +88,19 @@ class QuoteService
         //     $query->join('customers', 'quotes.customer_id', '=', 'customers.id');
         // }
 
-        // Execute the query and get results
-        return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        if ($isExport && empty($limit)) {
+            // Fetch all data without pagination
+            Log::info("export is true and limit is empty");
+            $startTime = microtime(true);
+            $limit = $query->count();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            Log::info("Quote Query Count = {$limit} && execution time: {$executionTime} seconds");
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        } else {
+            $limit = $limit ?: 10;
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        }
     }
 
     public function createQuote(Request $request)

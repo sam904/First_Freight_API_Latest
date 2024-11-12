@@ -312,7 +312,6 @@ class UserController extends Controller
         return $validator->validated();
     }
 
-
     public function excelExport(Request $request)
     {
         Log::info("*****************************");
