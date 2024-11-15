@@ -7,6 +7,8 @@ use App\Http\Controllers\Common\CommonController;
 use App\Http\Controllers\Common\ServiceTypeController;
 use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Destination\DestinationController;
+use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\Order\OrderStatusMasterController;
 use App\Http\Controllers\Permission\PermissionController;
 use App\Http\Controllers\Port\PortController;
 use App\Http\Controllers\Quote\QuoteController;
@@ -29,6 +31,7 @@ Route::prefix('user')->group(
                 Route::post('/verifyOtp', 'verifyOtp');
                 Route::post('/reset-password', 'resetPassword');
                 Route::post('/verify-reset-password', 'verifyResetPassword');
+                Route::post('/update-reset-password/{id}', 'updateResetPassword');
             }
         );
         Route::controller(UserController::class)->group(
@@ -48,7 +51,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('user')->group(
             function () {
                 Route::controller(AuthController::class)->group(function () {
-                    Route::post('/update-reset-password/{id}', 'updateResetPassword');
+                    // Route::post('/update-reset-password/{id}', 'updateResetPassword');
                 });
             }
         );
@@ -221,6 +224,42 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::post('/update/{id}', 'update');
                     Route::post('/status/{id}', 'status');
                     Route::delete('/delete/{id}', action: 'destroy');
+                });
+            }
+        );
+
+        // Orders
+        Route::prefix('order')->group(
+            function (): void {
+                Route::controller(OrderController::class)->group(function () {
+                    Route::post('/index', 'index');
+                    Route::post('/save', 'store');
+                    Route::get('/edit/{id}', 'edit');
+                    Route::post('/update/{id}', 'update');
+                    Route::delete('/delete/{id}', action: 'destroy');
+                    Route::get('/orderNotes/{id}', 'getOrderNote');
+                    Route::post('/saveNote', 'storeNote');
+                    Route::post('/updateNote/{id}', 'updateNote');
+                    Route::get('/editNote/{id}', 'editNote');
+                    Route::delete('/deleteNote/{id}', action: 'destroyNote');
+                    Route::post('/statusNote/{id}', 'statusNote');
+                    Route::post('/export', 'excelExport');
+                    Route::get('/pdf/{id}', 'generatePdf');
+                    // Order Status
+                    Route::post('/status/{orderId}', 'status');
+                });
+            }
+        );
+
+        Route::prefix('orderStatusMaster')->group(
+            function (): void {
+                Route::controller(OrderStatusMasterController::class)->group(function () {
+                    //master
+                    Route::post('/save', 'store');
+                    Route::get('/edit/{id}', 'edit');
+                    Route::post('/update/{id}', 'update');
+                    Route::delete('/delete/{id}', action: 'destroy');
+                    Route::post('/status/{id}', 'status');
                 });
             }
         );

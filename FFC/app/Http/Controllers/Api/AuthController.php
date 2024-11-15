@@ -254,30 +254,20 @@ class AuthController extends Controller
             return response()->json(['status' => false, 'error' => $validator->errors()], 422); // Return validation errors with a 422 status code
         }
 
-        // Based on Access Token Update the User's Password
-        $authHeader = $request->header('Authorization');
-
-        // Check if it contains a Bearer token
-        if ($authHeader && preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
-            $bearerToken = $matches[1]; // The token itself
-        } else {
-            return response()->json(['status' => false, 'message' => 'Token not provided'], 401);
-        }
-
-        if ($user->access_token == $bearerToken) {
-            $user->password = Hash::make($request->new_password);
-
-            // Encrypt the password
-            $key = generateSecretKey(32); // Make sure to use a strong key
-            $encryptedPassword = encryptPassword($user->password, $key);
-            $user->secret_password = $encryptedPassword;
-            $user->secret_key = $key;
-
-            // Save user
-            $user->save();
-            return response()->json(['status' => true, 'message' => 'Password updated successfully'], 200);
-        } else {
-            return response()->json(['status' => false, 'message' => 'Unauthorized Token passed for user : ' . $user->email], 404);
+        try {
+            $user->update([
+                'password' => Hash::make($request->new_password)
+            ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'User password updated successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update user data',
+                'error' => $e->getMessage()
+            ], 400);
         }
     }
 }

@@ -285,7 +285,7 @@ class RateController extends Controller
                 'status' => false,
                 'message' => 'Failed to update rate note',
                 "error" => $e->getMessage()
-            ], 500); // Return error response
+            ], 400); // Return error response
         }
     }
 
