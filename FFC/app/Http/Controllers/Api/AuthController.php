@@ -12,7 +12,9 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -230,18 +232,36 @@ class AuthController extends Controller
 
     /**
      * Summary of updateResetPassword
+     * user can update anyone password if he send wrong email id
+     * check : otp, is_verified, expiry_time
      * Passed only userId related Access Token else It will not Update Passoword
      */
-    public function updateResetPassword(Request $request, $id)
+    public function updateResetPassword(Request $request)
     {
-        // Use the findModel helper to retrieve the user
-        $user = findModel(User::class, $id);
+        Log::info("*****************************");
+        Log::info('Reset User Password...');
+        Log::info("*****************************");
 
-        // Check if the returned value is a JSON response (meaning the model was not found)
-        if ($user instanceof \Illuminate\Http\JsonResponse) {
-            return $user;  // Return the not found response
+        // 1. Validate user email
+        try {
+            $validatedData = $request->validate([
+                'username' => 'required|string|email|max:255',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->errors()
+            ], 422);
         }
 
+        // // Use the findModel helper to retrieve the user
+        // $user = findModel(User::class, $user->id);
+        // // Check if the returned value is a JSON response (meaning the model was not found)
+        // if ($user instanceof \Illuminate\Http\JsonResponse) {
+        //     return $user;  // Return the not found response
+        // }
+
+        // 2. Validate Password field
         $validator = Validator::make($request->all(), [
             'new_password' => 'required|string|min:8|confirmed',
         ], [
@@ -251,23 +271,82 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'error' => $validator->errors()], 422); // Return validation errors with a 422 status code
+            return response()->json(['status' => false, 'error' => $validator->errors()], 422);
         }
 
+        // 3. Check username exist or not
         try {
-            $user->update([
-                'password' => Hash::make($request->new_password)
-            ]);
+            $user = User::with('otp')->where('email', $request['username'])->firstOrFail();
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => true,
-                'message' => 'User password updated successfully'
+                'message' =>  $request['username'] . ' is not registered.'
             ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to update user data',
-                'error' => $e->getMessage()
-            ], 400);
         }
+
+        // 4. Check is OTP expired and isVerified status is 1
+        if (isset($user['otp'][0]['otp'])) {
+            if ($user['otp'][0]['expires_at'] > now()) {
+                if ($user['otp'][0]['is_verified']) {
+                    DB::beginTransaction();  // Start the transaction
+                    try {
+                        $user->update([
+                            'password' => Hash::make($request->new_password)
+                        ]);
+
+                        // now update otp as null and is verified to o
+                        Otp::updateOrCreate(
+                            [
+                                'user_id'    => $user->id,
+                            ],
+                            [
+                                'otp'        => null,
+                                'is_verified' => false,
+                            ]
+                        );
+                        DB::commit();
+                        return response()->json([
+                            'status' => true,
+                            'message' => 'User password updated successfully'
+                        ], 200);
+                    } catch (Exception $e) {
+                        DB::rollBack();
+                        return response()->json([
+                            'status' => true,
+                            'message' => 'Failed to update user password',
+                            'error' => $e->getMessage()
+                        ], 200);
+                    }
+                } else {
+                    return response()->json(['status' => false, 'message' => 'OTP is not verified'], 400);
+                }
+            } else {
+                return response()->json(['status' => false, 'message' => 'OTP expired'], 400);
+            }
+        } else {
+            return response()->json(['status' => false, 'message' => 'Please generate OTP.'], 400);
+        }
+
+        // // Based on Access Token Update the User's Password
+        // $authHeader = $request->header('Authorization');
+        // // Check if it contains a Bearer token
+        // if ($authHeader && preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
+        //     $bearerToken = $matches[1]; // The token itself
+        // } else {
+        //     return response()->json(['status' => false, 'message' => 'Token not provided'], 401);
+        // }
+        // if ($user->access_token == $bearerToken) {
+        //     $user->password = Hash::make($request->new_password);
+        //     // Encrypt the password
+        //     $key = generateSecretKey(32); // Make sure to use a strong key
+        //     $encryptedPassword = encryptPassword($user->password, $key);
+        //     $user->secret_password = $encryptedPassword;
+        //     $user->secret_key = $key;
+        //     // Save user
+        //     $user->save();
+        //     return response()->json(['status' => true, 'message' => 'Password updated successfully'], 200);
+        // } else {
+        //     return response()->json(['status' => false, 'message' => 'Unauthorized Token passed for user : ' . $user->email], 404);
+        // }
     }
 }

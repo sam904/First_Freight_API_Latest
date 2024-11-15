@@ -93,4 +93,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Permission::class);
     }
+
+    public function otp()
+    {
+        return $this->hasMany(Otp::class);
+    }
 }

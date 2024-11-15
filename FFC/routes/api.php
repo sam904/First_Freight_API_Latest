@@ -31,7 +31,7 @@ Route::prefix('user')->group(
                 Route::post('/verifyOtp', 'verifyOtp');
                 Route::post('/reset-password', 'resetPassword');
                 Route::post('/verify-reset-password', 'verifyResetPassword');
-                Route::post('/update-reset-password/{id}', 'updateResetPassword');
+                Route::post('/update-reset-password', 'updateResetPassword');
             }
         );
         Route::controller(UserController::class)->group(
