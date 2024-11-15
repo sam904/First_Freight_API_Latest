@@ -6,6 +6,7 @@ use App\Helpers\SearchHelper;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
@@ -40,5 +41,22 @@ class UserService
             $limit = $limit ?: 10;
             return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
         }
+    }
+
+    public function createUser($validatedData)
+    {
+        $user = User::create([
+            'first_name' => $validatedData['first_name'],
+            'last_name' => $validatedData['last_name'],
+            'email' => $validatedData['email'],
+            'mobile_number' => $validatedData['mobile_number'],
+            'password' => Hash::make($validatedData['password']),
+            'profile_image' => $validatedData['profile_image'],
+            //$loginType => $request->username,
+            // 'secret_password' => $encryptedPassword,
+            // 'secret_key' => $key,
+        ]);
+
+        return $user;
     }
 }
