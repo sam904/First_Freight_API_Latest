@@ -26,11 +26,27 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $customer = $this->customerService->getAllCustomer($request);
+        $maxFinanceCount = $customer->max('finance_count');
+        $maxContactCount = $customer->max('contact_count');
 
+        // Convert the pagination result to an array to add custom data
+        $customersArray = $customer->toArray();
+
+        // Add max counts to the pagination result
+        $customersArray['max_contact_count'] = $maxContactCount;
+        $customersArray['max_finance_count'] = $maxFinanceCount;
+
+        // Return the modified result as JSON
         return response()->json([
             'status' => true,
-            'data' => $customer
-        ], 200);
+            'data' => $customersArray,
+        ]);
+
+
+        // return response()->json([
+        //     'status' => true,
+        //     'data' => $customer
+        // ], 200);
     }
 
     public function store(Request $request)

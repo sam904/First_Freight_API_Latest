@@ -45,11 +45,25 @@ class VendorController extends Controller
     public function index(Request $request)
     {
         $vendors = $this->vendorService->getAllVendorData($request);
-        // Return the modified vendor collection
+        $maxSalesCount = $vendors->max('sales_count');
+        $maxFinanceCount = $vendors->max('finance_count');
+        // Convert the pagination result to an array to add custom data
+        $vendorArray = $vendors->toArray();
+
+        // Add max counts to the pagination result
+        $vendorArray['max_sales_count'] = $maxSalesCount;
+        $vendorArray['max_finance_count'] = $maxFinanceCount;
+
+        // Return the modified result as JSON
         return response()->json([
             'status' => true,
-            'data' => $vendors
+            'data' => $vendorArray,
         ]);
+        // // Return the modified vendor collection
+        // return response()->json([
+        //     'status' => true,
+        //     'data' => $vendors
+        // ]);
     }
 
 

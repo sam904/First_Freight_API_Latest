@@ -37,7 +37,7 @@ class CustomerService
             'finance',
             'delivery.state',
             'delivery.country',
-        ]);
+        ])->withCount(['contact', 'finance']);
 
         // Apply filter by IDs if they are provided
         if (!empty($ids)) {

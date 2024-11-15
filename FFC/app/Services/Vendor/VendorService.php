@@ -34,7 +34,7 @@ class VendorService
             'vendorTypes',
             'sales',
             'finance',
-        ]);
+        ])->withCount(['sales', 'finance']);
 
         // Apply filter by IDs if they are provided
         if (!empty($ids)) {
