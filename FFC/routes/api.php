@@ -15,6 +15,7 @@ use App\Http\Controllers\Quote\QuoteController;
 use App\Http\Controllers\Rate\RateController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Vendor\VendorController;
+use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\CheckTokenExpiry;
 
 // Public Routes
@@ -78,12 +79,12 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('vendor')->group(
             function () {
                 Route::controller(VendorController::class)->group(function () {
-                    Route::post('/index', 'index');
-                    Route::post('/save', action: 'store');
-                    Route::get('/edit/{id}', 'edit');
-                    Route::post('/update/{id}', action: 'update');
-                    Route::delete('/delete/{id}', action: 'destroy');
-                    Route::post('/status/{id}', 'status');
+                    Route::post('/index', 'index')->middleware(CheckPermission::class . ':Vendor,can_view');
+                    Route::post('/save', action: 'store')->middleware(CheckPermission::class . ':Vendor,can_create');
+                    Route::get('/edit/{id}', 'edit')->middleware(CheckPermission::class . ':Vendor,can_edit');
+                    Route::post('/update/{id}', action: 'update')->middleware(CheckPermission::class . ':Vendor,can_edit');
+                    Route::delete('/delete/{id}', action: 'destroy')->middleware(CheckPermission::class . ':Vendor,can_delete');
+                    Route::post('/status/{id}', 'status')->middleware(CheckPermission::class . ':Vendor,can_edit');
                     Route::post('/import', 'excelUpload');
                     Route::post('/export', 'excelExport');
                     Route::get('/vendorType', 'getAllVendorType');
@@ -97,12 +98,12 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('customer')->group(
             function () {
                 Route::controller(CustomerController::class)->group(function () {
-                    Route::post('/index', 'index');
-                    Route::post('/save', 'store');
-                    Route::get('/edit/{id}', 'edit');
-                    Route::post('/update/{id}', 'update');
-                    Route::delete('/delete/{id}', action: 'destroy');
-                    Route::post('/status/{id}', 'status');
+                    Route::post('/index', 'index')->middleware(CheckPermission::class . ':Customer,can_view');
+                    Route::post('/save', 'store')->middleware(CheckPermission::class . ':Customer,can_create');
+                    Route::get('/edit/{id}', 'edit')->middleware(CheckPermission::class . ':Customer,can_edit');
+                    Route::post('/update/{id}', 'update')->middleware(CheckPermission::class . ':Customer,can_edit');
+                    Route::delete('/delete/{id}', action: 'destroy')->middleware(CheckPermission::class . ':Customer,can_delete');
+                    Route::post('/status/{id}', 'status')->middleware(CheckPermission::class . ':Customer,can_edit');
                     Route::post('/import', 'excelUpload');
                     Route::post('/export', 'excelExport');
                 });
@@ -141,12 +142,12 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
             function () {
                 Route::controller(PortController::class)->group(function () {
                     Route::get('/port-type', 'portType');
-                    Route::post('/index', 'index');
-                    Route::post('/save', 'store');
-                    Route::get('/edit/{id}', 'edit');
-                    Route::post('/update/{id}', 'update');
-                    Route::delete('/delete/{id}', action: 'destroy');
-                    Route::post('/status/{id}', 'status');
+                    Route::post('/index', 'index')->middleware(CheckPermission::class . ':Port,can_view');
+                    Route::post('/save', 'store')->middleware(CheckPermission::class . ':Port,can_create');
+                    Route::get('/edit/{id}', 'edit')->middleware(CheckPermission::class . ':Port,can_edit');
+                    Route::post('/update/{id}', 'update')->middleware(CheckPermission::class . ':Port,can_edit');
+                    Route::delete('/delete/{id}', action: 'destroy')->middleware(CheckPermission::class . ':Port,can_delete');
+                    Route::post('/status/{id}', 'status')->middleware(CheckPermission::class . ':Port,can_edit');
                     Route::post('/import', 'excelUpload');
                     Route::post('/export', 'excelExport');
                 });
@@ -157,12 +158,12 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('destination')->group(
             function () {
                 Route::controller(DestinationController::class)->group(function () {
-                    Route::post('/index', 'index');
-                    Route::post('/save', 'store');
-                    Route::get('/edit/{id}', 'edit');
-                    Route::post('/update/{id}', 'update');
-                    Route::delete('/delete/{id}', action: 'destroy');
-                    Route::post('/status/{id}', 'status');
+                    Route::post('/index', 'index')->middleware(CheckPermission::class . ':Destination,can_view');
+                    Route::post('/save', 'store')->middleware(CheckPermission::class . ':Destination,can_create');
+                    Route::get('/edit/{id}', 'edit')->middleware(CheckPermission::class . ':Destination,can_edit');
+                    Route::post('/update/{id}', 'update')->middleware(CheckPermission::class . ':Destination,can_edit');
+                    Route::delete('/delete/{id}', action: 'destroy')->middleware(CheckPermission::class . ':Destination,can_delete');
+                    Route::post('/status/{id}', 'status')->middleware(CheckPermission::class . ':Destination,can_edit');
                     Route::post('/import', 'excelUpload');
                     Route::post('/export', 'excelExport');
                 });
@@ -173,18 +174,18 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('rate')->group(
             function () {
                 Route::controller(RateController::class)->group(function () {
-                    Route::post('/index', 'index');
-                    Route::post('/save', 'store');
-                    Route::get('/edit/{id}', 'edit');
-                    Route::post('/update/{id}', 'update');
-                    Route::delete('/delete/{id}', action: 'destroy');
-                    Route::post('/status/{id}', 'status');
+                    Route::post('/index', 'index')->middleware(CheckPermission::class . ':Rate,can_view');
+                    Route::post('/save', 'store')->middleware(CheckPermission::class . ':Rate,can_create');
+                    Route::get('/edit/{id}', 'edit')->middleware(CheckPermission::class . ':Rate,can_edit');
+                    Route::post('/update/{id}', 'update')->middleware(CheckPermission::class . ':Rate,can_edit');
+                    Route::delete('/delete/{id}', action: 'destroy')->middleware(CheckPermission::class . ':Rate,can_delete');
+                    Route::post('/status/{id}', 'status')->middleware(CheckPermission::class . ':Rate,can_edit');
                     Route::get('/rateNotes/{id}', 'getRateNote');
-                    Route::post('/saveNote', 'storeNote');
-                    Route::post('/updateNote/{id}', 'updateNote');
-                    Route::get('/editNote/{id}', 'editNote');
-                    Route::delete('/deleteNote/{id}', action: 'destroyNote');
-                    Route::post('/statusNote/{id}', 'statusNote');
+                    Route::post('/saveNote', 'storeNote')->middleware(CheckPermission::class . ':RateNote,can_create');
+                    Route::post('/updateNote/{id}', 'updateNote')->middleware(CheckPermission::class . ':RateNote,can_edit');
+                    Route::get('/editNote/{id}', 'editNote')->middleware(CheckPermission::class . ':RateNote,can_edit');
+                    Route::delete('/deleteNote/{id}', action: 'destroyNote')->middleware(CheckPermission::class . ':RateNote,can_delete');
+                    Route::post('/statusNote/{id}', 'statusNote')->middleware(CheckPermission::class . ':RateNote,can_edit');
                     Route::post('/import', 'excelUpload');
                     Route::post('/export', 'excelExport');
                 });
@@ -195,19 +196,19 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('quote')->group(
             function (): void {
                 Route::controller(QuoteController::class)->group(function () {
-                    Route::post('/index', 'index');
                     Route::post('/getVendorList', 'getVendorList');
-                    Route::post('/save', 'store');
-                    Route::get('/edit/{id}', 'edit');
-                    Route::post('/update/{id}', 'update');
-                    Route::delete('/delete/{id}', action: 'destroy');
-                    Route::post('/status/{id}', 'status');
-                    Route::get('/quoteNotes/{id}', 'getQuoteNote');
-                    Route::post('/saveNote', 'storeNote');
-                    Route::post('/updateNote/{id}', 'updateNote');
-                    Route::get('/editNote/{id}', 'editNote');
-                    Route::delete('/deleteNote/{id}', action: 'destroyNote');
-                    Route::post('/statusNote/{id}', 'statusNote');
+                    Route::post('/index', 'index')->middleware(CheckPermission::class . ':Quote,can_view');
+                    Route::post('/save', 'store')->middleware(CheckPermission::class . ':Quote,can_create');
+                    Route::get('/edit/{id}', 'edit')->middleware(CheckPermission::class . ':Quote,can_edit');
+                    Route::post('/update/{id}', 'update')->middleware(CheckPermission::class . ':Quote,can_edit');
+                    Route::delete('/delete/{id}', action: 'destroy')->middleware(CheckPermission::class . ':Quote,can_delete');
+                    Route::post('/status/{id}', 'status')->middleware(CheckPermission::class . ':Quote,can_edit');
+                    Route::get('/quoteNotes/{id}', 'getQuoteNote')->middleware(CheckPermission::class . ':QuoteNote,can_view');
+                    Route::post('/saveNote', 'storeNote')->middleware(CheckPermission::class . ':QuoteNote,can_create');
+                    Route::get('/editNote/{id}', 'editNote')->middleware(CheckPermission::class . ':QuoteNote,can_edit');
+                    Route::post('/updateNote/{id}', 'updateNote')->middleware(CheckPermission::class . ':QuoteNote,can_edit');
+                    Route::delete('/deleteNote/{id}', action: 'destroyNote')->middleware(CheckPermission::class . ':QuoteNote,can_delete');
+                    Route::post('/statusNote/{id}', 'statusNote')->middleware(CheckPermission::class . ':QuoteNote,can_edit');
                     Route::post('/export', 'excelExport');
                     Route::get('/pdf/{id}', 'generatePdf');
                 });
