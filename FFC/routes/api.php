@@ -254,7 +254,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('orderStatusMaster')->group(
             function (): void {
                 Route::controller(OrderStatusMasterController::class)->group(function () {
-                    //master
+                    Route::get('/index', 'index');
                     Route::post('/save', 'store');
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', 'update');
