@@ -6,13 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\Master;
 use App\Models\Permission;
 use App\Models\User;
+use App\Services\Permission\PermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class PermissionController extends Controller
 {
+
+    protected $permissionService;
+    public function __construct(PermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     public function getAllMaster()
     {
         $master = Master::all();
@@ -46,12 +55,12 @@ class PermissionController extends Controller
 
     public function view($userId)
     {
-        // Use the findModel helper to retrieve the customer
+        // Use the findModel helper to retrieve the User
         $user = findModel(User::class, $userId);
 
         // Check if the returned value is a JSON response (meaning the model was not found)
         if ($user instanceof \Illuminate\Http\JsonResponse) {
-            return $user;  // Return the not found response
+            return $user;
         }
 
         $masters = Master::select('id', 'name')
@@ -67,7 +76,7 @@ class PermissionController extends Controller
 
     public function saveUserPermissions(Request $request, $id)
     {
-        // Use the findModel helper to retrieve the customer
+        // Use the findModel helper to retrieve the user
         $user = findModel(User::class, $id);
 
         // Check if the returned value is a JSON response (meaning the model was not found)
@@ -88,46 +97,11 @@ class PermissionController extends Controller
             ], 422);
         }
 
-        // Extract user_id from the request
-        $userId = $validated['user_id'];
-        $loginUser = Auth::user();
-
-        // Loop through each permission and update or create the record
-        foreach ($validated['permissions'] as $masterName => $permissionData) {
-            // Ensure master_id is present in the permission data
-            if (isset($permissionData['master_id'])) {
-                Permission::updateOrCreate(
-                    [
-                        'user_id' => $userId,
-                        'master_id' => $permissionData['master_id'],
-                    ],
-                    [
-                        'can_create' => $permissionData['can_create'],
-                        'can_edit'   => $permissionData['can_edit'],
-                        'can_delete' => $permissionData['can_delete'],
-                        'can_view'   => $permissionData['can_view'],
-                        'granted_by' => $loginUser->id,
-                    ]
-                );
-            }
-        }
+        $this->permissionService->savePermission($request);
 
         return response()->json([
             'status' => true,
             'message' => 'Permissions saved successfully'
         ], 201);
-    }
-
-    public function findModelHelper(string $id)
-    {
-        // Use the findModel helper to retrieve the customer
-        $user = findModel(User::class, $id);
-
-        // Check if the returned value is a JSON response (meaning the model was not found)
-        if ($user instanceof \Illuminate\Http\JsonResponse) {
-            return $user;  // Return the not found response
-        }
-
-        return $user;
     }
 }

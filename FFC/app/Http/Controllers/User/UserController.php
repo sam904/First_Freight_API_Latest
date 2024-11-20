@@ -8,11 +8,9 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Services\User\UserService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
@@ -41,7 +39,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         Log::info("*****************************");
-        Log::info('Saving User Details...');
+        Log::info('Creating User Details...');
         Log::info("*****************************");
 
         $validatedData = $this->userValidation($request);
@@ -58,16 +56,9 @@ class UserController extends Controller
         // Determine whether the input is an email or username
         //$loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        if ($image = $request->file('profile_image')) {
-            $destinationPath = 'images/profiles/user/';
-            $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
-            $image->move($destinationPath, $profileImage);
-            $validatedData['profile_image'] = "$profileImage";
-        }
-
         DB::beginTransaction();  // Start the transaction
         try {
-            $user = $this->userService->createUser($validatedData);
+            $user = $this->userService->createUser($request);
             DB::commit();
             Log::info("User: {$user->id} registered successfully.");
             return response()->json([

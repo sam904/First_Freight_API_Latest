@@ -4,12 +4,20 @@ namespace App\Services\User;
 
 use App\Helpers\SearchHelper;
 use App\Models\User;
+use App\Services\Permission\PermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
+    protected $permissionService;
+
+    public function __construct(PermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     public function getAllUserData(Request $request)
     {
         // Paginate the results
@@ -43,19 +51,36 @@ class UserService
         }
     }
 
-    public function createUser($validatedData)
+    public function createUser(Request $request)
     {
         $user = User::create([
-            'first_name' => $validatedData['first_name'],
-            'last_name' => $validatedData['last_name'],
-            'email' => $validatedData['email'],
-            'mobile_number' => $validatedData['mobile_number'],
-            'password' => Hash::make($validatedData['password']),
-            'profile_image' => $validatedData['profile_image'],
-            //$loginType => $request->username,
+            'first_name' => $request['first_name'],
+            'last_name' => $request['last_name'],
+            'email' => $request['email'],
+            'mobile_number' => $request['mobile_number'],
+            'password' => Hash::make($request['password']),
+            // 'profile_image' => $img['profileImage'],
+            //  $loginType => $request->username,
             // 'secret_password' => $encryptedPassword,
             // 'secret_key' => $key,
         ]);
+        Log::info("user is created => " . $user->id);
+        if ($request->hasFile('profile_image')) {
+            if ($image = $request->file('profile_image')) {
+                $destinationPath = 'images/profiles/user/' . $user->id . '/';
+                $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
+                $image->move($destinationPath, $profileImage);
+                $img['profileImage'] = "$profileImage";
+            }
+            $user->update([
+                'profile_image' =>  $img['profileImage']
+            ]);
+        }
+
+
+        Log::info("Saving User Permission...");
+        $request->merge(['user_id' => $user->id]);
+        $this->permissionService->savePermission($request);
 
         return $user;
     }

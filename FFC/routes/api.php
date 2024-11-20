@@ -37,7 +37,7 @@ Route::prefix('user')->group(
         );
         Route::controller(UserController::class)->group(
             function () {
-                Route::post('/register', 'store');
+                // Route::post('/register', 'store');
             }
         );
     }
@@ -66,6 +66,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
             function () {
                 Route::controller(UserController::class)->group(function () {
                     Route::post('/index', 'index')->middleware(CheckPermission::class . ':User,can_view');
+                    Route::post('/register', 'store')->middleware(CheckPermission::class . ':User,can_create');
                     Route::post('/update/{id}', 'update')->middleware(CheckPermission::class . ':User,can_edit');
                     Route::get('/edit/{id}', 'edit')->middleware(CheckPermission::class . ':User,can_edit');
                     Route::post('/status/{id}', 'status')->middleware(CheckPermission::class . ':User,can_edit');
