@@ -26,13 +26,13 @@ class CheckPermission
             'Order',
         ]; // Add valid master names here.
         if (!in_array($master, $allowedMasters)) {
-            return response()->json(['error' => 'Invalid master name for permission'], 400);
+            return response()->json(['status' => false, 'error' => 'Invalid master name for permission'], 400);
         }
 
         // Fetch master_id securely.
         $masterId = DB::table('masters')->where('name', $master)->value('id');
         if (!$masterId) {
-            return response()->json(['error' => 'Master not found for permission'], 404);
+            return response()->json(['status' => false, 'error' => 'Master not found for permission'], 404);
         }
 
         $user = Auth::user(); // Get the logged-in user ID.
@@ -42,9 +42,10 @@ class CheckPermission
             ->value($action);
 
         if (!$permission) {
+            Log::error($user->first_name . ' ' . $user->last_name . " not having permission for this {$master} master");
             return response()->json([
                 'status' => false,
-                'error' => 'You do not have permission to perform this action.'
+                'error' => 'User do not have permission to perform this action.'
             ], 403);
         }
 

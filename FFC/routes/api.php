@@ -65,11 +65,11 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('user')->group(
             function () {
                 Route::controller(UserController::class)->group(function () {
-                    Route::post('/index', 'index');
-                    Route::post('/update/{id}', 'update');
-                    Route::get('/edit/{id}', 'edit');
-                    Route::post('/status/{id}', 'status');
-                    Route::delete('/delete/{id}', action: 'destroy');
+                    Route::post('/index', 'index')->middleware(CheckPermission::class . ':User,can_view');
+                    Route::post('/update/{id}', 'update')->middleware(CheckPermission::class . ':User,can_edit');
+                    Route::get('/edit/{id}', 'edit')->middleware(CheckPermission::class . ':User,can_edit');
+                    Route::post('/status/{id}', 'status')->middleware(CheckPermission::class . ':User,can_edit');
+                    Route::delete('/delete/{id}', action: 'destroy')->middleware(CheckPermission::class . ':User,can_delete');
                     Route::post('/export', 'excelExport');
                 });
             }
