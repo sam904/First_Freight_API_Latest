@@ -263,12 +263,12 @@ class CustomerController extends Controller
             'contact.*.contact_fax' => 'nullable|string',
 
             // finance validation for each item in the array
-            'finance' => 'required|array',
-            'finance.*.finance_name' => 'required|string',
-            'finance.*.finance_designation' => 'required|string',
-            'finance.*.finance_phone' => 'required|numeric|digits_between:10,15',
-            'finance.*.finance_email' => 'required|string|email|max:255',
-            'finance.*.finance_fax' => 'nullable|string',
+            // 'finance' => 'required|array',
+            // 'finance.*.finance_name' => 'required|string',
+            // 'finance.*.finance_designation' => 'required|string',
+            // 'finance.*.finance_phone' => 'required|numeric|digits_between:10,15',
+            // 'finance.*.finance_email' => 'required|string|email|max:255',
+            // 'finance.*.finance_fax' => 'nullable|string',
 
         ]);
 
