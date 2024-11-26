@@ -186,17 +186,15 @@ class OrderService
                 $orderDetail = $order->orderDetails()->create($orderDetailData);
             } else {
                 Log::info("updating Order Details..." . $order->id);
-                $orderDetail = $order->orderDetails()->where('order_id', $order->id)->first();  // Fetch the updated model
+                $orderDetail = $order->orderDetails()->where('order_id', $order->id)->first();
                 $orderDetail->update($orderDetailData);
-                // $orderDetail = $order->orderDetails()->update($orderDetailData);
-                Log::info("orderDetail => " . $orderDetail);
+                Log::info("orderDetail => " . $orderDetail->implode);
             }
 
             if ($request->hasFile('uploadDocuments')) {
                 Log::info("Order Documents are uploading...");
                 $this->uploadImages($request, $order);
             }
-
 
             foreach ($detail['deliveryDetails'] as $delivery) {
                 $deliveryDetailsData = [
