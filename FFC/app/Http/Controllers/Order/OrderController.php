@@ -143,14 +143,14 @@ class OrderController extends Controller
             DB::commit();
             return response()->json([
                 'status' => true,
-                'message' => "Order created successfully"
+                'message' => "Order updated successfully"
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction if something goes wrong            
-            Log::error('Failed to insert order data: ', ['error' => $e->getMessage()]);
+            Log::error('Failed to update order data: ', ['error' => $e->getMessage()]);
             return response()->json([
                 'status' => false,
-                'message' => 'Failed to insert order data',
+                'message' => 'Failed to update order data',
                 "error" => $e->getMessage()
             ], 400); // Return error response
         }

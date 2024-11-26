@@ -75,7 +75,11 @@ class OrderService
 
     public function updateOrder(Request $request, Order $order)
     {
-        $order = $this->createOrder($request, $order, $order->id);
+        Log::info("order id => " . $order->id);
+        $this->createOrder($request, $order, $order->id);
+        $this->containerDetails($request, $order, $order->id);
+        $this->orderDetails($request, $order, $order->id);
+        return true;
     }
 
     public function createOrder(Request $request, Order $order = null, $id = null)
@@ -89,8 +93,10 @@ class OrderService
             "created_by" =>  $this->loginUser->id,
         ];
         if ($id == null) {
+            Log::info("Saving Order...");
             $order = Order::create($orderData);
         } else {
+            Log::info("updating Order data for => " . $order->id);
             $order = $order->update($orderData);
         }
         return $order;
@@ -98,16 +104,21 @@ class OrderService
 
     public function containerDetails(Request $request, Order $order, $id = null)
     {
-        $containerData = [
-            'container_no' => $container['containerNo'] ?? null,
-            'container_size' => $container['containerSize'] ?? null,
-            'po' => $container['po'] ?? null,
-            'cpo' => $container['cpo'] ?? null,
-        ];
         if (!empty($request['containerDetails'])) {
-            Log::info("Save to order_container_details table...");
             foreach ($request['containerDetails'] as $container) {
-                $order->orderContainerDetails()->create($containerData);
+                $containerData = [
+                    'container_no' => $container['containerNo'] ?? null,
+                    'container_size' => $container['containerSize'] ?? null,
+                    'po' => $container['po'] ?? null,
+                    'cpo' => $container['cpo'] ?? null,
+                ];
+                if ($id == null) {
+                    Log::info("Save to Order Container Details table...");
+                    $order->orderContainerDetails()->create($containerData);
+                } else {
+                    Log::info("update the Order Container Details table for =>" . $order->id);
+                    $order->orderContainerDetails()->update($containerData);
+                }
             }
         } else {
             Log::info("Order Container details are empty...");
@@ -116,7 +127,6 @@ class OrderService
 
     public function orderDetails(Request $request, Order $order, $id = null)
     {
-        Log::info("Save to order_details and related tables...");
         if (!empty($request['orderDetails'])) {
             $detail = $request['orderDetails'];
             $orderDetailData = [
@@ -171,14 +181,23 @@ class OrderService
                 'accessorial_charges' => $detail['accessorialCharges'] ?? null,
             ];
 
-            $orderDetail = $order->orderDetails()->create($orderDetailData);
+            if ($id == null) {
+                Log::info("Saving Order Details...");
+                $orderDetail = $order->orderDetails()->create($orderDetailData);
+            } else {
+                Log::info("updating Order Details..." . $order->id);
+                $orderDetail = $order->orderDetails()->where('order_id', $order->id)->first();  // Fetch the updated model
+                $orderDetail->update($orderDetailData);
+                // $orderDetail = $order->orderDetails()->update($orderDetailData);
+                Log::info("orderDetail => " . $orderDetail);
+            }
 
-            Log::info("Order Documents are uploading...");
             if ($request->hasFile('uploadDocuments')) {
+                Log::info("Order Documents are uploading...");
                 $this->uploadImages($request, $order);
             }
 
-            Log::info("Order Delivery are creating...");
+
             foreach ($detail['deliveryDetails'] as $delivery) {
                 $deliveryDetailsData = [
                     'order_sent_date' => $delivery['orderSentDate'] ?? null,
@@ -198,11 +217,31 @@ class OrderService
                     'transhipment_port_id' => $delivery['transhipmentPortId'],
                     'delivery_created_by' => $delivery['deliveryCreatedBy'],
                 ];
-                $orderDelivery = $orderDetail->deliveries()->create($deliveryDetailsData);
+                // if delivery id is null && isRequestType is insert then create
+                // if isRequestType is null then do not perform any operations
+                if ($delivery['isRequestType'] == "insert") {
+                    Log::info("Order Delivery is being created...");
+                    $orderDelivery = $orderDetail->deliveries()->create($deliveryDetailsData);
+                } else if ($delivery['isRequestType'] == "update" && isset($delivery['deliveryId'])) {
+                    Log::info("Order Delivery is being updated for delivery   order details id :" . $orderDetail->id);
+                    $orderDelivery = $orderDetail->deliveries()
+                        ->where('order_details_id', $orderDetail->id)
+                        ->where('id', $delivery['deliveryId'])
+                        ->first();
+                    if ($orderDelivery) {
+                        $orderDelivery->update($deliveryDetailsData);
+                    } else {
+                        Log::error("Delivery not found for update.");
+                    }
+                } else {
+                    Log::info("Order delivery: nothing to update...");
+                }
 
                 Log::info("Order Delivery Status are creating...");
                 $deliveryStatusData = ['delivery_status_id' => $delivery['deliveryStatusId']];
-                $orderDelivery->statuses()->create($deliveryStatusData);
+                if ($delivery['isRequestType'] != null) {
+                    $orderDelivery->statuses()->create($deliveryStatusData);
+                }
             }
         }
     }
