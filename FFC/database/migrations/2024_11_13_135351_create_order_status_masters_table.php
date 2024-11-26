@@ -15,7 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable();
             $table->string('status')->default('active');
+            $table->integer('sort_level')->nullable();
+            $table->unsignedBigInteger('service_type_id');
             $table->timestamps();
+
+            // Foreign key
+            $table->foreign('service_type_id')->references('id')->on('service_types')->onDelete('cascade');
         });
     }
 

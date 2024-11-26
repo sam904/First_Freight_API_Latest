@@ -14,15 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 class OrderDetails extends Model
 {
     use HasFactory;
-
     protected $fillable = [
-        'order_id',
-        'service_type_id',
-        'vendor_id',
-        'port_id',
-        'destination_id',
-        'created_by',
-        'transhipment_port_id',
         'shipper',
         'shipper_address',
         'consignee',
@@ -33,7 +25,6 @@ class OrderDetails extends Model
         'booking_request_sent_date',
         'booking_date',
         'bc_sent_to_shipper',
-        'bl',
         'seal',
         'weight',
         'pallets',
@@ -42,65 +33,47 @@ class OrderDetails extends Model
         'streamship_line',
         'discharge_date',
         'cargo_ready_date',
+        'master_bl',
+        'house_bl',
+        'freight_location',
         'vessel_voyage',
+        'firm_code',
         'commodity',
+        'special_instructions',
+        'upload_documents',
+        'notes',
         'si_cut_off',
         'vgm_cut_off',
         'cy_cut_off',
         'isf',
         'isf_date',
         'isf_no',
+        'isf_confirmation',
         'custom_filed',
+        'custom_clearance_date',
+        'custom_confirmation',
         'last_free_day',
-        'freight_location',
         'dangerous_goods',
         'freight_prepaid',
         'all_inclusive_rate',
         'hts_code',
-        'firm_code',
-        'special_instructions',
-        'notes',
-        'delivery_order_sent_date',
-        'delivery_vendor_confirm',
-        'delivery_picked_up_date',
-        'delivery_schedule_date',
-        'delivery_empty_return_date',
-        'delivery_empty_pick_up_cutoff_date',
-        'transmit_time',
-        'delivery_mode',
-        'delivery_free_days',
+        'consolidator',
+        'importer_of_record_name',
+        'importer_of_record_number',
         'msc_chassis',
         'pierpass_fees',
         'clean_truck_fees',
         'accessorial_charges',
+        'order_id'
     ];
 
-    public function serviceType()
+    public function order()
     {
-        return $this->belongsTo(ServiceType::class, 'service_type_id', 'id');
+        return $this->belongsTo(Order::class, 'order_id');
     }
 
-    public function vendor()
+    public function deliveries()
     {
-        return $this->belongsTo(Vendor::class, 'vendor_id', 'id');
-    }
-
-    public function port()
-    {
-        return $this->belongsTo(Port::class, 'port_id', 'id');
-    }
-
-    public function destination()
-    {
-        return $this->belongsTo(Destination::class, 'destination_id', 'id');
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'created_by', 'id');
-    }
-    public function transhipmentPort()
-    {
-        return $this->belongsTo(Port::class, 'transhipment_port_id', 'id');
+        return $this->hasMany(OrderDelivery::class);
     }
 }

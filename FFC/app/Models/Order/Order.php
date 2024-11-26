@@ -13,17 +13,12 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'customer_id',
-        'quote_id',
         'received_date',
-        'address_id',
-        'container_no',
-        'container_size',
-        'po',
-        'cpo',
         'overweight',
+        'quote_id',
+        'customer_id',
+        'address_id',
         'created_by',
-        'order_status_id',
     ];
 
     public function orderDetails()
@@ -31,27 +26,28 @@ class Order extends Model
         return $this->hasMany(OrderDetails::class, 'order_id', 'id');
     }
 
+    public function orderContainerDetails()
+    {
+        return $this->hasMany(OrderContainerDetails::class);
+    }
+
     public function quote()
     {
-        return $this->belongsTo(Quote::class, 'quote_id', 'id');
+        return $this->belongsTo(Quote::class, 'quote_id');
     }
 
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'customer_id', 'id');
-    }
-    public function customerAddress()
-    {
-        return $this->belongsTo(Customer::class, 'address_id', 'id');
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 
-    public function user()
+    public function address()
     {
-        return $this->belongsTo(User::class, 'created_by', 'id');
+        return $this->belongsTo(Customer::class, 'address_id');
     }
 
-    public function orderStatuses()
+    public function createdBy()
     {
-        return $this->hasMany(OrderStatus::class, 'order_id', 'id');
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

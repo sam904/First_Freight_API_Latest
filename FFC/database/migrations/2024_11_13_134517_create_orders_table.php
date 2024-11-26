@@ -14,10 +14,6 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->date('received_date')->nullable();
-            $table->string('container_no')->nullable();
-            $table->string('po')->nullable();
-            $table->string('cpo')->nullable();
-            $table->string('container_size')->nullable();
             $table->string('overweight')->nullable();
 
             // Foreign key columns
@@ -25,7 +21,6 @@ return new class extends Migration
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('address_id');
             $table->unsignedBigInteger('created_by');
-            $table->unsignedBigInteger('order_status_id')->nullable();
             $table->timestamps();
 
             // Foreign key constraints

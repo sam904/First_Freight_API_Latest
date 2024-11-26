@@ -23,15 +23,33 @@ class OrderService
     {
         $orders = Order::with([
             'customer:id,company_name',
+            'address:id,company_name',
             'quote:id',
-            'orderDetails.serviceType:id,name',
-            'orderDetails.vendor:id,company_name',
-            'orderDetails.port:id,name',
-            'orderDetails.destination:id,name',
-            'orderDetails.transhipmentPort:id,name',
-            'orderDetails.user:id,first_name,last_name'
-        ]);
-        return $orders->paginate(10);
+            'orderContainerDetails',
+            'orderDetails' => function ($query) {
+                $query->with([
+                    'deliveries' => function ($query) {
+                        $query->with([
+                            // 'orderDetail:id,order_id', // OrderDetail relationship within deliveries
+                            'serviceType:id,name',
+                            'portOfLoading:id,name',
+                            'portOfDischarge:id,name',
+                            'destination:id,name',
+                            'vendor:id,company_name',
+                            'transhipmentPort:id,name',
+                            'createdBy:id,first_name,last_name',
+                            'statuses' => function ($query) {
+                                $query->with([
+                                    'deliveryStatus:id,name'
+                                ]);
+                            }
+                        ]);
+                    }
+                ]);
+            }
+        ])->paginate(10);
+
+        return $orders;
     }
 
     /**
@@ -44,161 +62,150 @@ class OrderService
 
     public function saveOrder(Request $request)
     {
-        $order = Order::create([
-            'customer_id' => $request['customerId'],
-            'quote_id' => $request['quoteId'],
-            'received_date' => $request['receivedDate'],
-            'address_id' => $request['addressId'],
-            'container_no' => $request['containerNo'],
-            'container_size' => $request['containerSize'],
-            'po' => $request['po'],
-            'cpo' => $request['cpo'] ?? null,
-            'overweight' => $request['overweight'],
-            "created_by" =>  $this->loginUser->id,
-        ]);
 
-        Log::info("Order Documents are uploading...");
-        if ($request->hasFile('uploadDocuments')) {
-            $this->uploadImages($request, $order);
-        }
+        $order = $this->createOrder($request);
+        Log::info("Order is created => " . $order->id);
 
-        Log::info("Order Details are saving...");
-        $this->saveOrderDetails($request, $order);
+        $this->containerDetails($request, $order);
 
-
+        $this->orderDetails($request, $order);
 
         return true;
     }
 
-    public function saveOrderDetails(Request $request, $order)
+    public function updateOrder(Request $request, Order $order)
     {
-        foreach ($request['orderDetails'] as $detail) {
-            $order->orderDetails()->create([
-                "created_by" =>  $detail['createdBy'],
-                'service_type_id' => $detail['serviceTypeId'],
-                'vendor_id' => $detail['vendorId'],
-                'port_id' => $detail['portId'],
-                'destination_id' => $detail['destinationId'],
-                'transhipment_port_id' => $detail['transhipmentPortId'] ?? null,
-                'shipper' => $detail['shipper'],
-                'shipper_address' => $detail['shipperAddress'],
-                'consignee' => $detail['consignee'],
-                'consignee_address' => $detail['consigneeAddress'],
+        $order = $this->createOrder($request, $order, $order->id);
+    }
+
+    public function createOrder(Request $request, Order $order = null, $id = null)
+    {
+        $orderData = [
+            'customer_id' => $request['customerId'],
+            'quote_id' => $request['quoteId'] ?? null,
+            'received_date' => $request['receivedDate'] ?? null,
+            'address_id' => $request['addressId'],
+            'overweight' => $request['overweight'] ?? null,
+            "created_by" =>  $this->loginUser->id,
+        ];
+        if ($id == null) {
+            $order = Order::create($orderData);
+        } else {
+            $order = $order->update($orderData);
+        }
+        return $order;
+    }
+
+    public function containerDetails(Request $request, Order $order, $id = null)
+    {
+        $containerData = [
+            'container_no' => $container['containerNo'] ?? null,
+            'container_size' => $container['containerSize'] ?? null,
+            'po' => $container['po'] ?? null,
+            'cpo' => $container['cpo'] ?? null,
+        ];
+        if (!empty($request['containerDetails'])) {
+            Log::info("Save to order_container_details table...");
+            foreach ($request['containerDetails'] as $container) {
+                $order->orderContainerDetails()->create($containerData);
+            }
+        } else {
+            Log::info("Order Container details are empty...");
+        }
+    }
+
+    public function orderDetails(Request $request, Order $order, $id = null)
+    {
+        Log::info("Save to order_details and related tables...");
+        if (!empty($request['orderDetails'])) {
+            $detail = $request['orderDetails'];
+            $orderDetailData = [
+                'shipper' => $detail['shipper'] ?? null,
+                'shipper_address' => $detail['shipperAddress'] ?? null,
+                'consignee' => $detail['consignee'] ?? null,
+                'consignee_address' => $detail['consigneeAddress'] ?? null,
                 'buyer' => $detail['buyer'] ?? null,
                 'buyer_address' => $detail['buyerAddress'] ?? null,
                 'notify_party' => $detail['notifyParty'] ?? null,
-                'booking_request_sent_date' => $detail['bookingRequestSentDate'],
+                'booking_request_sent_date' => $detail['bookingRequestSentDate'] ?? null,
                 'booking_date' => $detail['bookingDate'] ?? null,
                 'bc_sent_to_shipper' => $detail['bcSentToShipper'] ?? null,
-                'bl' => $detail['bl'] ?? null,
                 'seal' => $detail['seal'] ?? null,
                 'weight' => $detail['weight'] ?? null,
                 'pallets' => $detail['pallets'] ?? null,
-                'etd' => $detail['etd'],
-                'eta' => $detail['eta'],
+                'etd' => $detail['etd'] ?? null,
+                'eta' => $detail['eta'] ?? null,
                 'streamship_line' => $detail['streamshipLine'] ?? null,
                 'discharge_date' => $detail['dischargeDate'] ?? null,
                 'cargo_ready_date' => $detail['cargoReadyDate'] ?? null,
+                'master_bl' => $detail['masterBl'] ?? null,
+                'house_bl' => $detail['houseBl'] ?? null,
+                'freight_location' => $detail['freightLocation'] ?? null,
                 'vessel_voyage' => $detail['vesselVoyage'] ?? null,
+                'firm_code' => $detail['firmCode'] ?? null,
                 'commodity' => $detail['commodity'] ?? null,
+                'special_instructions' => $detail['specialInstructions'] ?? null,
+                'upload_documents' => $detail['uploadDocuments'] ?? null,
+                'notes' => $detail['notes'] ?? null,
                 'si_cut_off' => $detail['siCutOff'] ?? null,
                 'vgm_cut_off' => $detail['vgmCutOff'] ?? null,
                 'cy_cut_off' => $detail['cyCutOff'] ?? null,
                 'isf' => $detail['isf'] ?? null,
                 'isf_date' => $detail['isfDate'] ?? null,
                 'isf_no' => $detail['isfNo'] ?? null,
+                'isf_confirmation' => $detail['isfConfirmation'] ?? null,
                 'custom_filed' => $detail['customFiled'] ?? null,
+                'custom_clearance_date' => $detail['customClearanceDate'] ?? null,
+                'custom_confirmation' => $detail['customConfirmation'] ?? null,
                 'last_free_day' => $detail['lastFreeDay'] ?? null,
-                'freight_location' => $detail['freightLocation'] ?? null,
                 'dangerous_goods' => $detail['dangerousGoods'] ?? null,
                 'freight_prepaid' => $detail['freightPrepaid'] ?? null,
                 'all_inclusive_rate' => $detail['allInclusiveRate'] ?? null,
                 'hts_code' => $detail['htsCode'] ?? null,
-                'firm_code' => $detail['firmCode'] ?? null,
-                'special_instructions' => $detail['specialInstructions'] ?? null,
-                'notes' => $detail['notes'] ?? null,
-                'delivery_order_sent_date' => $detail['deliveryOrderSentDate'] ?? null,
-                'delivery_vendor_confirm' => $detail['deliveryVendorConfirm'] ?? null,
-                'delivery_picked_up_date' => $detail['deliveryPickedUpDate'] ?? null,
-                'delivery_schedule_date' => $detail['deliveryScheduleDate'] ?? null,
-                'delivery_empty_return_date' => $detail['deliveryEmptyReturnDate'] ?? null,
-                'delivery_empty_pick_up_cutoff_date' => $detail['deliveryEmptyPickUpCutoffDate'] ?? null,
-                'transmit_time' => $detail['transmitTime'] ?? null,
-                'delivery_mode' => $detail['deliveryMode'] ?? null,
-                'delivery_free_days' => $detail['deliveryFreeDays'] ?? null,
+                'consolidator' => $detail['consolidator'] ?? null,
+                'importer_of_record_name' => $detail['importerOfRecordName'] ?? null,
+                'importer_of_record_number' => $detail['importerOfRecordNumber'] ?? null,
                 'msc_chassis' => $detail['mscChassis'] ?? null,
                 'pierpass_fees' => $detail['pierpassFees'] ?? null,
                 'clean_truck_fees' => $detail['cleanTruckFees'] ?? null,
                 'accessorial_charges' => $detail['accessorialCharges'] ?? null,
-            ]);
+            ];
 
-            Log::info("Order status is saving...");
-            $order->orderStatuses()->create([
-                'status_id' => $detail['orderStatusId']
-            ]);
-            // OrderStatus::create([
-            //     'order_id' => $order->id,
-            //     'status_id' => $detail['orderStatusId']
-            // ]);
+            $orderDetail = $order->orderDetails()->create($orderDetailData);
+
+            Log::info("Order Documents are uploading...");
+            if ($request->hasFile('uploadDocuments')) {
+                $this->uploadImages($request, $order);
+            }
+
+            Log::info("Order Delivery are creating...");
+            foreach ($detail['deliveryDetails'] as $delivery) {
+                $deliveryDetailsData = [
+                    'order_sent_date' => $delivery['orderSentDate'] ?? null,
+                    'is_vendor_confirmed' => $delivery['isVendorConfirmed'] ?? null,
+                    'picked_up_date' => $delivery['pickedUpDate'] ?? null,
+                    'schedule_date' => $delivery['scheduleDate'] ?? null,
+                    'empty_return_on_date' => $delivery['emptyReturnOnDate'] ?? null,
+                    'empty_pick_up_cutoff_date' => $delivery['emptyPickUpCutoffDate'] ?? null,
+                    'transit_time' => $delivery['transitTime'] ?? null,
+                    'mode' => $delivery['mode'] ?? null,
+                    'free_days' => $delivery['freeDays'] ?? null,
+                    'service_type_id' => $delivery['serviceTypeId'],
+                    'port_of_loading_id' => $delivery['portOfLoadingId'],
+                    'port_of_discharge_id' => $delivery['portOfDischargeId'],
+                    'destination_id' => $delivery['destinationId'],
+                    'vendor_id' => $delivery['vendorId'],
+                    'transhipment_port_id' => $delivery['transhipmentPortId'],
+                    'delivery_created_by' => $delivery['deliveryCreatedBy'],
+                ];
+                $orderDelivery = $orderDetail->deliveries()->create($deliveryDetailsData);
+
+                Log::info("Order Delivery Status are creating...");
+                $deliveryStatusData = ['delivery_status_id' => $delivery['deliveryStatusId']];
+                $orderDelivery->statuses()->create($deliveryStatusData);
+            }
         }
     }
-
-    public function saveOrderOld(Request $request)
-    {
-        $order =  Order::create([
-            'received_date' => $request['receivedDate'],
-            'address' => $request['address'],
-            'container_no' => $request['containerNo'],
-            'bl' =>  $request['bl'],
-            'po' =>  $request['po'],
-            'cpo' =>  $request['cpo'],
-            'seal' =>  $request['seal'],
-            'last_free_day' =>  $request['lastFreeDay'],
-            'container_size' =>  $request['containerSize'],
-            'weight' =>  $request['weight'],
-            'overweight' =>  $request['overWeight'],
-            'pallets' =>  $request['pallets'],
-            'streamship_line' =>  $request['streamShipLine'],
-            'discharge_date' =>  $request['dischargeDate'],
-            'freight_location' =>  $request['freightLocation'],
-            'firm_code' =>  $request['firmCode'],
-            'vessel_voyage' =>  $request['vesselVoyage'],
-            'eta' =>  $request['eta'],
-            'commodity' =>  $request['commodity'],
-            'special_instructions' =>  $request['specialInstructions'],
-            'notes' =>  $request['notes'],
-            'mode' =>  $request['mode'],
-            'free_days' =>  $request['freeDays'],
-            'delivery_order_sent_date' =>  $request['deliveryOrderSentDate'],
-            'delivery_vendor_confirm' =>  $request['deliveryVendorConfirm'],
-            'delivery_picked_up_date' =>  $request['deliveryPickedUpDate'],
-            'delivery_schedule_date' =>  $request['deliveryScheduleDate'],
-            'delivery_empty_return_date' =>  $request['deliveryEmptyReturnDate'],
-            'msc_chassis' =>  $request['mscChassis'],
-            'pierpass_fees' =>  $request['pierPassFees'],
-            'clean_truck_fees' =>  $request['cleanTruckFees'],
-            'accessorial_charges' =>  $request['accessorialCharges'],
-            'service_type_id' =>  $request['serviceTypeId'],
-            'customer_id' =>  $request['customerId'],
-            'vendor_id' =>  $request['vendorId'],
-            'port_id' =>  $request['portId'],
-            'destination_id' =>  $request['destinationId'],
-            "user_id" =>  $this->loginUser->id,
-        ]);
-
-        if ($request->hasFile('uploadDocuments')) {
-            $this->uploadImages($request, $order);
-        }
-
-        Log::info("Order status is saving...");
-        OrderStatus::create([
-            'order_id' => $order->id,
-            'status_id' => $request['orderStatusId']
-        ]);
-
-        return true;
-    }
-
     public function uploadImages(Request $request, $order)
     {
         Log::info("Uploading Images for order => " . $order->id);
@@ -244,6 +251,8 @@ class OrderService
     {
         $orderStatusMaster = OrderStatusMaster::create([
             'name' => $request['name'],
+            'service_type_id' => $request['serviceTypeId'],
+            'sort_level' => $request['sortLevel'],
         ]);
         return $orderStatusMaster;
     }
@@ -252,6 +261,8 @@ class OrderService
     {
         $orderStatusMaster->update([
             'name' => $request['name'],
+            'service_type_id' => $request['serviceTypeId'],
+            'sort_level' => $request['sortLevel'],
         ]);
         return true;
     }
