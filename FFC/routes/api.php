@@ -247,6 +247,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::post('/statusNote/{id}', 'statusNote');
                     Route::post('/export', 'excelExport');
                     Route::get('/pdf/{id}', 'generatePdf');
+                    Route::get('/orderStatusByServiceType/{id}', 'getOrderStatusByServiceType');
                     // Order Status
                     Route::post('/status/{orderId}', 'status');
                 });

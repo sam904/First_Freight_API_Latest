@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Order;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order\Order;
+use App\Models\Order\OrderStatusMaster;
 use App\Services\Order\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -156,6 +157,15 @@ class OrderController extends Controller
         }
     }
 
+
+    public function getOrderStatusByServiceType($id)
+    {
+        $data = OrderStatusMaster::where('service_type_id', $id)->get();
+        return response()->json([
+            'status' => true,
+            'data' => $data
+        ], 200);
+    }
 
     public function status(Request $request, $id)
     {

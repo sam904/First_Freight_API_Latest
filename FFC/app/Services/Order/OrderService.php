@@ -286,11 +286,22 @@ class OrderService
      */
     public function createStatusMaster(Request $request)
     {
-        $orderStatusMaster = OrderStatusMaster::create([
-            'name' => $request['name'],
-            'service_type_id' => $request['serviceTypeId'],
-            'sort_level' => $request['sortLevel'],
-        ]);
+        // $orderStatusMaster = OrderStatusMaster::create([
+        //     'name' => $request['name'],
+        //     'service_type_id' => $request['serviceTypeId'],
+        //     'sort_level' => $request['sortLevel'],
+        // ]);
+        $orderStatusMaster = OrderStatusMaster::updateOrCreate(
+            // Search criteria to determine if the record exists
+            [
+                'service_type_id' => $request['serviceTypeId'],
+                'name' => $request['name']
+            ],
+            // Data to update or create
+            [
+                'sort_level' => $request['sortLevel']
+            ]
+        );
         return $orderStatusMaster;
     }
 
