@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Order;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order\Order;
+use App\Models\Order\OrderNote;
 use App\Models\Order\OrderStatusMaster;
 use App\Services\Order\OrderService;
 use Illuminate\Http\Request;
@@ -56,6 +57,7 @@ class OrderController extends Controller
             DB::commit();
             return response()->json([
                 'status' => true,
+                'orderId' => $order,
                 'message' => "Order created successfully"
             ], 201);
         } catch (\Exception $e) {
@@ -86,9 +88,9 @@ class OrderController extends Controller
             'orderContainerDetails',
             'orderDetails' => function ($query) {
                 $query->with([
+                    'serviceType:id,name',
                     'deliveries' => function ($query) {
                         $query->with([
-                            'serviceType:id,name',
                             'portOfLoading:id,name',
                             'portOfDischarge:id,name',
                             'destination:id,name',
@@ -198,83 +200,83 @@ class OrderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'customerId' => 'required|integer',
-            'quoteId' => 'nullable|integer',
-            'receivedDate' => 'required|date',
-            'addressId' => 'required|integer',
-            'overweight' => 'required|in:Yes,No',
-            'containerDetails' => 'required|array|min:1',
-            'containerDetails.*.containerNo' => 'required|string',
-            'containerDetails.*.containerSize' => 'required|string',
-            'containerDetails.*.po' => 'required|string',
-            'containerDetails.*.cpo' => 'required|string',
-            'orderDetails' => 'required|array|min:1',
-            'orderDetails.deliveryDetails' => 'required|array|min:1',
-            'orderDetails.deliveryDetails.*.orderSentDate' => 'required|date',
-            'orderDetails.deliveryDetails.*.isVendorConfirmed' => 'required|in:Yes,No',
-            'orderDetails.deliveryDetails.*.pickedUpDate' => 'required|date',
-            'orderDetails.deliveryDetails.*.scheduleDate' => 'required|date',
-            'orderDetails.deliveryDetails.*.emptyReturnOnDate' => 'required|date',
-            'orderDetails.deliveryDetails.*.emptyPickUpCutoffDate' => 'required|date',
-            'orderDetails.deliveryDetails.*.transitTime' => 'required|date',
-            'orderDetails.deliveryDetails.*.mode' => 'required|string',
-            'orderDetails.deliveryDetails.*.freeDays' => 'required|integer',
-            'orderDetails.deliveryDetails.*.serviceTypeId' => 'required|integer',
-            'orderDetails.deliveryDetails.*.portOfLoadingId' => 'required|integer',
-            'orderDetails.deliveryDetails.*.portOfDischargeId' => 'required|integer',
-            'orderDetails.deliveryDetails.*.destinationId' => 'required|integer',
-            'orderDetails.deliveryDetails.*.vendorId' => 'required|integer',
-            'orderDetails.deliveryDetails.*.transhipmentPortId' => 'required|integer',
-            'orderDetails.deliveryDetails.*.deliveryCreatedBy' => 'required|integer',
-            'orderDetails.deliveryDetails.*.deliveryStatusId' => 'required|integer',
-            'orderDetails.shipper' => 'required|string',
-            'orderDetails.shipperAddress' => 'required|string',
-            'orderDetails.consignee' => 'required|string',
-            'orderDetails.consigneeAddress' => 'required|string',
-            'orderDetails.buyer' => 'required|string',
-            'orderDetails.buyerAddress' => 'required|string',
-            'orderDetails.notifyParty' => 'required|string',
-            'orderDetails.bookingRequestSentDate' => 'required|date',
-            'orderDetails.bookingDate' => 'required|date',
-            'orderDetails.bcSentToShipper' => 'required|date',
-            'orderDetails.seal' => 'required|string',
-            'orderDetails.weight' => 'required|string',
-            'orderDetails.pallets' => 'required|integer',
-            'orderDetails.etd' => 'required|date',
-            'orderDetails.eta' => 'required|date',
-            'orderDetails.streamshipLine' => 'required|string',
-            'orderDetails.dischargeDate' => 'required|date',
-            'orderDetails.cargoReadyDate' => 'required|date',
-            'orderDetails.masterBl' => 'required|string',
-            'orderDetails.houseBl' => 'required|string',
-            'orderDetails.freightLocation' => 'required|string',
-            'orderDetails.vesselVoyage' => 'required|string',
-            'orderDetails.firmCode' => 'required|string',
-            'orderDetails.commodity' => 'required|string',
-            'orderDetails.specialInstructions' => 'nullable|string',
-            'orderDetails.uploadDocuments' => 'nullable|string',
-            'orderDetails.notes' => 'nullable|string',
-            'orderDetails.siCutOff' => 'required|date',
-            'orderDetails.vgmCutOff' => 'required|date',
-            'orderDetails.cyCutOff' => 'required|date',
-            'orderDetails.isf' => 'required|string',
-            'orderDetails.isfDate' => 'required|date',
-            'orderDetails.isfNo' => 'required|string',
-            'orderDetails.isfConfirmation' => 'required|in:Yes,No',
-            'orderDetails.customFiled' => 'required|in:Yes,No',
-            'orderDetails.customClearanceDate' => 'required|date',
-            'orderDetails.customConfirmation' => 'required|string',
-            'orderDetails.lastFreeDay' => 'required|date',
-            'orderDetails.dangerousGoods' => 'required|in:Yes,No',
-            'orderDetails.freightPrepaid' => 'required|in:Yes,No',
-            'orderDetails.allInclusiveRate' => 'required|numeric',
-            'orderDetails.htsCode' => 'required|string',
-            'orderDetails.consolidator' => 'required|string',
-            'orderDetails.importerOfRecordName' => 'required|string',
-            'orderDetails.importerOfRecordNumber' => 'required|string',
-            'orderDetails.mscChassis' => 'required|in:Yes,No',
-            'orderDetails.pierpassFees' => 'required|in:Yes,No',
-            'orderDetails.cleanTruckFees' => 'required|in:Yes,No',
-            'orderDetails.accessorialCharges' => 'required|in:Yes,No',
+            // 'quoteId' => 'nullable|integer',
+            // 'receivedDate' => 'required|date',
+            // 'addressId' => 'required|integer',
+            // 'overweight' => 'required|in:Yes,No',
+            'order_container_details' => 'required|array|min:1',
+            // 'order_container_details.*.containerNo' => 'required|string',
+            // 'order_container_details.*.containerSize' => 'required|string',
+            'order_container_details.*.po' => 'required|string',
+            'order_container_details.*.cpo' => 'required|string',
+            // 'order_details' => 'required|array|min:1',
+            // 'order_details.deliveries' => 'required|array|min:1',
+            // 'order_details.deliveries.*.orderSentDate' => 'required|date',
+            // 'order_details.deliveries.*.isVendorConfirmed' => 'required|in:Yes,No',
+            // 'order_details.deliveries.*.pickedUpDate' => 'required|date',
+            // 'order_details.deliveries.*.scheduleDate' => 'required|date',
+            // 'order_details.deliveries.*.emptyReturnOnDate' => 'required|date',
+            // 'order_details.deliveries.*.emptyPickUpCutoffDate' => 'required|date',
+            // 'order_details.deliveries.*.transitTime' => 'required|date',
+            // 'order_details.deliveries.*.mode' => 'required|string',
+            // 'order_details.deliveries.*.freeDays' => 'required|integer',
+            // 'order_details.deliveries.*.serviceTypeId' => 'required|integer',
+            // 'order_details.deliveries.*.portOfLoadingId' => 'required|integer',
+            // 'order_details.deliveries.*.portOfDischargeId' => 'required|integer',
+            // 'order_details.deliveries.*.destinationId' => 'required|integer',
+            // 'order_details.deliveries.*.vendorId' => 'required|integer',
+            // 'order_details.deliveries.*.transhipmentPortId' => 'required|integer',
+            // 'order_details.deliveries.*.deliveryCreatedBy' => 'required|integer',
+            // 'order_details.deliveries.*.deliveryStatusId' => 'required|integer',
+            // 'order_details.shipper' => 'required|string',
+            // 'order_details.shipperAddress' => 'required|string',
+            // 'order_details.consignee' => 'required|string',
+            // 'order_details.consigneeAddress' => 'required|string',
+            // 'order_details.buyer' => 'required|string',
+            // 'order_details.buyerAddress' => 'required|string',
+            // 'order_details.notifyParty' => 'required|string',
+            // 'order_details.bookingRequestSentDate' => 'required|date',
+            // 'order_details.bookingDate' => 'required|date',
+            // 'order_details.bcSentToShipper' => 'required|date',
+            // 'order_details.seal' => 'required|string',
+            // 'order_details.weight' => 'required|string',
+            // 'order_details.pallets' => 'required|integer',
+            // 'order_details.etd' => 'required|date',
+            // 'order_details.eta' => 'required|date',
+            // 'order_details.streamshipLine' => 'required|string',
+            // 'order_details.dischargeDate' => 'required|date',
+            // 'order_details.cargoReadyDate' => 'required|date',
+            // 'order_details.masterBl' => 'required|string',
+            // 'order_details.houseBl' => 'required|string',
+            // 'order_details.freightLocation' => 'required|string',
+            // 'order_details.vesselVoyage' => 'required|string',
+            // 'order_details.firmCode' => 'required|string',
+            // 'order_details.commodity' => 'required|string',
+            // 'order_details.specialInstructions' => 'nullable|string',
+            // 'order_details.uploadDocuments' => 'nullable|string',
+            // 'order_details.notes' => 'nullable|string',
+            // 'order_details.siCutOff' => 'required|date',
+            // 'order_details.vgmCutOff' => 'required|date',
+            // 'order_details.cyCutOff' => 'required|date',
+            // 'order_details.isf' => 'required|string',
+            // 'order_details.isfDate' => 'required|date',
+            // 'order_details.isfNo' => 'required|string',
+            // 'order_details.isfConfirmation' => 'required|in:Yes,No',
+            // 'order_details.customFiled' => 'required|in:Yes,No',
+            // 'order_details.customClearanceDate' => 'required|date',
+            // 'order_details.customConfirmation' => 'required|string',
+            // 'order_details.lastFreeDay' => 'required|date',
+            // 'order_details.dangerousGoods' => 'required|in:Yes,No',
+            // 'order_details.freightPrepaid' => 'required|in:Yes,No',
+            // 'order_details.allInclusiveRate' => 'required|numeric',
+            // 'order_details.htsCode' => 'required|string',
+            // 'order_details.consolidator' => 'required|string',
+            // 'order_details.importerOfRecordName' => 'required|string',
+            // 'order_details.importerOfRecordNumber' => 'required|string',
+            // 'order_details.mscChassis' => 'required|in:Yes,No',
+            // 'order_details.pierpassFees' => 'required|in:Yes,No',
+            // 'order_details.cleanTruckFees' => 'required|in:Yes,No',
+            // 'order_details.accessorialCharges' => 'required|in:Yes,No',
         ]);
 
         // Check if validation fails
@@ -283,6 +285,166 @@ class OrderController extends Controller
         }
 
         // Return validated data
+        return $validator->validated();
+    }
+
+    /**
+     * Order Note
+     */
+
+    public function getOrderNote($id)
+    {
+        Log::info("*****************************");
+        Log::info('Get Order Note');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the Order
+        $order = findModel(Order::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($order instanceof \Illuminate\Http\JsonResponse) {
+            return $order;  // Return the not found response
+        }
+
+        $note = OrderNote::with('user:id,first_name,last_name')->where('order_id', $id)->orderBy('id', 'desc')->get();
+        return response()->json(['status' => true, 'data' => $note], 200);
+    }
+
+
+    public function storeNote(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Save Order Note');
+        Log::info("*****************************");
+        $validatedData = $this->orderNoteValidation($request);
+        if (!is_array($validatedData)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order Note validation failed',
+                'error' => $validatedData
+            ], 422);
+        }
+
+        DB::beginTransaction();  // Start the transaction
+        try {
+            $this->orderService->createNotes($request);
+            DB::commit();
+            return response()->json([
+                'status' => true,
+                'message' => "Order Notes created successfully"
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to insert order note data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to insert order note',
+                "error" => $e->getMessage()
+            ], 400); // Return error response
+        }
+    }
+
+    public function updateNote(Request $request, $id)
+    {
+        Log::info("*****************************");
+        Log::info('Update Order Note');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the OrderNote
+        $orderNotes = findModel(OrderNote::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($orderNotes instanceof \Illuminate\Http\JsonResponse) {
+            return $orderNotes;  // Return the not found response
+        }
+
+        $validatedData = $this->orderNoteValidation($request);
+        if (!is_array($validatedData)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order Note validation failed',
+                'error' => $validatedData
+            ], 422);
+        }
+
+        DB::beginTransaction();  // Start the transaction
+        try {
+            $this->orderService->updateNote($request, $orderNotes);
+            DB::commit();
+            return response()->json([
+                'status' => true,
+                'message' => "Order Notes updated successfully"
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to update order note data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update order note',
+                "error" => $e->getMessage()
+            ], 400); // Return error response
+        }
+    }
+
+    public function editNote($id)
+    {
+        Log::info("*****************************");
+        Log::info('Edit Order Note');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the Order
+        $orderNote = findModel(OrderNote::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($orderNote instanceof \Illuminate\Http\JsonResponse) {
+            return $orderNote;  // Return the not found response
+        }
+
+        $note = OrderNote::with('user:id,first_name,last_name')->find($id);
+        return response()->json(['status' => true, 'data' => $note], 200);
+    }
+
+    public function destroyNote($id)
+    {
+        Log::info("*****************************");
+        Log::info('Delete Order Note');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the Order
+        $orderNote = findModel(OrderNote::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($orderNote instanceof \Illuminate\Http\JsonResponse) {
+            return $orderNote;  // Return the not found response
+        }
+
+        DB::transaction(function () use ($orderNote) {
+            $orderNote->delete();
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order Note deleted successfully'
+        ], 200);
+    }
+
+    public function statusNote(Request $request, $id)
+    {
+        Log::info("*****************************");
+        Log::info('Status Order Note............');
+        Log::info("*****************************");
+        // Use the statusUpdate helper to update status
+        return statusUpdate(OrderNote::class, $id, [
+            'status' => $request->status
+        ]);
+    }
+
+    private function orderNoteValidation(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'orderId' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
         return $validator->validated();
     }
 }

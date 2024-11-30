@@ -3,11 +3,6 @@
 namespace App\Models\Order;
 
 use App\Models\Common\ServiceType;
-use App\Models\Customer\Customer;
-use App\Models\Destination\Destination;
-use App\Models\Port\Port;
-use App\Models\User;
-use App\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -64,12 +59,19 @@ class OrderDetails extends Model
         'pierpass_fees',
         'clean_truck_fees',
         'accessorial_charges',
-        'order_id'
+        'order_id',
+        'service_type_id',
+        'sort_level'
     ];
 
     public function order()
     {
         return $this->belongsTo(Order::class, 'order_id');
+    }
+
+    public function serviceType()
+    {
+        return $this->belongsTo(ServiceType::class, 'service_type_id');
     }
 
     public function deliveries()

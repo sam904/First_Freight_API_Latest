@@ -25,7 +25,6 @@ class OrderDelivery extends Model
         'mode',
         'free_days',
         'order_details_id',
-        'service_type_id',
         'port_of_loading_id',
         'port_of_discharge_id',
         'destination_id',
@@ -37,11 +36,6 @@ class OrderDelivery extends Model
     public function orderDetail()
     {
         return $this->belongsTo(OrderDetails::class, 'order_details_id');
-    }
-
-    public function serviceType()
-    {
-        return $this->belongsTo(ServiceType::class, 'service_type_id');
     }
 
     public function portOfLoading()
