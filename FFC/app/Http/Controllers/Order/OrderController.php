@@ -493,19 +493,19 @@ class OrderController extends Controller
         // Encode as Base64
         $base64Pdf = base64_encode($pdfContent);
 
-        // return response()->json([
-        //     'pdf_base64' => $base64Pdf,
-        // ]);
+        return response()->json([
+            'pdf_base64' => $base64Pdf,
+        ]);
 
 
-        return response()->streamDownload(
-            fn() => print($dompdf->output()),
-            'delivery_order.pdf',
-            [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="delivery_order.pdf"',
-            ]
-        );
+        // return response()->streamDownload(
+        //     fn() => print($dompdf->output()),
+        //     'delivery_order.pdf',
+        //     [
+        //         'Content-Type' => 'application/pdf',
+        //         'Content-Disposition' => 'attachment; filename="delivery_order.pdf"',
+        //     ]
+        // );
 
         // return $pdf->download('Trucking.pdf');
     }
