@@ -7,10 +7,13 @@ use App\Models\Order\Order;
 use App\Models\Order\OrderNote;
 use App\Models\Order\OrderStatusMaster;
 use App\Services\Order\OrderService;
+use Dompdf\Dompdf;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OrderController extends Controller
 {
@@ -177,7 +180,6 @@ class OrderController extends Controller
         ]);
     }
 
-
     public function destroy($id)
     {
         // Use the findModel helper to retrieve the port
@@ -308,7 +310,6 @@ class OrderController extends Controller
         $note = OrderNote::with('user:id,first_name,last_name')->where('order_id', $id)->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $note], 200);
     }
-
 
     public function storeNote(Request $request)
     {
@@ -446,5 +447,66 @@ class OrderController extends Controller
             return $validator->errors();
         }
         return $validator->validated();
+    }
+
+    /**
+     * Order PDF
+     */
+    public function generatePdf($id)
+    {
+        Log::info("Pdf is generating...");
+        // Fetch data from database
+        $data = [
+            'trucker' => 'John Doe Trucking',
+            'email' => 'johndoe@example.com',
+            'date' => now()->toDateString(),
+            // 'containerDetails' => DB::table('containers')->get() // Adjust query to match your database
+        ];
+        try {
+            // Get Delivery Data
+            $data = $this->orderService->getPdfData($id);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order Data Not Found',
+                "error" => $e->getMessage()
+            ], 400); // Return error response
+        }
+
+        // return response()->json([
+        //     $data[0],
+        // ]);
+        // exit;
+
+        // $html = view('order/Trucking', compact('data'))->render();
+        $html = view('order/Trucking', ['data' => $data[0]])->render();
+        // Load the HTML and pass the data
+        // $pdf = Pdf::loadView('order/Trucking', $data);
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        // Download the PDF
+        // Get the raw PDF content
+        $pdfContent = $dompdf->output();
+
+        // Encode as Base64
+        $base64Pdf = base64_encode($pdfContent);
+
+        // return response()->json([
+        //     'pdf_base64' => $base64Pdf,
+        // ]);
+
+
+        return response()->streamDownload(
+            fn() => print($dompdf->output()),
+            'delivery_order.pdf',
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="delivery_order.pdf"',
+            ]
+        );
+
+        // return $pdf->download('Trucking.pdf');
     }
 }

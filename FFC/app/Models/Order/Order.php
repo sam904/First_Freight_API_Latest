@@ -23,7 +23,12 @@ class Order extends Model
 
     public function orderDetails()
     {
-        return $this->hasMany(OrderDetails::class, 'order_id', 'id');
+        return $this->hasMany(OrderDetails::class);
+    }
+
+    public function orderContainerDetails()
+    {
+        return $this->hasManyThrough(OrderContainerDetails::class, OrderDetails::class);
     }
 
     public function quote()

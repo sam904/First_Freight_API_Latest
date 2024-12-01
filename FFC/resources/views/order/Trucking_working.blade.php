@@ -1,3 +1,31 @@
+@php
+    // Check if orderDetails exists, and then access the related orderContainerDetails
+    $orderDetails = $data['orderDetails'] ?? null;
+
+    $bl = $orderDetails[0]['master_bl'] ?? '';
+    $seal = $orderDetails[0]['seal'] ?? '';
+    $lfd = $orderDetails[0]['last_free_day'] ?? '';
+    $weight = $orderDetails[0]['weight'] ?? '';
+    $pallets = $orderDetails[0]['pallets'] ?? '';
+    // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
+    $orderContainerDetails = $orderDetails
+        ? $orderDetails->map(function ($orderDetail) {
+            return $orderDetail->orderContainerDetails;
+        })
+        : null;
+
+    $orderDeliveries = $orderDetails
+        ? $orderDetails->map(function ($orderDetail) {
+            return $orderDetail->deliveries;
+        })
+        : null;
+
+    foreach ($orderDeliveries[0] as $delivery) {
+        $scac = $delivery['vendor']['scac_number'];
+        $mc = $delivery['vendor']['mc_number'];
+        $usdot = $delivery['vendor']['us_dot_number'];
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,14 +35,16 @@
     <title>Delivery Order</title>
 </head>
 
-<body style="
+<body
+    style="
       font-family: Verdana, Geneva, Tahoma, sans-serif;
       margin: 0;
       padding: 0;
       background-color: #f9f9f9;
     ">
     <div class="delivery-order" style="max-width: 80rem; margin: 0 auto; padding: 20px">
-        <header style="
+        <header
+            style="
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -22,26 +52,27 @@
           padding: 5px;
           border-bottom: 2px solid #000;
         ">
+            {{-- <p><pre>{{ json_encode($scac, JSON_PRETTY_PRINT) }}</pre></p> --}}
             <div class="header-left">
                 <img src="https://via.placeholder.com/120" alt="FFC Logo" class="logo"
                     style="width: 120px; height: auto" />
-                <h1 style="font-size: 24px; margin: 0">Delivery Order</h1>
+                <h1 style="font-size: 24px; margin: 0">{{ $data['customer']['company_name'] }}</h1>
             </div>
             <div class="header-right">
                 <p style="text-align: right; font-size: 14px">
-                    <strong>SCAC:</strong> FIVA
+                    <strong>SCAC:</strong> {{ $scac }}
                 </p>
                 <p style="text-align: right; font-size: 14px">
-                    <strong>USDOT #:</strong> 3718531
+                    <strong>USDOT #:</strong> {{ $usdot }}
                 </p>
                 <p style="text-align: right; font-size: 14px">
-                    <strong>MC #:</strong> MC1307931
+                    <strong>MC #:</strong> {{ $mc }}
                 </p>
                 <p style="text-align: right; font-size: 14px">
                     <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
                 </p>
                 <p style="font-size: 14px; font-weight: bold">
-                    Ocean Freight | Customs Filing | Trucking | Transload | Warehousing
+                    Ocean Freight | Customs Filing | trucker | Transload | Warehousing
                 </p>
             </div>
         </header>
@@ -53,7 +84,8 @@
                 date/time as the POD.
             </p>
             <br /><br />
-            <div style="
+            <div
+                style="
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -69,7 +101,7 @@
                 </div>
                 <div style="text-align: right">
                     <p style="font-size: 14px; margin: 5px 0">
-                        <strong>Date:</strong> 10-09-2024
+                        <strong>Date:</strong> {{ $data['received_date'] }}
                     </p>
                 </div>
             </div>
@@ -108,23 +140,26 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px">PONU038737</td>
-                    <td style="border: 1px solid #ddd; padding: 8px">#REF</td>
-                    <td style="border: 1px solid #ddd; padding: 8px">#REF</td>
-                    <td style="border: 1px solid #ddd; padding: 8px">#REF</td>
-                    <td style="border: 1px solid #ddd; padding: 8px">#REF</td>
-                    <td style="border: 1px solid #ddd; padding: 8px">#REF</td>
-                    <td style="border: 1px solid #ddd; padding: 8px">#REF</td>
-                    <td style="border: 1px solid #ddd; padding: 8px">#REF</td>
-                    <td style="border: 1px solid #ddd; padding: 8px">#REF</td>
-                </tr>
+                @foreach ($orderContainerDetails[0] as $containerDetails)
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['container_no'] }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $bl }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['po'] }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['cpo'] }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $seal }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $lfd }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $weight }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['container_size'] }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $pallets }}</td>
+                    </tr>
+                @endforeach
             </tbody>
         </table>
         <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
             <thead>
                 <tr>
-                    <th style="
+                    <th
+                        style="
                 border: 1px solid #ddd;
                 background-color: rgb(221, 238, 240);
                 padding: 8px;
@@ -133,15 +168,16 @@
                         <strong>Deliver To:</strong>
                     </th>
                     <td colspan="3" style="border: 1px solid #ddd; padding: 8px; text-align: left">
-                        <p style="margin: 0">METABO HPT Koki Holdings America LTD</p>
-                        <p style="margin: 0">1111 BROADWAY AVE</p>
-                        <p style="margin: 0">BRASELTON GA 30517</p>
+                        <p style="margin: 0">{{ $data['address']['company_name'] }}</p>
+                        {{-- <p style="margin: 0">1111 BROADWAY AVE</p>
+                        <p style="margin: 0">BRASELTON GA 30517</p> --}}
                     </td>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 border: 1px solid #ddd;
                 background-color: rgb(221, 238, 240);
                 padding: 8px;
@@ -150,9 +186,11 @@
                         <strong>Delivery Appt Date:</strong>
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: center">
-                        1-18
+                        {{ \Carbon\Carbon::parse($data['received_date'])->format('m-d') }}
+
                     </td>
-                    <td style="
+                    <td
+                        style="
                 border: 1px solid #ddd;
                 padding: 8px;
                 font-weight: bold;
@@ -168,7 +206,8 @@
         </table>
 
         <section class="contact" style="margin-top: 20px; background-color: #ffffff; border-radius: 5px">
-            <p class="highlight" style="
+            <p class="highlight"
+                style="
             background: black;
             color: white;
             padding: 10px;
@@ -179,7 +218,8 @@
             <table class="details-table" style="width: 100%; margin-top: 10px; border-collapse: collapse">
                 <thead>
                     <tr>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -188,9 +228,10 @@
                             <strong>Freight Location:</strong>
                         </th>
                         <td style="border: 1px solid #ddd; padding: 8px">
-                            CHARLESTON - WANDO WELCH TERMINAL
+                            {{ $orderDetails[0]['freight_location'] }}
                         </td>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -198,12 +239,15 @@
                 ">
                             <strong>Firms Code:</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">NA</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">
+                            {{ $orderDetails[0]['firm_code'] }}
+                        </td>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -212,9 +256,10 @@
                             <strong>Vessel/Voyage:</strong>
                         </th>
                         <td style="border: 1px solid #ddd; padding: 8px">
-                            COSCO - CMA CGM CHRISTOPHER
+                            {{ $orderDetails[0]['vessel_voyage'] }}
                         </td>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -223,11 +268,12 @@
                             <strong>Commodity:</strong>
                         </th>
                         <td style="border: 1px solid #ddd; padding: 8px">
-                            COLLATED NAILS
+                            {{ $orderDetails[0]['commodity'] }}
                         </td>
                     </tr>
                     <tr>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -235,7 +281,9 @@
                 ">
                             <strong>ETA:</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">#REF!</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">
+                            {{ $orderDetails[0]['eta'] }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -244,7 +292,8 @@
         <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
             <thead>
                 <tr>
-                    <th style="
+                    <th
+                        style="
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
@@ -261,7 +310,8 @@
             </thead>
         </table>
 
-        <table class="details-table" style="
+        <table class="details-table"
+            style="
           width: 100%;
           margin-top: 20px;
           border-collapse: collapse;
@@ -269,7 +319,8 @@
         ">
             <thead>
                 <tr>
-                    <th rowspan="2" style="
+                    <th rowspan="2"
+                        style="
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
@@ -278,7 +329,8 @@
               ">
                         Email:
                     </th>
-                    <td style="
+                    <td
+                        style="
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
@@ -293,7 +345,8 @@
                 </tr>
 
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
@@ -310,7 +363,8 @@
         </table>
 
         <div style="border: 1px solid #ddd; padding: 1rem; font-size: 14px">
-            <div style="
+            <div
+                style="
             text-align: center;
             font-weight: bold;
             padding-bottom: 0.5rem;
@@ -322,14 +376,16 @@
             <p style="margin: 1rem 0; font-weight: bold">
                 Cargo is received in good condition.
             </p>
-            <div style="
+            <div
+                style="
             display: flex;
             justify-content: space-between;
             margin-bottom: 1rem;
           ">
                 <div>
                     <strong>Appointment time:</strong>
-                    <span style="
+                    <span
+                        style="
                 border-bottom: 1px solid #000;
                 display: inline-block;
                 width: 150px;
@@ -337,7 +393,8 @@
                 </div>
                 <div>
                     <strong>Arrived at:</strong>
-                    <span style="
+                    <span
+                        style="
                 border-bottom: 1px solid #000;
                 display: inline-block;
                 width: 150px;
@@ -345,7 +402,8 @@
                 </div>
                 <div>
                     <strong>Departed:</strong>
-                    <span style="
+                    <span
+                        style="
                 border-bottom: 1px solid #000;
                 display: inline-block;
                 width: 150px;
@@ -354,7 +412,8 @@
             </div>
             <div style="display: flex; justify-content: space-between">
                 <div style="text-align: center">
-                    <span style="
+                    <span
+                        style="
                 border-bottom: 1px solid #000;
                 display: inline-block;
                 width: 150px;
@@ -362,7 +421,8 @@
                     <strong>Signature</strong>
                 </div>
                 <div style="text-align: center">
-                    <span style="
+                    <span
+                        style="
                 border-bottom: 1px solid #000;
                 display: inline-block;
                 width: 150px;
@@ -370,7 +430,8 @@
                     <strong>Name</strong>
                 </div>
                 <div style="text-align: center">
-                    <span style="
+                    <span
+                        style="
                 border-bottom: 1px solid #000;
                 display: inline-block;
                 width: 150px;
@@ -380,7 +441,8 @@
             </div>
         </div>
 
-        <footer style="
+        <footer
+            style="
           display: flex;
           justify-content: space-between;
           align-items: flex-start;

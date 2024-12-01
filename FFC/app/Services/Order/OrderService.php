@@ -3,6 +3,8 @@
 namespace App\Services\Order;
 
 use App\Models\Order\Order;
+use App\Models\Order\OrderContainerDetails;
+use App\Models\Order\OrderDelivery;
 use App\Models\Order\OrderDetails;
 use App\Models\Order\OrderNote;
 use App\Models\Order\OrderStatusMaster;
@@ -399,7 +401,6 @@ class OrderService
         return true;
     }
 
-
     public function updateNote(Request $request, OrderNote $notes)
     {
         $notes->update([
@@ -411,5 +412,73 @@ class OrderService
             'user_id' =>  $this->loginUser->id,
         ]);
         return true;
+    }
+
+    /**
+     * Id is delivery id
+     */
+    public function getPdfData($id)
+    {
+        // Get delevery Details
+        $deliveryId = $id;
+        $deliveryData = OrderDelivery::find($deliveryId);
+        if (!$deliveryData) {
+            Log::info('Order Delivery Details are not found.');
+            throw new \InvalidArgumentException('Order Delivery Details are not found for this Id =>' . $id);
+        }
+        // Get Order Details
+        $orderDetailsId = $deliveryData->order_details_id;
+        $orderDetailsData = OrderDetails::find($orderDetailsId);
+        if (!$orderDetailsData) {
+            Log::info('Order Details are not found.');
+            throw new \InvalidArgumentException('Order Details are not found.');
+        }
+        // Get Order Details
+        $orderId = $orderDetailsData->order_id;
+        $orderData = Order::find($orderId);
+        if (!$orderData) {
+            Log::info('Order are not found.');
+            throw new \InvalidArgumentException('Order are not found.');
+        }
+        // Get Order Container Details
+        $orderContainerDetailsData = OrderContainerDetails::where('order_details_id', $orderDetailsId)->get();
+        if ($orderContainerDetailsData->isEmpty()) {
+            Log::info('Order Container Details Data are not found.');
+            throw new \InvalidArgumentException('Order Container Details Data are not found.');
+        }
+
+        // Get Order Data
+        $orders = Order::with([
+            'customer:id,company_name',
+            'address:id,company_name',
+            'quote:id',
+            'orderDetails' => function ($query) use ($orderDetailsId, $deliveryId) {
+                // Filter the order details based on the order_detail_id and delivery_id
+                $query->where('id', $orderDetailsId)
+                    ->with([
+                        'serviceType:id,name',
+                        'orderContainerDetails',
+                        'deliveries' => function ($query) use ($deliveryId) {
+                            // Filter deliveries by delivery_id
+                            $query->where('id', $deliveryId)
+                                ->with([
+                                    'portOfLoading:id,name',
+                                    'portOfDischarge:id,name',
+                                    'destination:id,name',
+                                    'vendor:id,company_name,mc_number,scac_number,us_dot_number',
+                                    'transhipmentPort:id,name',
+                                    'createdBy:id,first_name,last_name',
+                                    // 'statuses' => function ($query) {
+                                    //     $query->with([
+                                    //         'deliveryStatus:id,name'
+                                    //     ]);
+                                    // }
+                                ]);
+                        }
+                    ]);
+            }
+        ])->where('id', $orderId)->get();
+
+        return $orders;
     }
 }
