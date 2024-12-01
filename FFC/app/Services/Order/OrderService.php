@@ -28,13 +28,13 @@ class OrderService
             'customer:id,company_name',
             'address:id,company_name',
             'quote:id',
-            'orderContainerDetails',
             'orderDetails' => function ($query) {
                 $query->with([
+                    'serviceType:id,name',
+                    'orderContainerDetails',
                     'deliveries' => function ($query) {
                         $query->with([
                             // 'orderDetail:id,order_id', // OrderDetail relationship within deliveries
-                            'serviceType:id,name',
                             'portOfLoading:id,name',
                             'portOfDischarge:id,name',
                             'destination:id,name',
@@ -113,8 +113,6 @@ class OrderService
 
     public function containerDetails($data, OrderDetails $orderDetail, $id = null)
     {
-        // Log::info($data['order_container_details']);
-        // if (!empty($request['order_container_details'])) {
         if (isset($data['order_container_details']) && is_array($data['order_container_details'])) {
             foreach ($data['order_container_details'] as $container) {
                 Log::info("container => ", $container);
@@ -130,23 +128,23 @@ class OrderService
                     $orderDetail->orderContainerDetails()->create($containerData);
                 } else {
                     Log::info("update the Order Container Details table for =>" . $orderDetail->id);
-
                     $orderContainer = $orderDetail->orderContainerDetails()->where('id', $container['orderContainerId'])->first();
+                    if (empty($orderContainer)) {
+                        Log::info('Order Container ID is required/Not Found');
+                        throw new \InvalidArgumentException('Order Container ID is required/Not Found.');
+                    }
                     $orderContainer->update($containerData);
                 }
             }
+        } else {
+            Log::info("Order Container details are empty...");
         }
-        // } else {
-        //     Log::info("Order Container details are empty...");
-        // }
     }
 
     public function orderDetails(Request $request, Order $order)
     {
         if (!empty($request['order_details'])) {
             foreach ($request->order_details as $detail) {
-
-
                 // Perform order details actions if isOrderDetailsRequest is insert or update
                 if ($detail['isOrderDetailsRequest'] != null) {
 
@@ -206,8 +204,7 @@ class OrderService
                     if ($detail['isOrderDetailsRequest'] === 'insert') {
                         $orderDetail = $order->orderDetails()->create($orderDetailData);
                         Log::info("Saving Order Details..." . $orderDetail->id);
-
-                        // Log::info($detail['order_container_details']);
+                        Log::info("Saving Order Container Details...");
                         $this->containerDetails($detail, $orderDetail, null);
                     } elseif ($detail['isOrderDetailsRequest'] === 'update') {
                         $orderDetailId = $detail['orderDetailsId'];
@@ -220,6 +217,7 @@ class OrderService
                         $orderDetail->update($orderDetailData);
                         Log::info("orderDetail => " . $orderDetail);
 
+                        Log::info("Updating Order Container Details...");
                         $this->containerDetails($detail, $orderDetail, $orderDetail->id);
                     } else {
                         Log::error("Order Details not found for update");
@@ -289,6 +287,8 @@ class OrderService
                     Log::info("Order Details isOrderDetailsRequest is null");
                 }
             }
+        } else {
+            Log::info("Order Details are empty.");
         }
     }
 
