@@ -85,10 +85,10 @@ class OrderController extends Controller
             'customer:id,company_name',
             'address:id,company_name',
             'quote:id',
-            'orderContainerDetails',
             'orderDetails' => function ($query) {
                 $query->with([
                     'serviceType:id,name',
+                    'orderContainerDetails',
                     'deliveries' => function ($query) {
                         $query->with([
                             'portOfLoading:id,name',
@@ -204,11 +204,11 @@ class OrderController extends Controller
             // 'receivedDate' => 'required|date',
             // 'addressId' => 'required|integer',
             // 'overweight' => 'required|in:Yes,No',
-            'order_container_details' => 'required|array|min:1',
+            // 'order_container_details' => 'required|array|min:1',
             // 'order_container_details.*.containerNo' => 'required|string',
             // 'order_container_details.*.containerSize' => 'required|string',
-            'order_container_details.*.po' => 'required|string',
-            'order_container_details.*.cpo' => 'required|string',
+            // 'order_container_details.*.po' => 'required|string',
+            // 'order_container_details.*.cpo' => 'required|string',
             // 'order_details' => 'required|array|min:1',
             // 'order_details.deliveries' => 'required|array|min:1',
             // 'order_details.deliveries.*.orderSentDate' => 'required|date',

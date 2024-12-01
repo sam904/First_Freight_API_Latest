@@ -3,6 +3,7 @@
 namespace App\Services\Order;
 
 use App\Models\Order\Order;
+use App\Models\Order\OrderDetails;
 use App\Models\Order\OrderNote;
 use App\Models\Order\OrderStatusMaster;
 use Illuminate\Http\Request;
@@ -68,8 +69,8 @@ class OrderService
         $order = $this->createOrder($request);
         Log::info("Order is created => " . $order->id);
 
-        Log::info("Container Details");
-        $this->containerDetails($request, $order);
+        // Log::info("Container Details");
+        // $this->containerDetails($request, $order);
 
         Log::info("Order Details");
         $this->orderDetails($request, $order);
@@ -86,7 +87,7 @@ class OrderService
     {
         Log::info("update order id => " . $order->id);
         $this->createOrder($request, $order, $order->id);
-        $this->containerDetails($request, $order, $order->id);
+
         $this->orderDetails($request, $order);
         return true;
     }
@@ -98,7 +99,6 @@ class OrderService
             'quote_id' => $request['quoteId'] ?? null,
             'received_date' => $request['receivedDate'] ?? null,
             'address_id' => $request['addressId'] ?? null,
-            'overweight' => $request['overweight'] ?? null,
             "created_by" =>  $this->loginUser->id,
         ];
         if ($id == null) {
@@ -111,33 +111,42 @@ class OrderService
         return $order;
     }
 
-    public function containerDetails(Request $request, Order $order, $id = null)
+    public function containerDetails($data, OrderDetails $orderDetail, $id = null)
     {
-        if (!empty($request['order_container_details'])) {
-            foreach ($request['order_container_details'] as $container) {
+        // Log::info($data['order_container_details']);
+        // if (!empty($request['order_container_details'])) {
+        if (isset($data['order_container_details']) && is_array($data['order_container_details'])) {
+            foreach ($data['order_container_details'] as $container) {
+                Log::info("container => ", $container);
                 $containerData = [
                     'container_no' => $container['containerNo'] ?? null,
                     'container_size' => $container['containerSize'] ?? null,
                     'po' => $container['po'] ?? null,
                     'cpo' => $container['cpo'] ?? null,
+                    'overweight' => $container['overweight'] ?? null,
                 ];
                 if ($id == null) {
-                    Log::info("Save to Order Container Details table...");
-                    $order->orderContainerDetails()->create($containerData);
+                    Log::info("Save to Order Container Details table..." . $orderDetail);
+                    $orderDetail->orderContainerDetails()->create($containerData);
                 } else {
-                    Log::info("update the Order Container Details table for =>" . $order->id);
-                    $order->orderContainerDetails()->update($containerData);
+                    Log::info("update the Order Container Details table for =>" . $orderDetail->id);
+
+                    $orderContainer = $orderDetail->orderContainerDetails()->where('id', $container['orderContainerId'])->first();
+                    $orderContainer->update($containerData);
                 }
             }
-        } else {
-            Log::info("Order Container details are empty...");
         }
+        // } else {
+        //     Log::info("Order Container details are empty...");
+        // }
     }
 
     public function orderDetails(Request $request, Order $order)
     {
         if (!empty($request['order_details'])) {
             foreach ($request->order_details as $detail) {
+
+
                 // Perform order details actions if isOrderDetailsRequest is insert or update
                 if ($detail['isOrderDetailsRequest'] != null) {
 
@@ -197,6 +206,9 @@ class OrderService
                     if ($detail['isOrderDetailsRequest'] === 'insert') {
                         $orderDetail = $order->orderDetails()->create($orderDetailData);
                         Log::info("Saving Order Details..." . $orderDetail->id);
+
+                        // Log::info($detail['order_container_details']);
+                        $this->containerDetails($detail, $orderDetail, null);
                     } elseif ($detail['isOrderDetailsRequest'] === 'update') {
                         $orderDetailId = $detail['orderDetailsId'];
                         if (empty($orderDetailId)) {
@@ -207,6 +219,8 @@ class OrderService
                         $orderDetail = $order->orderDetails()->where('id', $orderDetailId)->first();
                         $orderDetail->update($orderDetailData);
                         Log::info("orderDetail => " . $orderDetail);
+
+                        $this->containerDetails($detail, $orderDetail, $orderDetail->id);
                     } else {
                         Log::error("Order Details not found for update");
                     }

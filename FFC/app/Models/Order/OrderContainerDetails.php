@@ -15,13 +15,14 @@ class OrderContainerDetails extends Model
         'container_size',
         'po',
         'cpo',
-        'order_id'
+        'order_id',
+        'overweight',
     ];
 
     protected $hidden = ['created_at', 'updated_at'];
 
-    public function order()
+    public function orderDetail()
     {
-        return $this->belongsTo(Order::class, 'order_id', 'id');
+        return $this->belongsTo(OrderDetails::class, 'order_details_id');
     }
 }

@@ -78,4 +78,9 @@ class OrderDetails extends Model
     {
         return $this->hasMany(OrderDelivery::class);
     }
+
+    public function orderContainerDetails()
+    {
+        return $this->hasMany(OrderContainerDetails::class);
+    }
 }

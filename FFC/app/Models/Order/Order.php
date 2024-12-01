@@ -26,11 +26,6 @@ class Order extends Model
         return $this->hasMany(OrderDetails::class, 'order_id', 'id');
     }
 
-    public function orderContainerDetails()
-    {
-        return $this->hasMany(OrderContainerDetails::class);
-    }
-
     public function quote()
     {
         return $this->belongsTo(Quote::class, 'quote_id');
