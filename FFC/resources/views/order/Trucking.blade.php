@@ -8,9 +8,16 @@
     $weight = $orderDetails[0]['weight'] ?? '';
     $pallets = $orderDetails[0]['pallets'] ?? '';
     // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
+    // $orderContainerDetails1 = $orderDetails
+    //     ? $orderDetails->map(function ($orderDetail) {
+    //         return $orderDetail->orderContainerDetails;
+    //     })
+    //     : null;
+
     $orderContainerDetails = $orderDetails
         ? $orderDetails->map(function ($orderDetail) {
-            return $orderDetail->orderContainerDetails;
+            // Get the first element of the orderContainerDetails array
+            return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
         })
         : null;
 
@@ -117,6 +124,9 @@
         }
     </style>
 </head>
+{{-- <p>
+    <pre>{{ json_encode($orderContainerDetails, JSON_PRETTY_PRINT) }}</pre>
+</p> --}}
 
 <body>
     <div class="delivery-order">
@@ -130,7 +140,7 @@
                 <p><strong>USDOT #:</strong> {{ $usdot }}</p>
                 <p><strong>MC #:</strong> {{ $mc }}</p>
                 <p><a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a></p>
-                <p>Ocean Freight | Customs Filing | Trucking | Transload | Warehousing</p>
+                <p><strong> Ocean Freight | Customs Filing | Trucking | Transload | Warehousing</strong></p>
             </div>
             <div class="clearfix"></div>
         </header>
@@ -163,7 +173,8 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($orderContainerDetails[0] as $containerDetails)
+                {{-- @foreach ($orderContainerDetails1[0] as $containerDetails) --}}
+                @foreach ($orderContainerDetails as $containerDetails)
                     <tr>
                         <td>{{ $containerDetails['container_no'] }}</td>
                         <td>{{ $bl }}</td>
@@ -291,12 +302,13 @@
                 </tr>
             </thead>
         </table>
+
         <div style="border: 1px solid #ddd; padding: 1rem; font-size: 14px">
             <div
                 style="
             text-align: center;
             font-weight: bold;
-            padding-bottom: 0.5rem;
+            padding: 0.5rem;
             border-bottom: 1px solid #ccc;
             background-color: rgb(221, 238, 240);
           ">
@@ -313,61 +325,23 @@
           ">
                 <div>
                     <strong>Appointment time:</strong>
-                    <span
-                        style="
-                border-bottom: 1px solid #000;
-                display: inline-block;
-                width: 150px;
-              ">&nbsp;</span>
+                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
+                    <strong style="margin-left:30px">Arrived at:</strong>
+                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
+                    <strong style="margin-left:30px">Departed:</strong>
+                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
                 </div>
-                <div>
-                    <strong>Arrived at:</strong>
-                    <span
-                        style="
-                border-bottom: 1px solid #000;
-                display: inline-block;
-                width: 150px;
-              ">&nbsp;</span>
-                </div>
-                <div>
-                    <strong>Departed:</strong>
-                    <span
-                        style="
-                border-bottom: 1px solid #000;
-                display: inline-block;
-                width: 150px;
-              ">&nbsp;</span>
+
+                <div style="margin-top:30px">
+                    <strong>Signature:</strong>
+                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
+                    <strong style="margin-left:85px">Name:</strong>
+                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
+                    <strong style="margin-left:55px">Date:</strong>
+                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
                 </div>
             </div>
-            <div style="display: flex; justify-content: space-between">
-                <div style="text-align: center">
-                    <span
-                        style="
-                border-bottom: 1px solid #000;
-                display: inline-block;
-                width: 150px;
-              ">&nbsp;</span><br />
-                    <strong>Signature</strong>
-                </div>
-                <div style="text-align: center">
-                    <span
-                        style="
-                border-bottom: 1px solid #000;
-                display: inline-block;
-                width: 150px;
-              ">&nbsp;</span><br />
-                    <strong>Name</strong>
-                </div>
-                <div style="text-align: center">
-                    <span
-                        style="
-                border-bottom: 1px solid #000;
-                display: inline-block;
-                width: 150px;
-              ">&nbsp;</span><br />
-                    <strong>Date</strong>
-                </div>
-            </div>
+
         </div>
 
         <footer>
