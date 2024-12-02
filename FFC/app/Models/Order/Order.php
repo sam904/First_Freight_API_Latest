@@ -7,6 +7,7 @@ use App\Models\Quote\Quote;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Order extends Model
 {
@@ -20,6 +21,26 @@ class Order extends Model
         'address_id',
         'created_by',
     ];
+
+    protected $excludedColumns = [
+        'id',
+        'created_at',
+        'updated_at',
+        'quote_id',
+        'customer_id',
+        'address_id',
+        'created_by',
+        'received_date',
+    ];
+
+    public function getSearchableColumns()
+    {
+        // Fetch all columns of the table dynamically, and exclude specific ones
+        $table = $this->getTable();
+        $columns = Schema::getColumnListing($table);
+        // $columns = array_merge($columns, ['sales_name']);
+        return array_diff($columns, $this->excludedColumns);
+    }
 
     public function orderDetails()
     {

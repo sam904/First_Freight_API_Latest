@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Order;
 
 use App\Http\Controllers\Controller;
+use App\Models\Common\ServiceType;
 use App\Models\Order\Order;
+use App\Models\Order\OrderContainerDetails;
+use App\Models\Order\OrderDelivery;
+use App\Models\Order\OrderDetails;
 use App\Models\Order\OrderNote;
 use App\Models\Order\OrderStatusMaster;
 use App\Services\Order\OrderService;
@@ -454,17 +458,40 @@ class OrderController extends Controller
      */
     public function generatePdf($id)
     {
-        Log::info("Pdf is generating...");
+        Log::info("*********************");
+        Log::info("Pdf is generating....");
+        Log::info("*********************");
+        // Get delevery Details
+        $deliveryId = $id;
+        $deliveryData = OrderDelivery::find($deliveryId);
+        if (!$deliveryData) {
+            Log::info('Order Delivery Details are not found.');
+            throw new \InvalidArgumentException('Order Delivery Details are not found for this Id =>' . $id);
+        }
+        // Get Order Details
+        $orderDetailsId = $deliveryData->order_details_id;
+        $orderDetailsData = OrderDetails::find($orderDetailsId);
+        if (!$orderDetailsData) {
+            Log::info('Order Details are not found.');
+            throw new \InvalidArgumentException('Order Details are not found.');
+        }
+        // Get Order Details
+        $orderId = $orderDetailsData->order_id;
+        $orderData = Order::find($orderId);
+        if (!$orderData) {
+            Log::info('Order is not found.');
+            throw new \InvalidArgumentException('Order is not found.');
+        }
+        // Get Service Type details
+        $serviceTypeId = $orderDetailsData->service_type_id;
+        $serviceData = ServiceType::find($serviceTypeId);
+        if (!$serviceData) {
+            Log::info('Service Type is not found.');
+            throw new \InvalidArgumentException('Service Type is not found.');
+        }
         // Fetch data from database
-        $data = [
-            'trucker' => 'John Doe Trucking',
-            'email' => 'johndoe@example.com',
-            'date' => now()->toDateString(),
-            // 'containerDetails' => DB::table('containers')->get() // Adjust query to match your database
-        ];
         try {
-            // Get Delivery Data
-            $data = $this->orderService->getPdfData($id);
+            $data = $this->orderService->getPdfData($deliveryId, $orderDetailsId, $orderId);
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
@@ -479,23 +506,34 @@ class OrderController extends Controller
         // exit;
 
         // $html = view('order/Trucking', compact('data'))->render();
-        $html = view('order/Trucking', ['data' => $data[0]])->render();
-        // Load the HTML and pass the data
-        // $pdf = Pdf::loadView('order/Trucking', $data);
-        $dompdf = new Dompdf();
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-        // Download the PDF
-        // Get the raw PDF content
-        $pdfContent = $dompdf->output();
+        if ($serviceData['name'] == "Trucking") {
+            $html = view('order/Trucking', ['data' => $data[0]])->render();
+        } else if ($serviceData['name'] == "Ocean Freight") {
+            $html = view('order/Ocean', ['data' => $data[0]])->render();
+        }
+        if (!empty($html)) {
+            // Load the HTML and pass the data
+            // $pdf = Pdf::loadView('order/Trucking', $data);
+            $dompdf = new Dompdf();
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+            // Download the PDF
+            // Get the raw PDF content
+            $pdfContent = $dompdf->output();
 
-        // Encode as Base64
-        $base64Pdf = base64_encode($pdfContent);
+            // Encode as Base64
+            $base64Pdf = base64_encode($pdfContent);
 
-        return response()->json([
-            'pdf_base64' => $base64Pdf,
-        ]);
+            return response()->json([
+                'pdf_base64' => $base64Pdf,
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Html View is empty. So not able to generate PDF'
+            ], 400); // Return error response
+        }
 
 
         // return response()->streamDownload(

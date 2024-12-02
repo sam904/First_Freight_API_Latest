@@ -2,15 +2,14 @@
 
 namespace App\Services\Order;
 
+use App\Helpers\SearchHelper;
 use App\Models\Order\Order;
 use App\Models\Order\OrderContainerDetails;
-use App\Models\Order\OrderDelivery;
 use App\Models\Order\OrderDetails;
 use App\Models\Order\OrderNote;
 use App\Models\Order\OrderStatusMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class OrderService
@@ -26,7 +25,19 @@ class OrderService
 
     public function getAllOrders(Request $request)
     {
-        $orders = Order::with([
+        $searchTerm = $request->input('searchTerm');
+        $filterBy = $request->input('filterBy');
+        $page = $request->input('page') ?: 1;
+        $limit = $request->input('limit');
+        $sortColumn = $request->input('sortColumn') ?: 'id';
+        $sortDirection = $request->input('sortDirection') ?: 'desc';
+        $isExport = $request->input('export') ?? false;
+        $ids = $request->input('ids');
+
+        // Get all column names of the 'Vendors' table
+        $model = new Order();
+
+        $query = Order::with([
             'customer:id,company_name',
             'address:id,company_name',
             'quote:id',
@@ -52,8 +63,111 @@ class OrderService
                     }
                 ]);
             }
-        ])->paginate(10);
+        ]);
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('id', $ids);
+        }
+        // Apply search filters
+        $query = SearchHelper::applySearchFilters($query, $model, $request);
+        // Sub Table query
+        if (!empty($searchTerm)) {
+            $query->where(function ($query) use ($searchTerm) {
+                // Search in customer relation
+                $query->orWhereHas('customer', function ($q) use ($searchTerm) {
+                    $q->where('company_name', 'LIKE', "%{$searchTerm}%");
+                });
 
+                // Search in address relation
+                $query->orWhereHas('address', function ($q) use ($searchTerm) {
+                    $q->where('company_name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in the serviceType relation
+                $query->whereHas('orderDetails.serviceType', function ($q) use ($searchTerm) {
+                    Log::info("Search Term => " . $searchTerm);
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in orderContainerDetails within order Details
+                $query->orWhereHas('orderDetails.orderContainerDetails', function ($q) use ($searchTerm) {
+                    $q->where('container_no', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('container_size', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('po', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('cpo', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('overweight', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in portOfLoading within deliveries
+                $query->orWhereHas('orderDetails.deliveries.portOfLoading', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in portOfDischarge within deliveries
+                $query->orWhereHas('orderDetails.deliveries.portOfDischarge', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in destination name within deliveries
+                $query->orWhereHas('orderDetails.deliveries.destination', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in vendor within deliveries
+                $query->orWhereHas('orderDetails.deliveries.vendor', function ($q) use ($searchTerm) {
+                    $q->where('company_name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in transhipment port name within deliveries
+                $query->orWhereHas('orderDetails.deliveries.transhipmentPort', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in created by name within deliveries
+                $query->orWhereHas('orderDetails.deliveries.createdBy', function ($q) use ($searchTerm) {
+                    // Check if the search term contains a space (assuming full name has a space)
+                    $names = explode(' ', $searchTerm, 2);
+                    if (count($names) === 2) {
+                        // Full name provided: search for first and last name separately
+                        $q->where(function ($query) use ($names) {
+                            $query->where('first_name', 'LIKE', "%{$names[0]}%")
+                                ->where('last_name', 'LIKE', "%{$names[1]}%");
+                        });
+                    } else {
+                        // Single name provided: search for it in either first or last name
+                        $q->where('first_name', 'LIKE', "%{$searchTerm}%")
+                            ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
+                    }
+                });
+
+                // Search in statuses and nested delivery_status within deliveries
+                $query->orWhereHas('orderDetails.deliveries.statuses.deliveryStatus', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in Delivery
+                $query->orWhereHas('orderDetails.deliveries', function ($q) use ($searchTerm) {
+                    $q->where('mode', 'LIKE', "%{$searchTerm}%")
+                        // ->orWhere('picked_up_date', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('mode', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('free_days', 'LIKE', "%{$searchTerm}%");
+                });
+            });
+        }
+
+        if ($isExport && empty($limit)) {
+            // Fetch all data without pagination
+            Log::info("export is true and limit is empty");
+            $startTime = microtime(true);
+            $limit = $query->count();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            Log::info("Order Query Count = {$limit} && execution time: {$executionTime} seconds");
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        } else {
+            $limit = $limit ?: 10;
+            $orders = $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        }
         return $orders;
     }
 
@@ -417,29 +531,8 @@ class OrderService
     /**
      * Id is delivery id
      */
-    public function getPdfData($id)
+    public function getPdfData($deliveryId, $orderDetailsId, $orderId)
     {
-        // Get delevery Details
-        $deliveryId = $id;
-        $deliveryData = OrderDelivery::find($deliveryId);
-        if (!$deliveryData) {
-            Log::info('Order Delivery Details are not found.');
-            throw new \InvalidArgumentException('Order Delivery Details are not found for this Id =>' . $id);
-        }
-        // Get Order Details
-        $orderDetailsId = $deliveryData->order_details_id;
-        $orderDetailsData = OrderDetails::find($orderDetailsId);
-        if (!$orderDetailsData) {
-            Log::info('Order Details are not found.');
-            throw new \InvalidArgumentException('Order Details are not found.');
-        }
-        // Get Order Details
-        $orderId = $orderDetailsData->order_id;
-        $orderData = Order::find($orderId);
-        if (!$orderData) {
-            Log::info('Order are not found.');
-            throw new \InvalidArgumentException('Order are not found.');
-        }
         // Get Order Container Details
         $orderContainerDetailsData = OrderContainerDetails::where('order_details_id', $orderDetailsId)->get();
         if ($orderContainerDetailsData->isEmpty()) {

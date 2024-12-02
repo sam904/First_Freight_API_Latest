@@ -1,3 +1,55 @@
+@php
+    // Check if orderDetails exists, and then access the related orderContainerDetails
+    $orderDetails = $data['orderDetails'] ?? null;
+
+    $shipper = $orderDetails[0]['shipper'] ?? '';
+    $shipper_address = $orderDetails[0]['shipper_address'] ?? '';
+    $consignee = $orderDetails[0]['consignee'] ?? '';
+    $consignee_address = $orderDetails[0]['consignee_address'] ?? '';
+    $buyer = $orderDetails[0]['buyer'] ?? '';
+    $buyer_address = $orderDetails[0]['buyer_address'] ?? '';
+    $notify_party = $orderDetails[0]['notify_party'] ?? '';
+    $hts_code = $orderDetails[0]['hts_code'] ?? '';
+    $commodity = $orderDetails[0]['commodity'] ?? '';
+    $weight = $orderDetails[0]['weight'] ?? '';
+    $ssl = $orderDetails[0]['streamship_line'] ?? '';
+    $etd = $orderDetails[0]['etd'] ?? '';
+    $eta = $orderDetails[0]['eta'] ?? '';
+    $si_cut_off = $orderDetails[0]['si_cut_off'] ?? '';
+    $vgm_cut_off = $orderDetails[0]['vgm_cut_off'] ?? '';
+    $all_inclusive_rate = $orderDetails[0]['all_inclusive_rate'] ?? '';
+    $freight_prepaid = $orderDetails[0]['freight_prepaid'] ?? '';
+    $received_date = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y');
+    // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
+    // $orderContainerDetails1 = $orderDetails
+    // ? $orderDetails->map(function ($orderDetail) {
+    // return $orderDetail->orderContainerDetails;
+    // })
+    // : null;
+
+    $orderContainerDetails = $orderDetails
+        ? $orderDetails->map(function ($orderDetail) {
+            // Get the first element of the orderContainerDetails array
+            return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
+        })
+        : null;
+
+    $orderDeliveries = $orderDetails
+        ? $orderDetails->map(function ($orderDetail) {
+            return $orderDetail->deliveries;
+        })
+        : null;
+
+    foreach ($orderDeliveries[0] as $delivery) {
+        $scac = $delivery['vendor']['scac_number'];
+        $mc = $delivery['vendor']['mc_number'];
+        $usdot = $delivery['vendor']['us_dot_number'];
+        $transit_time = $delivery['transit_time'];
+        $empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'];
+        $transhipment_port = $delivery['transhipmentPort']['name'];
+        $ignate_cutoff_date = '?';
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,14 +59,16 @@
     <title>Delivery Order</title>
 </head>
 
-<body style="
+<body
+    style="
       font-family: Verdana, Geneva, Tahoma, sans-serif;
       margin: 0;
       padding: 0;
       background-color: #f9f9f9;
     ">
     <div class="delivery-order" style="max-width: 80rem; margin: 0 auto; padding: 20px">
-        <header style="
+        <header
+            style="
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -29,13 +83,13 @@
             </div>
             <div class="header-right">
                 <p style="text-align: right; font-size: 14px">
-                    <strong>SCAC:</strong> FIVA
+                    <strong>SCAC:</strong> {{ $scac }}
                 </p>
                 <p style="text-align: right; font-size: 14px">
-                    <strong>USDOT #:</strong> 3718531
+                    <strong>USDOT #:</strong> {{ $usdot }}
                 </p>
                 <p style="text-align: right; font-size: 14px">
-                    <strong>MC #:</strong> MC1307931
+                    <strong>MC #:</strong> {{ $mc }}
                 </p>
                 <p style="text-align: right; font-size: 14px">
                     <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
@@ -47,7 +101,8 @@
         </header>
 
         <section class="order-info" style="margin-top: 20px; border-bottom: 2px solid #7c7979">
-            <div style="
+            <div
+                style="
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -58,13 +113,14 @@
                     </p>
                 </div>
                 <div style="text-align: right">
-                    <p style="
+                    <p
+                        style="
                 border: 1px solid #ddd;
                 /* padding: 8px; */
                 text-align: left;
                 background-color: rgb(221, 238, 240);
               ">
-                        <strong>Date:</strong> 10-09-2024
+                        <strong>Date:</strong> {{ $received_date }}
                     </p>
                 </div>
             </div>
@@ -78,7 +134,8 @@
             <table class="details-table" style="width: 100%; margin-top: 10px; border-collapse: collapse">
                 <thead>
                     <tr>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -89,7 +146,8 @@
                         <td colspan="3" style="border: 1px solid #ddd; padding: 8px">
                             Kaohsiung, Taiwan to Savannah
                         </td>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -102,7 +160,8 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -111,9 +170,10 @@
                             <strong>SSL/Vessel</strong>
                         </th>
                         <td style="border: 1px solid #ddd; padding: 8px">
-                            Yang Ming Lines
+                            {{ $ssl }}
                         </td>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -121,8 +181,9 @@
                 ">
                             <strong>ETD</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">09/15/2024</td>
-                        <th style="
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $etd }}</td>
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -130,10 +191,11 @@
                 ">
                             ETA
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">11/01/2024</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $eta }}</td>
                     </tr>
                     <tr>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -141,8 +203,9 @@
                 ">
                             <strong>Transit Time</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">09/10/2024</td>
-                        <th style="
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $transit_time }}</td>
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -150,8 +213,9 @@
                 ">
                             <strong>Empty pick up cutoff date</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px"></td>
-                        <th style="
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $empty_pick_up_cutoff_date }}</td>
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -159,10 +223,11 @@
                 ">
                             Ingate cutoff date
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">09/11/2024</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $ignate_cutoff_date }}</td>
                     </tr>
                     <tr>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -170,8 +235,9 @@
                 ">
                             <strong>SI Cutoff</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">46 days</td>
-                        <th style="
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $si_cut_off }}</td>
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -179,8 +245,9 @@
                 ">
                             <strong>Transhipment Port</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px"></td>
-                        <th style="
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $transhipment_port }}</td>
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -188,10 +255,11 @@
                 ">
                             VGM cutoff date
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">09/11/2024</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $vgm_cut_off }}</td>
                     </tr>
                     <tr>
-                        <th style="
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -199,8 +267,9 @@
                 ">
                             <strong>All Inclusive Rate</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">$5,465</td>
-                        <th style="
+                        <td style="border: 1px solid #ddd; padding: 8px">${{ $all_inclusive_rate }}</td>
+                        <th
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -208,8 +277,9 @@
                 ">
                             <strong>Freight</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">Prepaid</td>
-                        <th colspan="2" style="
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $freight_prepaid }}</td>
+                        <th colspan="2"
+                            style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
@@ -222,7 +292,8 @@
             </table>
         </section>
 
-        <div style="
+        <div
+            style="
           display: flex;
           justify-content: center;
           margin-top: 2rem;
@@ -231,7 +302,8 @@
             <!-- Left Table -->
             <table border="1" style="width: 50%; border-collapse: collapse; margin: 0">
                 <tr>
-                    <th rowspan="4" style="
+                    <th rowspan="4"
+                        style="
                 width: 30%;
                 padding: 8px;
                 text-align: left;
@@ -240,47 +312,52 @@
               ">
                         Shipper
                     </th>
-                    <td style="
+                    <td
+                        style="
                 width: 70%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        INTERACTIVE CORP.
+                        {{ $shipper }}
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        14FL. NO. 95, TUN HWA SOUTH ROAD.
+                        {{ $shipper_address }}
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        TAIPEI
+                        ?
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        Taiwan
+                        ?
                     </td>
                 </tr>
                 <tr>
-                    <th rowspan="4" style="
+                    <th rowspan="4"
+                        style="
                 width: 20%;
                 padding: 8px;
                 text-align: left;
@@ -289,47 +366,52 @@
               ">
                         Buyer
                     </th>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        Accent Building Materials
+                        {{ $buyer }}
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        1127 S. 56th St.
+                        {{ $buyer_address }}
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        Tampa, FL 33619
+                        ?
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        USA
+                        ?
                     </td>
                 </tr>
                 <tr>
-                    <th style="
+                    <th
+                        style="
                 width: 20%;
                 padding: 8px;
                 text-align: left;
@@ -338,17 +420,19 @@
               ">
                         HTS Code
                     </th>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        7318.15.6080.
+                        {{ $hts_code }}
                     </td>
                 </tr>
                 <tr>
-                    <th style="
+                    <th
+                        style="
                 width: 20%;
                 padding: 8px;
                 text-align: left;
@@ -357,17 +441,19 @@
               ">
                         Commodity
                     </th>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        Screws
+                        {{ $commodity }}
                     </td>
                 </tr>
                 <tr>
-                    <th style="
+                    <th
+                        style="
                 width: 20%;
                 padding: 8px;
                 text-align: left;
@@ -376,7 +462,8 @@
               ">
                         Container Size
                     </th>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
@@ -386,7 +473,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <th style="
+                    <th
+                        style="
                 width: 20%;
                 padding: 8px;
                 text-align: left;
@@ -395,13 +483,14 @@
               ">
                         Weight
                     </th>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        20 MT
+                        {{ $weight }}
                     </td>
                 </tr>
             </table>
@@ -409,7 +498,8 @@
             <!-- Right Table -->
             <table border="1" style="width: 50%; border-collapse: collapse; margin: 0">
                 <tr>
-                    <th rowspan="4" style="
+                    <th rowspan="4"
+                        style="
                 width: 30%;
                 padding: 8px;
                 text-align: left;
@@ -418,47 +508,52 @@
               ">
                         Consignee
                     </th>
-                    <td style="
+                    <td
+                        style="
                 width: 70%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        Accent Building Materials
+                        {{ $consignee }}
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        1127 S. 56th St.
+                        {{ $consignee_address }}
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        Tampa, FL 33619
+                        ?
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        USA
+                        ?
                     </td>
                 </tr>
                 <tr>
-                    <th rowspan="4" style="
+                    <th rowspan="4"
+                        style="
                 width: 20%;
                 padding: 8px;
                 text-align: left;
@@ -467,7 +562,8 @@
               ">
                         Notify Party
                     </th>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
@@ -477,7 +573,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
@@ -487,7 +584,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
@@ -497,7 +595,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="
+                    <td
+                        style="
                 width: 80%;
                 padding: 8px;
                 text-align: left;
@@ -507,7 +606,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <th style="
+                    <th
+                        style="
                 width: 30%;
                 padding: 8px;
                 text-align: left;
@@ -516,7 +616,8 @@
               ">
                         PO #/Proforma #
                     </th>
-                    <td style="
+                    <td
+                        style="
                 width: 70%;
                 padding: 8px;
                 text-align: left;
@@ -531,7 +632,8 @@
         <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
             <thead>
                 <tr>
-                    <th style="
+                    <th
+                        style="
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
@@ -551,7 +653,8 @@
         <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
             <thead>
                 <tr>
-                    <th style="
+                    <th
+                        style="
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
@@ -572,7 +675,8 @@
             </thead>
         </table>
 
-        <footer style="
+        <footer
+            style="
           margin-top: 3rem;
           display: flex;
           justify-content: space-between;
