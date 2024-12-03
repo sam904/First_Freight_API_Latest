@@ -205,21 +205,21 @@ class VendorService
             'state_id' => $request['state'],
             'country_id' => $request['country'],
             'zip_code' => $request['zip_code'],
-            'company_tax_id' => $request['company_tax_id'],
+            'company_tax_id' => $request['company_tax_id'] ?? null,
             'mc_number' => $request['mc_number'],
             'scac_number' => $request['scac_number'],
             'us_dot_number' => $request['us_dot_number'],
             // 'upload_w9' => $vendorImage['upload_w9'],
             // 'void_check' => $vendorImage['void_check'],
             // 'upload_insurance_certificate' => $vendorImage['upload_insurance_certificate'],
-            'bank_name' => $request['bank_name'],
-            'bank_account_number' => $request['bank_account_number'],
-            'bank_routing' => $request['bank_routing'],
-            'bank_address' => $request['bank_address'],
-            'bank_country_id' => $request['bankCountry'],
-            'bank_swift_code' => $request['bankSwiftCode'],
-            'bank_iban_number' => $request['bankIBANNumber'],
-            'bank_ifsc_code' => $request['bankIFSCCode'],
+            'bank_name' => $request['bank_name'] ?? null,
+            'bank_account_number' => $request['bank_account_number'] ?? null,
+            'bank_routing' => $request['bank_routing'] ?? null,
+            'bank_address' => $request['bank_address'] ?? null,
+            'bank_country_id' => $request['bankCountry'] ?? null,
+            'bank_swift_code' => $request['bankSwiftCode'] ?? null,
+            'bank_iban_number' => $request['bankIBANNumber'] ?? null,
+            'bank_ifsc_code' => $request['bankIFSCCode'] ?? null,
             'remarks' => $request['remarks'],
             // 'date_of_expiration' => $request['date_of_expiration'],
             // 'contact_name' => $request['contact_name'],
@@ -239,8 +239,10 @@ class VendorService
         $this->storeFinance($request, $vendor);
 
         // Saving Vendor Type Id
-        $vendorTypeIds = explode(',', $request->input('vendor_type'));
-        $vendor->vendorTypes()->attach($vendorTypeIds);
+        if (isset($request['vendor_type']) && !empty($request['vendor_type'])) {
+            $vendorTypeIds = explode(',', $request->input('vendor_type'));
+            $vendor->vendorTypes()->attach($vendorTypeIds);
+        }
 
         return true;
     }
@@ -263,21 +265,21 @@ class VendorService
             'state_id' => $request['state'],
             'country_id' => $request['country'],
             'zip_code' => $request['zip_code'],
-            'company_tax_id' => $request['company_tax_id'],
+            'company_tax_id' => $request['company_tax_id'] ?? null,
             'mc_number' => $request['mc_number'],
             'scac_number' => $request['scac_number'],
             'us_dot_number' => $request['us_dot_number'],
             // 'upload_w9' => $vendorImage['upload_w9'],
             // 'void_check' => $vendorImage['void_check'],
             // 'upload_insurance_certificate' => $vendorImage['upload_insurance_certificate'],
-            'bank_name' => $request['bank_name'],
-            'bank_account_number' => $request['bank_account_number'],
-            'bank_routing' => $request['bank_routing'],
-            'bank_address' => $request['bank_address'],
-            'bank_country_id' => $request['bankCountry'],
-            'bank_swift_code' => $request['bankSwiftCode'],
-            'bank_iban_number' => $request['bankIBANNumber'],
-            'bank_ifsc_code' => $request['bankIFSCCode'],
+            'bank_name' => $request['bank_name'] ?? null,
+            'bank_account_number' => $request['bank_account_number'] ?? null,
+            'bank_routing' => $request['bank_routing'] ?? null,
+            'bank_address' => $request['bank_address'] ?? null,
+            'bank_country_id' => $request['bankCountry'] ?? null,
+            'bank_swift_code' => $request['bankSwiftCode'] ?? null,
+            'bank_iban_number' => $request['bankIBANNumber'] ?? null,
+            'bank_ifsc_code' => $request['bankIFSCCode'] ?? null,
             'remarks' => $request['remarks'],
             // 'date_of_expiration' => $request['date_of_expiration'],
             // 'contact_name' => $request['contact_name'],

@@ -201,15 +201,15 @@ class CustomerController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'company_name' => 'required|string',
-            'customer_type' => 'required|string',
+            // 'customer_type' => 'required|string',
             'address' => 'required|string',
             'city' => 'required|string',
             'state' => 'required|integer',
             'country' => 'required|integer',
             'zip_code' => 'required|integer',
-            'company_tax_id' => 'required|string',
+            // 'company_tax_id' => 'required|string',
             'payment_terms' => 'required|string',
-            'credit_limit' => 'required|string',
+            // 'credit_limit' => 'required|string',
             // 'contact_name' => 'required|string',
             // 'phone' => [
             //     'required',

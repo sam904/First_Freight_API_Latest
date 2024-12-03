@@ -31,6 +31,8 @@ class OrderDelivery extends Model
         'vendor_id',
         'transhipment_port_id',
         'delivery_created_by',
+        'country_of_origin',
+        'ignate_cutoff_date',
     ];
 
     public function orderDetail()
@@ -71,5 +73,10 @@ class OrderDelivery extends Model
     public function statuses()
     {
         return $this->hasMany(OrderDeliveryStatus::class, 'order_delivery_id');
+    }
+
+    public function latestStatus()
+    {
+        return $this->hasOne(OrderDeliveryStatus::class)->latest('created_at');
     }
 }

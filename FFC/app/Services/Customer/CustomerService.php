@@ -203,15 +203,15 @@ class CustomerService
         // save customer data
         $customer = Customer::create([
             'company_name' => $request['company_name'],
-            'customer_type' => $request['customer_type'],
+            'customer_type' => $request['customer_type'] ?? null,
             'address' => $request['address'],
             'city' => $request['city'],
             'state_id' => $request['state'],
             'country_id' => $request['country'],
             'zip_code' => $request['zip_code'],
-            'company_tax_id' => $request['company_tax_id'],
+            'company_tax_id' => $request['company_tax_id'] ?? null,
             'payment_terms' => $request['payment_terms'],
-            'credit_limit' => $request['credit_limit'],
+            'credit_limit' => $request['credit_limit'] ?? null,
             // 'contact_name' => $request['contact_name'],
             // 'phone' => $request['phone'],
             // 'email' => $request['email'],
@@ -248,15 +248,15 @@ class CustomerService
 
         $customer->update([
             'company_name' => $request['company_name'],
-            'customer_type' => $request['customer_type'],
+            'customer_type' => $request['customer_type'] ?? null,
             'address' => $request['address'],
             'city' => $request['city'],
             'state_id' => $request['state'],
             'country_id' => $request['country'],
             'zip_code' => $request['zip_code'],
-            'company_tax_id' => $request['company_tax_id'],
+            'company_tax_id' => $request['company_tax_id'] ?? null,
             'payment_terms' => $request['payment_terms'],
-            'credit_limit' => $request['credit_limit'],
+            'credit_limit' => $request['credit_limit'] ?? null,
             // 'contact_name' => $request['contact_name'],
             // 'phone' => $request['phone'],
             // 'email' => $request['email'],
@@ -353,11 +353,11 @@ class CustomerService
 
         foreach ($financeData as $financeItem) {
             $finance[] = new CustomerFinanceDetails([
-                'finance_name' => $financeItem['finance_name'],
-                'finance_designation' => $financeItem['finance_designation'],
-                'finance_phone' => $financeItem['finance_phone'],
-                'finance_email' => $financeItem['finance_email'],
-                'finance_fax' => $financeItem['finance_fax'],
+                'finance_name' => $financeItem['finance_name'] ?? null,
+                'finance_designation' => $financeItem['finance_designation'] ?? null,
+                'finance_phone' => $financeItem['finance_phone'] ?? null,
+                'finance_email' => $financeItem['finance_email'] ?? null,
+                'finance_fax' => $financeItem['finance_fax'] ?? null,
                 'customer_id' => $customer->id
             ]);
         }

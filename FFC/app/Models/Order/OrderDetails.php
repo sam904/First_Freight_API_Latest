@@ -3,6 +3,7 @@
 namespace App\Models\Order;
 
 use App\Models\Common\ServiceType;
+use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -61,7 +62,14 @@ class OrderDetails extends Model
         'accessorial_charges',
         'order_id',
         'service_type_id',
-        'sort_level'
+        'sort_level',
+        'manufacturer',
+        'manufacturer_address',
+        'ship_to_party',
+        'ship_to_party_address',
+        'mother_vessel_date',
+        'vessel_loaded_date',
+        'consolidator_address',
     ];
 
     public function order()
@@ -83,4 +91,33 @@ class OrderDetails extends Model
     {
         return $this->hasMany(OrderContainerDetails::class);
     }
+    public function orderHormonizeDetails()
+    {
+        return $this->hasMany(OrderHormonize::class);
+    }
+
+    // public function manufacturer()
+    // {
+    //     return $this->belongsTo(Customer::class, 'manufacturer');
+    // }
+    // public function shipToParty()
+    // {
+    //     return $this->belongsTo(Customer::class, 'ship_to_party');
+    // }
+    // public function shipper()
+    // {
+    //     return $this->belongsTo(Customer::class, 'shipper');
+    // }
+    // public function buyer()
+    // {
+    //     return $this->belongsTo(Customer::class, 'buyer');
+    // }
+    // public function consignee()
+    // {
+    //     return $this->belongsTo(Customer::class, 'consignee');
+    // }
+    // public function consolidator()
+    // {
+    //     return $this->belongsTo(Customer::class, 'consolidator');
+    // }
 }

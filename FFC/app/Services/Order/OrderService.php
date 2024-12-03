@@ -4,7 +4,6 @@ namespace App\Services\Order;
 
 use App\Helpers\SearchHelper;
 use App\Models\Order\Order;
-use App\Models\Order\OrderContainerDetails;
 use App\Models\Order\OrderDetails;
 use App\Models\Order\OrderNote;
 use App\Models\Order\OrderStatusMaster;
@@ -185,9 +184,6 @@ class OrderService
         $order = $this->createOrder($request);
         Log::info("Order is created => " . $order->id);
 
-        // Log::info("Container Details");
-        // $this->containerDetails($request, $order);
-
         Log::info("Order Details");
         $this->orderDetails($request, $order);
 
@@ -231,7 +227,6 @@ class OrderService
     {
         if (isset($data['order_container_details']) && is_array($data['order_container_details'])) {
             foreach ($data['order_container_details'] as $container) {
-                Log::info("container => ", $container);
                 $containerData = [
                     'container_no' => $container['containerNo'] ?? null,
                     'container_size' => $container['containerSize'] ?? null,
@@ -254,6 +249,31 @@ class OrderService
             }
         } else {
             Log::info("Order Container details are empty...");
+        }
+    }
+
+    public function orderHormonizeDetails($data, OrderDetails $orderDetail, $id = null)
+    {
+        if (isset($data['order_hormonize_details']) && is_array($data['order_hormonize_details'])) {
+            foreach ($data['order_hormonize_details'] as $hormonize) {
+                $hormonizeData = [
+                    'tarriff_schedule_number' => $hormonize['tarriff_schedule_number'] ?? null
+                ];
+                if ($id == null) {
+                    Log::info("Inserting Hormonize details");
+                    $orderDetail->orderHormonizeDetails()->create($hormonizeData);
+                } else {
+                    Log::info("update the Order Hormonize Details table for =>" . $hormonize['orderHormonizeId']);
+                    $orderHormonize = $orderDetail->orderHormonizeDetails()->where('id', $hormonize['orderHormonizeId'])->first();
+                    if (empty($orderHormonize)) {
+                        Log::info('Order Hormonize ID is required/Not Found');
+                        throw new \InvalidArgumentException('Order Hormonize ID is required/Not Found.');
+                    }
+                    $orderHormonize->update($hormonizeData);
+                }
+            }
+        } else {
+            Log::info("Order Hormonize details are empty...");
         }
     }
 
@@ -315,13 +335,24 @@ class OrderService
                         'pierpass_fees' => $detail['pierpassFees'] ?? null,
                         'clean_truck_fees' => $detail['cleanTruckFees'] ?? null,
                         'accessorial_charges' => $detail['accessorialCharges'] ?? null,
+                        'manufacturer' => $detail['manufacturer'] ?? null,
+                        'manufacturer_address' => $detail['manufacturerAddress'] ?? null,
+                        'ship_to_party' => $detail['shipToParty'] ?? null,
+                        'ship_to_party_address' => $detail['shipToPartyAddress'] ?? null,
+                        'mother_vessel_date' => $detail['motherVesselDate'] ?? null,
+                        'vessel_loaded_date' => $detail['vesselLoadedDate'] ?? null,
+                        'consolidator_address' => $detail['consolidatorAddress'] ?? null,
                     ];
 
                     if ($detail['isOrderDetailsRequest'] === 'insert') {
                         $orderDetail = $order->orderDetails()->create($orderDetailData);
                         Log::info("Saving Order Details..." . $orderDetail->id);
+
                         Log::info("Saving Order Container Details...");
                         $this->containerDetails($detail, $orderDetail, null);
+
+                        Log::info("Saving Order Hormonize Details...");
+                        $this->orderHormonizeDetails($detail, $orderDetail, null);
                     } elseif ($detail['isOrderDetailsRequest'] === 'update') {
                         $orderDetailId = $detail['orderDetailsId'];
                         if (empty($orderDetailId)) {
@@ -335,6 +366,9 @@ class OrderService
 
                         Log::info("Updating Order Container Details...");
                         $this->containerDetails($detail, $orderDetail, $orderDetail->id);
+
+                        Log::info("Updating Order Hormonize Details...");
+                        $this->orderHormonizeDetails($detail, $orderDetail, $orderDetail->id);
                     } else {
                         Log::error("Order Details not found for update");
                     }
@@ -360,12 +394,14 @@ class OrderService
                                     'transit_time' => $delivery['transitTime'] ?? null,
                                     'mode' => $delivery['mode'] ?? null,
                                     'free_days' => $delivery['freeDays'] ?? null,
-                                    'port_of_loading_id' => $delivery['portOfLoadingId'],
-                                    'port_of_discharge_id' => $delivery['portOfDischargeId'],
-                                    'destination_id' => $delivery['destinationId'],
-                                    'vendor_id' => $delivery['vendorId'],
-                                    'transhipment_port_id' => $delivery['transhipmentPortId'],
-                                    'delivery_created_by' => $delivery['deliveryCreatedBy'],
+                                    'port_of_loading_id' => $delivery['portOfLoadingId'] ?? null,
+                                    'port_of_discharge_id' => $delivery['portOfDischargeId'] ?? null,
+                                    'destination_id' => $delivery['destinationId'] ?? null,
+                                    'vendor_id' => $delivery['vendorId'] ?? null,
+                                    'transhipment_port_id' => $delivery['transhipmentPortId'] ?? null,
+                                    'delivery_created_by' => $delivery['deliveryCreatedBy'] ?? null,
+                                    'ignate_cutoff_date' => $delivery['ignateCutoffDate'] ?? null,
+                                    'country_of_origin' => $delivery['countryOfOrigin'] ?? null,
                                 ];
                                 if ($delivery['isRequestType'] === 'insert') {
                                     Log::info("Order Delivery is being created...");
@@ -533,13 +569,6 @@ class OrderService
      */
     public function getPdfData($deliveryId, $orderDetailsId, $orderId)
     {
-        // Get Order Container Details
-        $orderContainerDetailsData = OrderContainerDetails::where('order_details_id', $orderDetailsId)->get();
-        if ($orderContainerDetailsData->isEmpty()) {
-            Log::info('Order Container Details Data are not found.');
-            throw new \InvalidArgumentException('Order Container Details Data are not found.');
-        }
-
         // Get Order Data
         $orders = Order::with([
             'customer:id,company_name',

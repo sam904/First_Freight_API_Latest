@@ -96,20 +96,47 @@ class OrderController extends Controller
                 $query->with([
                     'serviceType:id,name',
                     'orderContainerDetails',
+                    'orderHormonizeDetails',
+                    // 'shipper:id,company_name,city,state_id,country_id',
+                    // 'shipper.country:id,name',
+                    // 'shipper.state:id,name',
+                    // 'buyer:id,company_name,city,state_id,country_id',
+                    // 'buyer.country:id,name',
+                    // 'buyer.state:id,name',
+                    // 'consignee:id,company_name,city,state_id,country_id',
+                    // 'consignee.country:id,name',
+                    // 'consignee.state:id,name',
+                    // 'manufacturer:id,company_name,city,state_id,country_id',
+                    // 'manufacturer.country:id,name',
+                    // 'manufacturer.state:id,name',
+                    // 'shipToParty:id,company_name,city,state_id,country_id',
+                    // 'shipToParty.country:id,name',
+                    // 'shipToParty.state:id,name',
+                    // 'consolidator:id,company_name,city,state_id,country_id',
+                    // 'consolidator.country:id,name',
+                    // 'consolidator.state:id,name',
                     'deliveries' => function ($query) {
-                        $query->with([
-                            'portOfLoading:id,name',
-                            'portOfDischarge:id,name',
-                            'destination:id,name',
-                            'vendor:id,company_name',
-                            'transhipmentPort:id,name',
-                            'createdBy:id,first_name,last_name',
-                            'statuses' => function ($query) {
-                                $query->with([
-                                    'deliveryStatus:id,name'
-                                ]);
-                            }
-                        ]);
+                        $query->select('order_deliveries.*') // Select all columns of deliveries
+                            ->addSelect([
+                                // Subquery to get the latest delivery_status_id
+                                DB::raw('(SELECT delivery_status_id FROM order_delivery_statuses 
+                                    WHERE order_delivery_statuses.order_delivery_id = order_deliveries.id 
+                                    ORDER BY created_at DESC LIMIT 1) AS delivery_status_id')
+                            ])
+                            ->with([
+                                'portOfLoading:id,name',
+                                'portOfDischarge:id,name',
+                                'destination:id,name',
+                                'vendor:id,company_name',
+                                'transhipmentPort:id,name',
+                                'createdBy:id,first_name,last_name',
+                                'statuses' => function ($query) {
+                                    // $query->latest('created_at')->limit(1);
+                                    $query->with([
+                                        'deliveryStatus:id,name'
+                                    ]);
+                                }
+                            ]);
                     }
                 ]);
             }
@@ -459,35 +486,51 @@ class OrderController extends Controller
     public function generatePdf($id)
     {
         Log::info("*********************");
-        Log::info("Pdf is generating....");
+        Log::info("Pdf is generating...." . $id);
         Log::info("*********************");
         // Get delevery Details
         $deliveryId = $id;
         $deliveryData = OrderDelivery::find($deliveryId);
+        Log::info("deliveryId => " . $deliveryId);
         if (!$deliveryData) {
             Log::info('Order Delivery Details are not found.');
-            throw new \InvalidArgumentException('Order Delivery Details are not found for this Id =>' . $id);
+            return response()->json([
+                'status' => false,
+                'message' => 'Order Delivery Details are not found for this Id =>' . $id
+            ], 400); // Return error response
         }
         // Get Order Details
         $orderDetailsId = $deliveryData->order_details_id;
+        Log::info("orderDetailsId => " . $orderDetailsId);
         $orderDetailsData = OrderDetails::find($orderDetailsId);
         if (!$orderDetailsData) {
             Log::info('Order Details are not found.');
-            throw new \InvalidArgumentException('Order Details are not found.');
+            return response()->json([
+                'status' => false,
+                'message' => 'Order Details are not found'
+            ], 400);
         }
         // Get Order Details
         $orderId = $orderDetailsData->order_id;
+        Log::info("orderId => " . $orderId);
         $orderData = Order::find($orderId);
         if (!$orderData) {
             Log::info('Order is not found.');
-            throw new \InvalidArgumentException('Order is not found.');
+            return response()->json([
+                'status' => false,
+                'message' => 'Order is not found'
+            ], 400);
         }
         // Get Service Type details
         $serviceTypeId = $orderDetailsData->service_type_id;
+        Log::info("serviceTypeId => " . $serviceTypeId);
         $serviceData = ServiceType::find($serviceTypeId);
         if (!$serviceData) {
             Log::info('Service Type is not found.');
-            throw new \InvalidArgumentException('Service Type is not found.');
+            return response()->json([
+                'status' => false,
+                'message' => 'Service Type is not found'
+            ], 400);
         }
         // Fetch data from database
         try {
@@ -505,20 +548,26 @@ class OrderController extends Controller
         // ]);
         // exit;
 
+        Log::info($serviceData);
         // $html = view('order/Trucking', compact('data'))->render();
-        if ($serviceData['name'] == "Trucking") {
+        if (isset($serviceData['id']) && ($serviceData['id'] == 1 || $serviceData['id'] == 2 || $serviceData['id'] == 5)) {
+            Log::info("Getting view for Trucking Template");
             $html = view('order/Trucking', ['data' => $data[0]])->render();
-        } else if ($serviceData['name'] == "Ocean Freight") {
+        } else if (isset($serviceData['id']) && ($serviceData['id'] == 3 || $serviceData['id'] == 4)) {
+            Log::info("Getting view for Ocean Template");
             $html = view('order/Ocean', ['data' => $data[0]])->render();
+        } else if (isset($serviceData['id']) && ($serviceData['id'] == 6)) {
+            Log::info("Getting view for ISF Template");
+            $html = view('order/ISF', ['data' => $data[0]])->render();
+        } else {
+            Log::info("Service ID does not match any template.");
         }
         if (!empty($html)) {
             // Load the HTML and pass the data
-            // $pdf = Pdf::loadView('order/Trucking', $data);
             $dompdf = new Dompdf();
             $dompdf->loadHtml($html);
             $dompdf->setPaper('A4', 'portrait');
             $dompdf->render();
-            // Download the PDF
             // Get the raw PDF content
             $pdfContent = $dompdf->output();
 
