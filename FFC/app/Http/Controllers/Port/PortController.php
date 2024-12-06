@@ -61,17 +61,18 @@ class PortController extends Controller
         }
     }
 
-    public function edit($portId)
+    public function edit($id)
     {
         // Use the findModel helper to retrieve the port
-        $port = findModel(Port::class, $portId);
+        $port = findModel(Port::class, $id);
 
         // Check if the returned value is a JSON response (meaning the model was not found)
         if ($port instanceof \Illuminate\Http\JsonResponse) {
             return $port;  // Return the not found response
         }
 
-        return response()->json(['status' => true, 'data' => $port], 200);
+        $ports = Port::with(['portTerminals'])->find($id);
+        return response()->json(['status' => true, 'data' => $ports], 200);
     }
 
     public function update(Request $request, $id)
