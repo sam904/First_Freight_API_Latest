@@ -355,20 +355,20 @@ class VendorService
     {
         Log::info("Uploading Images for vendor = " . $vendor->id);
         $uploadedImages = [];
-        $destinationPath = 'images/profiles/vendor/' . $vendor->id . '/';
+        $destinationPath = 'images/vendor/' . $vendor->id . '/';
         $images = $request->file('upload_document');
         if (is_array($images)) {
             Log::info("Array of Images");
             foreach ($images as $image) {
                 $imgName = date('YmdHis') . str_replace('.', '', microtime(true)) . "." . $image->getClientOriginalExtension();
                 $image->move($destinationPath, $imgName);
-                $uploadedImages[] = $imgName; // Collect only the file names
+                $uploadedImages[] = $destinationPath . $imgName; // Collect only the file names
             }
         } elseif ($images) {
             Log::info("In case of single image input");
             $imgName = date('YmdHis') . str_replace('.', '', microtime(true)) . "." . $images->getClientOriginalExtension();
             $images->move($destinationPath, $imgName);
-            $uploadedImages[] = $imgName;
+            $uploadedImages[] = $destinationPath . $imgName;
         }
 
         Log::info(implode(',', $uploadedImages));

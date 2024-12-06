@@ -66,11 +66,11 @@ class UserService
         ]);
         Log::info("user is created => " . $user->id);
         if ($request->hasFile('profile_image')) {
+            $destinationPath = 'images/user/' . $user->id . '/';
             if ($image = $request->file('profile_image')) {
-                $destinationPath = 'images/profiles/user/' . $user->id . '/';
                 $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
                 $image->move($destinationPath, $profileImage);
-                $img['profileImage'] = "$profileImage";
+                $img['profileImage'] = $destinationPath . $profileImage;
             }
             $user->update([
                 'profile_image' =>  $img['profileImage']
