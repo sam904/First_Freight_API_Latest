@@ -146,7 +146,6 @@ class OrderController extends Controller
         return response()->json(['status' => true, 'data' => $order], 200);
     }
 
-
     public function update(Request $request, $id)
     {
         Log::info("*****************************");
@@ -595,5 +594,43 @@ class OrderController extends Controller
         // );
 
         // return $pdf->download('Trucking.pdf');
+    }
+
+    /**
+     * Delivery Status
+     * 1. Get Request
+     * 2. Update Request
+     */
+    public function deliveryStatus($serviceTypeId, $deliveryId)
+    {
+        // Use the findModel helper to retrieve the port
+        $serviceType = findModel(ServiceType::class, $serviceTypeId);
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($serviceType instanceof \Illuminate\Http\JsonResponse) {
+            return $serviceType;  // Return the not found response
+        }
+        // Use the findModel helper to retrieve the port
+        $orderDelivery = findModel(OrderDelivery::class, $deliveryId);
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($orderDelivery instanceof \Illuminate\Http\JsonResponse) {
+            return $orderDelivery;  // Return the not found response
+        }
+        $order = $this->orderService->getDeliveryStatusData($serviceTypeId, $deliveryId);
+        return response()->json(['status' => true, 'data' => $order], 200);
+    }
+
+    public function deliveryUpdateStatus(Request $request, $deliveryId)
+    {
+        $orderDelivery = findModel(OrderDelivery::class, $deliveryId);
+        if ($orderDelivery instanceof \Illuminate\Http\JsonResponse) {
+            return $orderDelivery;
+        }
+        $orderStatusMaster = OrderStatusMaster::find($request['statusId']);
+        if (empty($orderStatusMaster)) {
+            Log::info('Status Id not found.');
+            return response()->json(['status' => false, 'message' => 'Status Id not found.'], 200);
+        }
+        $order = $this->orderService->updateDeliveryStatus($request, $deliveryId);
+        return response()->json(['status' => true, 'data' => $order], 200);
     }
 }

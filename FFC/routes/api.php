@@ -250,6 +250,8 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::get('/orderStatusByServiceType/{id}', 'getOrderStatusByServiceType');
                     // Order Status
                     Route::post('/status/{orderId}', 'status');
+                    Route::get('/deliveryStatus/{serviceTypeId}/{deliveryId}', 'deliveryStatus');
+                    Route::post('/deliveryUpdateStatus/{deliveryId}', 'deliveryUpdateStatus');
                 });
             }
         );

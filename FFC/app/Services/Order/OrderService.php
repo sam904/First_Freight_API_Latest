@@ -4,9 +4,11 @@ namespace App\Services\Order;
 
 use App\Helpers\SearchHelper;
 use App\Models\Order\Order;
+use App\Models\Order\OrderDeliveryStatus;
 use App\Models\Order\OrderDetails;
 use App\Models\Order\OrderNote;
 use App\Models\Order\OrderStatusMaster;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -424,6 +426,9 @@ class OrderService
                                 }
 
                                 if ($delivery['isStatusRequestChanged'] == true) {
+                                    // 1. update current status to 0 for the specific order delivery status
+                                    OrderDeliveryStatus::where('order_delivery_id', $orderDelivery->id)->update(['current_status' => 0]);
+                                    // 2. Create a new record with the current status set to 1
                                     $deliveryStatusData = ['delivery_status_id' => $delivery['deliveryStatusId']];
                                     Log::info("Order Delivery Status are creating...");
                                     $orderDelivery->statuses()->create($deliveryStatusData);
@@ -602,5 +607,70 @@ class OrderService
         ])->where('id', $orderId)->get();
 
         return $orders;
+    }
+
+    /**
+     * Summary of deliveryUpdateStatus
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Order\OrderDeliveryStatus $orderDeliveryStatus
+     * @return void
+     */
+
+    public function getDeliveryStatusData($serviceTypeId, $deliveryId): ?Collection
+    {
+        // // Get the latest data of max created time
+        // $order = OrderStatusMaster::select('id', 'name', 'service_type_id') // Select specific fields from OrderStatusMaster
+        //     ->with([
+        //         'deliveryStatuses' => function ($query) use ($deliveryId) {
+        //             $query->select('id', 'order_delivery_id', 'delivery_status_id', 'created_at') // Select specific fields
+        //                 ->where('order_delivery_id', $deliveryId)
+        //                 ->where('created_at', function ($subQuery) use ($deliveryId) {
+        //                     $subQuery->selectRaw('MAX(created_at)')
+        //                         ->from('order_delivery_statuses')
+        //                         ->where('order_delivery_id', $deliveryId);
+        //                 })
+        //                 ->latest('created_at') // Fetch only the latest status for each delivery_id
+        //                 ->limit(1); // Ensure only the latest status is selected
+        //         }
+        //     ])
+        //     ->where('service_type_id', $serviceTypeId)
+        //     ->get();
+
+        $order = OrderStatusMaster::select('id', 'name',) // Select specific fields from OrderStatusMaster
+            ->with([
+                'deliveryStatuses' => function ($query) use ($deliveryId) {
+                    $query->select('id', 'order_delivery_id', 'delivery_status_id', 'current_status', 'created_at') // Select specific fields
+                        ->where('order_delivery_id', $deliveryId)
+                        ->whereIn('delivery_status_id', function ($subQuery) use ($deliveryId) {
+                            // Get the latest delivery status ids for the provided delivery_id
+                            $subQuery->select('delivery_status_id')
+                                ->from('order_delivery_statuses')
+                                ->where('order_delivery_id', $deliveryId)
+                                ->groupBy('delivery_status_id');
+                        })
+                        ->orderBy('created_at', 'desc')
+                        ->limit(1);
+                }
+            ])
+            ->where('service_type_id', $serviceTypeId)
+            ->orderBy('sort_level', 'asc')
+            ->get();
+
+        return $order;
+    }
+
+    public function updateDeliveryStatus(Request $request, $deliveryId)
+    {
+        // 1. update current status to 0 for the specific order delivery status
+        OrderDeliveryStatus::where('order_delivery_id', $deliveryId)->update(['current_status' => 0]);
+
+        // 2. Create a new record with the current status set to 1
+        $order = OrderDeliveryStatus::create([
+            'delivery_status_id' => $request['statusId'],
+            'order_delivery_id' => $deliveryId,
+            'current_status' => 1,
+        ]);
+
+        return $order;
     }
 }

@@ -15,4 +15,9 @@ class OrderStatusMaster extends Model
     {
         return $this->hasMany(OrderDelivery::class);
     }
+
+    public function deliveryStatuses()
+    {
+        return $this->hasMany(OrderDeliveryStatus::class, 'delivery_status_id', 'id');
+    }
 }

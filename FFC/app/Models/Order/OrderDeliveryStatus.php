@@ -12,6 +12,7 @@ class OrderDeliveryStatus extends Model
     protected $fillable = [
         'order_delivery_id',
         'delivery_status_id',
+        'current_status',
     ];
 
     public function orderDelivery()
