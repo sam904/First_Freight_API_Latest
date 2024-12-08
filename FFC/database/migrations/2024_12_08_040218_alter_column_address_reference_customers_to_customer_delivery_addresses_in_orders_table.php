@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Orders
         Schema::table('orders', function (Blueprint $table) {
             // Drop the existing foreign key
             $table->dropForeign(['address_id']);

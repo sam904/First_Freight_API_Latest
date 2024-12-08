@@ -16,7 +16,8 @@ class Rate extends Model
 
     protected $fillable = [
         'vendor_id',
-        'port_id',
+        'port_of_loading_id',
+        'port_of_discharge_id',
         'destination_id',
         'start_date',
         'expiry',

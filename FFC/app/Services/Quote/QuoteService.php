@@ -204,6 +204,25 @@ class QuoteService
         return true;
     }
 
+    /**
+     * Notes
+     */
+    public function getQuoteNoteData(Request $request, $quoteId)
+    {
+        $searchTerm = $request->input('searchTerm');
+        $query = QuoteNotes::with('user:id,first_name,last_name')->where('quote_id', $quoteId);
+        $model = new QuoteNotes();
+        $query = SearchHelper::applySearchFilters($query, $model, $request);
+
+        $query->orWhereHas('user', function ($q) use ($searchTerm) {
+            $q->where('first_name', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
+        });
+
+        // Log::info($query->toSql(), $query->getBindings());
+        return $query->orderBy('id', 'desc')->get();
+    }
+
     public function saveNotes(Request $request)
     {
         QuoteNotes::create([

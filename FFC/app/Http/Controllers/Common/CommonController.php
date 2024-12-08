@@ -6,11 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\State;
+use App\Services\Common\CommonService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CommonController extends Controller
 {
+    protected $commonService;
+    public function __construct(CommonService $commonService)
+    {
+        $this->commonService = $commonService;
+    }
+
+
     public function country()
     {
         $country = Country::all();
@@ -93,5 +102,26 @@ class CommonController extends Controller
         $query->where('status', 'active');
         $query = $query->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $query], 200);
+    }
+
+    public function documentUpload(Request $request)
+    {
+        Log::info("********************");
+        Log::info("Uploading Images...");
+        Log::info("********************");
+        try {
+            $uploadedImages = $this->commonService->uploadDocuments($request);
+            return response()->json([
+                'status' => true,
+                'message' => "Document uploaded successfully",
+                'data' => $uploadedImages,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to upload Document',
+                "error" => $e->getMessage()
+            ], 400); // Return error response
+        }
     }
 }

@@ -376,9 +376,9 @@ class OrderService
                     }
 
                     // Documement Upload
-                    if ($request->hasFile('uploadDocuments')) {
+                    if (!empty($detail['uploadDocuments'])) {
                         Log::info("Order Documents are uploading...");
-                        $this->uploadImages($request, $order, $orderDetail);
+                        $this->uploadImages($detail['uploadDocuments'], $order, $orderDetail);
                     }
 
                     // Handle deliveryDetails
@@ -449,7 +449,37 @@ class OrderService
         }
     }
 
-    public function uploadImages(Request $request, $order, $orderDetail)
+    public function uploadImages($images, $order, $orderDetail)
+    {
+        Log::info("Uploading Images...");
+        // Get existing images (if any)
+        $existingImages = $order->upload_document ? explode(',', $order->upload_document) : [];
+
+        $uploadedImages = [];
+
+        if ($images) {
+            $imageArray = explode(',', $images); // Split the string into an array
+            foreach ($imageArray as $image) {
+                // $sourcePath = public_path('images/upload/' . trim($image)); // Temporary location of the image
+                if (!file_exists($image)) {
+                    Log::error("Upload Documents Source file does not exist: " . $image);
+                    throw new \InvalidArgumentException('Upload Documents Source file does not exist');
+                }
+                $uploadedImages[] = $image;
+            }
+            // Merge existing images with newly uploaded images
+            $allImages = array_merge($existingImages, $uploadedImages);
+
+            Log::info("allImages => ", $allImages);
+
+            // Update the database with the new list of images
+            $order->update([
+                'upload_documents' => implode(',', $allImages) // Convert array to comma-separated string
+            ]);
+        }
+    }
+
+    public function uploadImagesOld(Request $request, $order, $orderDetail)
     {
         Log::info("Uploading Images for order => " . $order->id . " && order details id =>" . $orderDetail->id);
 

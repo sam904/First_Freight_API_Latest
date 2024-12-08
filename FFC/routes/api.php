@@ -134,6 +134,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::post('/portList', 'getAllPortList');
                     Route::post('/destinationList', 'getAllDestinationList');
                     Route::post('/customerList', 'getAllCustomerList');
+                    Route::post('/documentUpload', 'documentUpload');
                 });
             }
         );
@@ -181,7 +182,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::post('/update/{id}', 'update')->middleware(CheckPermission::class . ':Rate,can_edit');
                     Route::delete('/delete/{id}', action: 'destroy')->middleware(CheckPermission::class . ':Rate,can_delete');
                     Route::post('/status/{id}', 'status')->middleware(CheckPermission::class . ':Rate,can_edit');
-                    Route::get('/rateNotes/{id}', 'getRateNote');
+                    Route::post('/rateNotes/{id}', 'getRateNote');
                     Route::post('/saveNote', 'storeNote')->middleware(CheckPermission::class . ':RateNote,can_create');
                     Route::post('/updateNote/{id}', 'updateNote')->middleware(CheckPermission::class . ':RateNote,can_edit');
                     Route::get('/editNote/{id}', 'editNote')->middleware(CheckPermission::class . ':RateNote,can_edit');
@@ -204,7 +205,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::post('/update/{id}', 'update')->middleware(CheckPermission::class . ':Quote,can_edit');
                     Route::delete('/delete/{id}', action: 'destroy')->middleware(CheckPermission::class . ':Quote,can_delete');
                     Route::post('/status/{id}', 'status')->middleware(CheckPermission::class . ':Quote,can_edit');
-                    Route::get('/quoteNotes/{id}', 'getQuoteNote')->middleware(CheckPermission::class . ':QuoteNote,can_view');
+                    Route::post('/quoteNotes/{id}', 'getQuoteNote')->middleware(CheckPermission::class . ':QuoteNote,can_view');
                     Route::post('/saveNote', 'storeNote')->middleware(CheckPermission::class . ':QuoteNote,can_create');
                     Route::get('/editNote/{id}', 'editNote')->middleware(CheckPermission::class . ':QuoteNote,can_edit');
                     Route::post('/updateNote/{id}', 'updateNote')->middleware(CheckPermission::class . ':QuoteNote,can_edit');

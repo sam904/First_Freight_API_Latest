@@ -168,7 +168,9 @@ class RateController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'vendor_id' => 'required|integer',
-            'port_id' => 'required|integer',
+            // 'port_id' => 'required|integer',
+            'port_of_loading_id' => 'nullable|integer',
+            'port_of_discharge_id' => 'nullable|integer',
             'destination_id' => 'required|integer',
             'start_date' => 'required|date',
             'expiry' => 'required|integer',
@@ -181,6 +183,13 @@ class RateController extends Controller
             'rateNotes.*.tag' => 'nullable|string',
             'rateNotes.*.pin' => 'nullable|boolean',
         ]);
+
+        // Custom validation to check that at least one port is provided
+        $validator->after(function ($validator) use ($request) {
+            if (is_null($request->input('port_of_loading_id')) && is_null($request->input('port_of_discharge_id'))) {
+                $validator->errors()->add('port_of_loading_id', 'At least one port (loading or discharge) is required.');
+            }
+        });
 
         // Check if validation fails
         if ($validator->fails()) {
@@ -196,7 +205,7 @@ class RateController extends Controller
     */
 
     // Passing RateId
-    public function getRateNote($rateId)
+    public function getRateNote(Request $request, $rateId)
     {
         Log::info("*****************************");
         Log::info('Get Rate Note');
@@ -208,8 +217,8 @@ class RateController extends Controller
         if ($rate instanceof \Illuminate\Http\JsonResponse) {
             return $rate;  // Return the not found response
         }
-
-        $rateNote = RateNotes::with('user:id,first_name,last_name')->where('rate_id', $rateId)->orderBy('id', 'desc')->get();
+        $rateNote = $this->rateService->getRateNoteData($request, $rateId);
+        // $rateNote = RateNotes::with('user:id,first_name,last_name')->where('rate_id', $rateId)->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $rateNote], 200);
     }
 

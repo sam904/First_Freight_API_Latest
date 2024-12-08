@@ -42,14 +42,17 @@ class RateService
         $today = Carbon::now()->toDateString();
         $query = DB::table('rates')
             ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
-            ->join('ports', 'rates.port_id', '=', 'ports.id')
+            ->leftJoin('ports as loading_ports', 'rates.port_of_loading_id', '=', 'loading_ports.id') // Left join for port_of_loading_id
+            ->leftJoin('ports as discharge_ports', 'rates.port_of_discharge_id', '=', 'discharge_ports.id') // Left join for port_of_discharge_id
             ->join('destinations', 'rates.destination_id', '=', 'destinations.id')
             ->leftJoin('service_types', 'rates.service_type_id', '=', 'service_types.id')
             ->select(
                 'rates.id as rate_id',
                 'vendors.company_name as vendor_name',
-                'ports.name as port_name',
+                'loading_ports.name as port_of_loading_name', // Name for port_of_loading
+                'discharge_ports.name as port_of_discharge_name', // Name for port_of_discharge
                 'destinations.name as destination_name',
+                'service_types.name as serviceTypeName',
                 'freight',
                 'expiry',
                 // DB::raw("DATEDIFF('$today', rates.start_date) as days_passed"),
@@ -90,7 +93,11 @@ class RateService
         if (!empty($searchTerm)) {
             Log::info("\n********************\nAppling Search filter for this model = Rate\n********************");
             if (!empty($filterBy) && $filterBy == "port") {
-                $query->where('ports.name', 'LIKE', "%{$searchTerm}%");
+                // $query->where('ports.name', 'LIKE', "%{$searchTerm}%");
+                $query->where(function ($query) use ($searchTerm) {
+                    $query->where('loading_ports.name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('discharge_ports.name', 'LIKE', "%{$searchTerm}%");
+                });
             } elseif (!empty($filterBy) && $filterBy == "destination") {
                 $query->where('destinations.name', 'LIKE', "%{$searchTerm}%");
             } elseif (!empty($filterBy) && $filterBy == "vendor") {
@@ -102,7 +109,9 @@ class RateService
                 // When filterBy is null, search in all three fields
                 $query->where(function ($query) use ($searchTerm) {
                     $query->where('rates.status', 'LIKE', "%{$searchTerm}%")
-                        ->orwhere('ports.name', 'LIKE', "%{$searchTerm}%")
+                        // ->orwhere('ports.name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('loading_ports.name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('discharge_ports.name', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('destinations.name', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('vendors.company_name', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('service_types.name', 'LIKE', "%{$searchTerm}%");
@@ -133,7 +142,8 @@ class RateService
     {
         $rate = Rate::create([
             'vendor_id' => $request['vendor_id'],
-            'port_id' => $request['port_id'],
+            'port_of_loading_id' => $request['port_of_loading_id'] ?? null,
+            'port_of_discharge_id' => $request['port_of_discharge_id'] ?? null,
             'destination_id' => $request['destination_id'],
             'freight' => $request['freight'],
             'fsc' => $request['fsc'],
@@ -180,7 +190,8 @@ class RateService
 
         $rate->update([
             'vendor_id' => $request['vendor_id'],
-            'port_id' => $request['port_id'],
+            'port_of_loading_id' => $request['port_of_loading_id'] ?? null,
+            'port_of_discharge_id' => $request['port_of_discharge_id'] ?? null,
             'destination_id' => $request['destination_id'],
             'freight' => $request['freight'],
             'fsc' => $request['fsc'],
@@ -210,6 +221,26 @@ class RateService
 
         // Save all charges related to rate
         $rate->charges()->saveMany($charge);
+    }
+
+    /**
+     * Notes
+     */
+
+    public function getRateNoteData(Request $request, $rateId)
+    {
+        $searchTerm = $request->input('searchTerm');
+        $query = RateNotes::with('user:id,first_name,last_name')->where('rate_id', $rateId);
+        $model = new RateNotes();
+        $query = SearchHelper::applySearchFilters($query, $model, $request);
+
+        $query->orWhereHas('user', function ($q) use ($searchTerm) {
+            $q->where('first_name', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
+        });
+
+        // Log::info($query->toSql(), $query->getBindings());
+        return $query->orderBy('id', 'desc')->get();
     }
 
     public function saveNotes(Request $request)

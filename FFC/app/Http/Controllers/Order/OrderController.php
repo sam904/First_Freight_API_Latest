@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Order;
 use App\Http\Controllers\Controller;
 use App\Models\Common\ServiceType;
 use App\Models\Order\Order;
-use App\Models\Order\OrderContainerDetails;
 use App\Models\Order\OrderDelivery;
 use App\Models\Order\OrderDetails;
 use App\Models\Order\OrderNote;
@@ -17,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Maatwebsite\Excel\Facades\Excel;
 
 class OrderController extends Controller
 {

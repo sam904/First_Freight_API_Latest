@@ -352,7 +352,7 @@ class QuoteController extends Controller
      */
 
     // Passing QuoteId
-    public function getQuoteNote($quoteId)
+    public function getQuoteNote(Request $request, $quoteId)
     {
         // Use the findModel helper to retrieve the customer
         $quote = findModel(Quote::class, $quoteId);
@@ -362,7 +362,8 @@ class QuoteController extends Controller
             return $quote;  // Return the not found response
         }
 
-        $quoteNote = QuoteNotes::with('user:id,first_name,last_name')->where('quote_id', $quoteId)->orderBy('id', 'desc')->get();
+        $quoteNote = $this->quoteService->getQuoteNoteData($request, $quoteId);
+        // QuoteNotes::with('user:id,first_name,last_name')->where('quote_id', $quoteId)->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $quoteNote], 200);
     }
 
