@@ -37,10 +37,12 @@ class QuoteService
         $query = Quote::with([
             'customer:id,company_name',  // Load customer and only select 'id' and 'company_name'
             'user:id,first_name,last_name,profile_image',
-            'quoteDetails.rate:id,start_date,vendor_id,port_id,destination_id',
+            'quoteDetails.rate:id,start_date,vendor_id,port_of_loading_id,port_of_discharge_id,destination_id',
             // 'quoteDetails.rate.vendor:id,company_name',
             // 'quoteDetails.vendor:id,company_name',  // Load vendor inside quoteDetails and select only 'id' and 'name'
-            'quoteDetails.port:id,name',  // Load port inside quoteDetails and select only 'id' and 'name'
+            // 'quoteDetails.port:id,name',  // Load port inside quoteDetails and select only 'id' and 'name'
+            'quoteDetails.portOfLoading:id,name',
+            'quoteDetails.portOfDischarge:id,name',
             'quoteDetails.destination:id,name',  // Load destination inside quoteDetails and select only 'id' and 'name'
             // 'quoteDetails.charges:quote_detail_id,charge_name,amount',
             'quoteDetails.rate:id,start_date',
@@ -57,8 +59,20 @@ class QuoteService
         // Apply search filters
         $query = SearchHelper::applySearchFilters($query, $model, $request);
 
-        if ($request->input('filterBy') == "port") {
-            $query->whereHas('quoteDetails.port', function ($q) use ($searchTerm) {
+        // if ($request->input('filterBy') == "port") {
+        //     $query->whereHas('quoteDetails.port', function ($q) use ($searchTerm) {
+        //         $q->where('name', 'like', "%{$searchTerm}%");
+        //     });
+        // }
+
+        if ($filterBy === "portOfLoading") {
+            $query->whereHas('quoteDetails.portOfLoading', function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        if ($filterBy === "portOfDischarge") {
+            $query->whereHas('quoteDetails.portOfDischarge', function ($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%");
             });
         }
@@ -158,7 +172,8 @@ class QuoteService
                 "rate_id" => $detail['rateId'] ?? null,
                 'service_type_id' => $detail['serviceType'] ?? null,
                 "container_weight" => $detail['containerWeight'] ?? null,
-                "port_id" => $detail['portId'],
+                'port_of_loading_id' => $detail['portOfLoadingId'] ?? null,
+                'port_of_discharge_id' => $detail['portOfDischargeId'] ?? null,
                 "destination_id" => $detail['destinationId'],
                 // "vendor_id" => $detail['vendorId'],
                 // "shipment_type" => $detail['shipmentType'],

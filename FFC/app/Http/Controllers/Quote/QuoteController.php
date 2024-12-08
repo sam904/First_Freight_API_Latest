@@ -26,9 +26,9 @@ class QuoteController extends Controller
 
     public function getVendorList(Request $request)
     {
-        Log::info("*************************");
+        Log::info("*******************************");
         Log::info("Getting Vendor list for quotes");
-        Log::info("*************************");
+        Log::info("*******************************");
         /*
         Process:
         1. First, it searches for vendors based on the provided port_id, destination_id, serviceType
@@ -36,13 +36,16 @@ class QuoteController extends Controller
             those values and adds it to the existing dataset. This step is specifically for the edit functionality.
         */
 
-        $isPortId = $request->input('port_id') ?? false;
+        $isPortOfLoadingId = $request->input('portOfLoadingId') ?? false;
+        $isPortOfDischargeId = $request->input('portOfDischargeId') ?? false;
         $isDestinationId = $request->input('destination_id') ?? false;
         $isServiceType = $request->input('serviceType') ?? false;
         $today = Carbon::now()->toDateString();
         // Main query
         $query = DB::table('rates')
             ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
+            ->leftJoin('ports as loading_ports', 'rates.port_of_loading_id', '=', 'loading_ports.id')
+            ->leftJoin('ports as discharge_ports', 'rates.port_of_discharge_id', '=', 'discharge_ports.id')
             ->select(
                 'rates.id as rate_id',
                 'vendors.company_name as vendor_name',
@@ -68,8 +71,14 @@ class QuoteController extends Controller
                 DB::raw("0 as temp_sort_column")
             );
 
-        if ($isPortId) {
-            $query->where('rates.port_id', $request->port_id);
+        // if ($isPortId) {
+        //     $query->where('rates.port_id', $request->port_id);
+        // }
+        if ($isPortOfLoadingId) {
+            $query->where('rates.port_of_loading_id', $isPortOfLoadingId);
+        }
+        if ($isPortOfDischargeId) {
+            $query->where('rates.port_of_discharge_id', $isPortOfDischargeId);
         }
         if ($isDestinationId) {
             $query->where('rates.destination_id', $request->destination_id);
@@ -87,6 +96,8 @@ class QuoteController extends Controller
 
             $additionalQuery = DB::table('rates')
                 ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
+                ->leftJoin('ports as loading_ports', 'rates.port_of_loading_id', '=', 'loading_ports.id') // Join for portOfLoadingId
+                ->leftJoin('ports as discharge_ports', 'rates.port_of_discharge_id', '=', 'discharge_ports.id') // Join for portOfDischargeId
                 ->select(
                     'rates.id as rate_id',
                     'vendors.company_name as vendor_name',
@@ -239,7 +250,7 @@ class QuoteController extends Controller
         $quotes = Quote::with([
             'customer:id,company_name',  // Load customer and only select 'id' and 'company_name'
             // 'user:id,first_name,last_name,profile_image',
-            'quoteDetails.rate:id,start_date,vendor_id,port_id,destination_id',
+            'quoteDetails.rate:id,start_date,vendor_id,port_of_loading_id,port_of_discharge_id,destination_id',
             'quoteDetails.rate.vendor:id,company_name',
             // 'quoteDetails.rate.port:id,name',
             // 'quoteDetails.rate.destination:id,name',
@@ -329,7 +340,8 @@ class QuoteController extends Controller
             'customerId' => 'required|integer',
             'quoteDetails' => 'required|array',
             // 'quoteDetails.*.serviceType' => 'required|integer',
-            'quoteDetails.*.portId' => 'required|integer',
+            'quoteDetails.*.portOfLoadingId' => 'nullable|integer',
+            'quoteDetails.*.portOfDischargeId' => 'nullable|integer',
             'quoteDetails.*.destinationId' => 'required|integer',
             'quoteNotes' => 'sometimes|array',
             'quoteNotes.*.title' => 'required_with:quoteNotes|string',

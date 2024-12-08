@@ -16,7 +16,8 @@ class QuoteDetail extends Model
     protected $fillable = [
         'quote_id',
         'container_weight',
-        'port_id',
+        'port_of_loading_id',
+        'port_of_discharge_id',
         'destination_id',
         // 'vendor_id',
         'rate_id',
@@ -39,6 +40,16 @@ class QuoteDetail extends Model
     public function port()
     {
         return $this->belongsTo(Port::class, 'port_id');
+    }
+
+    public function portOfLoading()
+    {
+        return $this->belongsTo(Port::class, 'port_of_loading_id');
+    }
+
+    public function portOfDischarge()
+    {
+        return $this->belongsTo(Port::class, 'port_of_discharge_id');
     }
 
     public function destination()

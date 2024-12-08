@@ -385,8 +385,11 @@ class VendorService
         foreach ($imageArray as $imageName) {
             // Trim any whitespace around the image name
             $imageName = trim($imageName);
-            // Construct the full path to the image
-            $filePath = public_path("images/profiles/vendor/" . $id . "/" . $imageName);
+            if (str_contains($imageName, '/')) {
+                $filePath = public_path($imageName);
+            } else {
+                $filePath = public_path("images/vendor/" . $id . "/" . $imageName);
+            }
             // Check if the file exists before attempting to delete
             if (file_exists($filePath)) {
                 unlink($filePath); // Delete the file
