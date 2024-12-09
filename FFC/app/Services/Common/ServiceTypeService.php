@@ -11,14 +11,16 @@ class ServiceTypeService
     public function createServiceType(Request $request)
     {
         ServiceType::create([
-            'name' => $request['name']
+            'name' => $request['name'],
+            'sort_level' => $request['sortLevel'],
         ]);
         return true;
     }
     public function updateServiceType(Request $request, ServiceType $serviceType)
     {
         $serviceType->update([
-            'name' => $request['name']
+            'name' => $request['name'],
+            'sort_level' => $request['sortLevel'],
         ]);
         return true;
     }

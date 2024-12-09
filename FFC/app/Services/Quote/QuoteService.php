@@ -225,7 +225,7 @@ class QuoteService
     public function getQuoteNoteData(Request $request, $quoteId)
     {
         $searchTerm = $request->input('searchTerm');
-        $query = QuoteNotes::with('user:id,first_name,last_name')->where('quote_id', $quoteId);
+        $query = QuoteNotes::with('user:id,first_name,last_name');
         $model = new QuoteNotes();
         $query = SearchHelper::applySearchFilters($query, $model, $request);
 
@@ -234,6 +234,10 @@ class QuoteService
                 ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
         });
 
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('quote_id', $quoteId);
+        }
         // Log::info($query->toSql(), $query->getBindings());
         return $query->orderBy('id', 'desc')->get();
     }

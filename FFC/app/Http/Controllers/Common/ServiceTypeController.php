@@ -21,7 +21,10 @@ class ServiceTypeController extends Controller
 
     public function index()
     {
-        $services = ServiceType::orderBy('id', 'desc')->get();
+        // $services = ServiceType::orderBy('sort_level', 'asc')->get();
+        $services = ServiceType::orderByRaw('(sort_level IS NULL OR sort_level = "")')
+            ->orderBy('sort_level', 'asc')
+            ->get();
         return response()->json(['status' => true, 'data' => $services], 200);
     }
 

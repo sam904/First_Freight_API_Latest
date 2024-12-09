@@ -230,7 +230,7 @@ class RateService
     public function getRateNoteData(Request $request, $rateId)
     {
         $searchTerm = $request->input('searchTerm');
-        $query = RateNotes::with('user:id,first_name,last_name')->where('rate_id', $rateId);
+        $query = RateNotes::with('user:id,first_name,last_name');
         $model = new RateNotes();
         $query = SearchHelper::applySearchFilters($query, $model, $request);
 
@@ -238,6 +238,10 @@ class RateService
             $q->where('first_name', 'LIKE', "%{$searchTerm}%")
                 ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
         });
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('rate_id', $rateId);
+        }
 
         // Log::info($query->toSql(), $query->getBindings());
         return $query->orderBy('id', 'desc')->get();

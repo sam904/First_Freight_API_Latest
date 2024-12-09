@@ -556,6 +556,26 @@ class OrderService
      * Order Notes
      */
 
+
+    public function getOrderNoteData(Request $request, $orderId)
+    {
+        $searchTerm = $request->input('searchTerm');
+        $query = OrderNote::with('user:id,first_name,last_name');
+        $model = new OrderNote();
+        $query = SearchHelper::applySearchFilters($query, $model, $request);
+
+        $query->orWhereHas('user', function ($q) use ($searchTerm) {
+            $q->where('first_name', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
+        });
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('order_id', $orderId);
+        }
+        Log::info($query->toSql(), $query->getBindings());
+        return $query->orderBy('id', 'desc')->get();
+    }
+
     public function saveOrderNotes(Request $request, $id)
     {
         if (!empty($request->input('orderNotes'))) {

@@ -322,7 +322,7 @@ class OrderController extends Controller
      * Order Note
      */
 
-    public function getOrderNote($id)
+    public function getOrderNote(Request $request, $id)
     {
         Log::info("*****************************");
         Log::info('Get Order Note');
@@ -335,7 +335,8 @@ class OrderController extends Controller
             return $order;  // Return the not found response
         }
 
-        $note = OrderNote::with('user:id,first_name,last_name')->where('order_id', $id)->orderBy('id', 'desc')->get();
+        $note = $this->orderService->getOrderNoteData($request, $id);
+        // OrderNote::with('user:id,first_name,last_name')->where('order_id', $id)->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $note], 200);
     }
 

@@ -240,7 +240,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::get('/edit/{id}', 'edit');
                     Route::post('/update/{id}', 'update');
                     Route::delete('/delete/{id}', action: 'destroy');
-                    Route::get('/orderNotes/{id}', 'getOrderNote');
+                    Route::post('/orderNotes/{id}', 'getOrderNote');
                     Route::post('/saveNote', 'storeNote');
                     Route::post('/updateNote/{id}', 'updateNote');
                     Route::get('/editNote/{id}', 'editNote');
