@@ -28,9 +28,9 @@
         : null;
 
     foreach ($orderDeliveries[0] as $delivery) {
-        $scac = $delivery['vendor']['scac_number'];
-        $mc = $delivery['vendor']['mc_number'];
-        $usdot = $delivery['vendor']['us_dot_number'];
+        $scac = $delivery['vendor']['scac_number'] ?? null;
+        $mc = $delivery['vendor']['mc_number'] ?? null;
+        $usdot = $delivery['vendor']['us_dot_number'] ?? null;
     }
 @endphp
 <!DOCTYPE html>
@@ -151,7 +151,7 @@
             <p style="display: flex; justify-content: space-between; font-size: 14px; margin: 5px 0;">
                 <span><strong>Trucker:</strong> Retrieving data. Wait a few seconds and try to cut or copy again.</span>
                 <span style="float:right"><strong>Date:</strong>
-                    {{ \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y') }}</span>
+                    {{ \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y') ?? null }}</span>
             </p>
             <p style="font-size: 14px; margin: 5px 0">
                 <strong>Email:</strong> Dispatch@firstfreightcarriers.com
@@ -176,14 +176,14 @@
                 {{-- @foreach ($orderContainerDetails1[0] as $containerDetails) --}}
                 @foreach ($orderContainerDetails as $containerDetails)
                     <tr>
-                        <td>{{ $containerDetails['container_no'] }}</td>
+                        <td>{{ $containerDetails['container_no'] ?? null }}</td>
                         <td>{{ $bl }}</td>
-                        <td>{{ $containerDetails['po'] }}</td>
-                        <td>{{ $containerDetails['cpo'] }}</td>
+                        <td>{{ $containerDetails['po'] ?? null }}</td>
+                        <td>{{ $containerDetails['cpo'] ?? null }}</td>
                         <td>{{ $seal }}</td>
                         <td>{{ $lfd }}</td>
                         <td>{{ $weight }}</td>
-                        <td>{{ $containerDetails['container_size'] }}</td>
+                        <td>{{ $containerDetails['container_size'] ?? null }}</td>
                         <td>{{ $pallets }}</td>
                     </tr>
                 @endforeach
@@ -194,13 +194,13 @@
             <thead>
                 <tr>
                     <th style="text-align: center;">Deliver To</th>
-                    <td colspan="3">{{ $data['address']['company_name'] }}</td>
+                    <td colspan="3">{{ $data['address']['company_name'] ?? null }}</td>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td style="text-align: center;"><strong>Delivery Appt Date</strong></td>
-                    <td>{{ \Carbon\Carbon::parse($data['received_date'])->format('m-d') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($data['received_date'])->format('m-d') ?? null }}</td>
                     <td>Time:</td>
                     <td>07:00</td>
                 </tr>
@@ -213,21 +213,21 @@
             <thead>
                 <tr>
                     <th>Freight Location</th>
-                    <td>{{ $orderDetails[0]['freight_location'] }}</td>
+                    <td>{{ $orderDetails[0]['freight_location'] ?? null }}</td>
                     <th>Firms Code</th>
-                    <td>{{ $orderDetails[0]['firm_code'] }}</td>
+                    <td>{{ $orderDetails[0]['firm_code'] ?? null }}</td>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <th>Vessel/Voyage</th>
-                    <td>{{ $orderDetails[0]['vessel_voyage'] }}</td>
+                    <td>{{ $orderDetails[0]['vessel_voyage'] ?? null }}</td>
                     <th>Commodity</th>
-                    <td>{{ $orderDetails[0]['commodity'] }}</td>
+                    <td>{{ $orderDetails[0]['commodity'] ?? null }}</td>
                 </tr>
                 <tr>
                     <th>ETA</th>
-                    <td>{{ $orderDetails[0]['eta'] }}</td>
+                    <td>{{ $orderDetails[0]['eta'] ?? null }}</td>
                 </tr>
             </tbody>
         </table>

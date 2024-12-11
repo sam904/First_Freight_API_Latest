@@ -547,6 +547,7 @@ class OrderController extends Controller
         // exit;
 
         Log::info($serviceData);
+        Log::info("PDF DATA => " . $data[0]);
         // $html = view('order/Trucking', compact('data'))->render();
         if (isset($serviceData['id']) && ($serviceData['id'] == 1 || $serviceData['id'] == 2 || $serviceData['id'] == 5)) {
             Log::info("Getting view for Trucking Template");
