@@ -1,25 +1,24 @@
 @php
-    $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
     // Check if orderDetails exists, and then access the related orderContainerDetails
     $orderDetails = $data['orderDetails'] ?? null;
 
-    $shipper = $orderDetails[0]['shipper'] ?? null;
-    $shipper_address = $orderDetails[0]['shipper_address'] ?? null;
-    $consignee = $orderDetails[0]['consignee'] ?? null;
-    $consignee_address = $orderDetails[0]['consignee_address'] ?? null;
-    $buyer = $orderDetails[0]['buyer'] ?? null;
-    $buyer_address = $orderDetails[0]['buyer_address'] ?? null;
-    $notify_party = $orderDetails[0]['notify_party'] ?? null;
-    $hts_code = $orderDetails[0]['hts_code'] ?? null;
-    $commodity = $orderDetails[0]['commodity'] ?? null;
-    $weight = $orderDetails[0]['weight'] ?? null;
-    $ssl = $orderDetails[0]['streamship_line'] ?? null;
-    $etd = $orderDetails[0]['etd'] ?? null;
-    $eta = $orderDetails[0]['eta'] ?? null;
-    $si_cut_off = $orderDetails[0]['si_cut_off'] ?? null;
-    $vgm_cut_off = $orderDetails[0]['vgm_cut_off'] ?? null;
-    $all_inclusive_rate = $orderDetails[0]['all_inclusive_rate'] ?? null;
-    $freight_prepaid = $orderDetails[0]['freight_prepaid'] ?? null;
+    $shipper = $orderDetails[0]['shipper'] ?? '';
+    $shipper_address = $orderDetails[0]['shipper_address'] ?? '';
+    $consignee = $orderDetails[0]['consignee'] ?? '';
+    $consignee_address = $orderDetails[0]['consignee_address'] ?? '';
+    $buyer = $orderDetails[0]['buyer'] ?? '';
+    $buyer_address = $orderDetails[0]['buyer_address'] ?? '';
+    $notify_party = $orderDetails[0]['notify_party'] ?? '';
+    $hts_code = $orderDetails[0]['hts_code'] ?? '';
+    $commodity = $orderDetails[0]['commodity'] ?? '';
+    $weight = $orderDetails[0]['weight'] ?? '';
+    $ssl = $orderDetails[0]['streamship_line'] ?? '';
+    $etd = $orderDetails[0]['etd'] ?? '';
+    $eta = $orderDetails[0]['eta'] ?? '';
+    $si_cut_off = $orderDetails[0]['si_cut_off'] ?? '';
+    $vgm_cut_off = $orderDetails[0]['vgm_cut_off'] ?? '';
+    $all_inclusive_rate = $orderDetails[0]['all_inclusive_rate'] ?? '';
+    $freight_prepaid = $orderDetails[0]['freight_prepaid'] ?? '';
     $received_date = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y');
     // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
     // $orderContainerDetails1 = $orderDetails
@@ -35,12 +34,6 @@
         })
         : null;
 
-    foreach ($orderContainerDetails as $containerDetails) {
-        $containerNo = $containerDetails['container_no'] ?? null;
-        $containerSize = $containerDetails['container_size'] ?? null;
-        $po = $containerDetails['po'] ?? null;
-    }
-
     $orderDeliveries = $orderDetails
         ? $orderDetails->map(function ($orderDetail) {
             return $orderDetail->deliveries;
@@ -48,13 +41,13 @@
         : null;
 
     foreach ($orderDeliveries[0] as $delivery) {
-        $scac = $delivery['vendor']['scac_number'] ?? null;
-        $mc = $delivery['vendor']['mc_number'] ?? null;
-        $usdot = $delivery['vendor']['us_dot_number'] ?? null;
-        $transit_time = $delivery['transit_time'] ?? null;
-        $empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'] ?? null;
-        $transhipment_port = $delivery['transhipmentPort']['name'] ?? null;
-        $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
+        $scac = $delivery['vendor']['scac_number'];
+        $mc = $delivery['vendor']['mc_number'];
+        $usdot = $delivery['vendor']['us_dot_number'];
+        $transit_time = $delivery['transit_time'];
+        $empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'];
+        $transhipment_port = $delivery['transhipmentPort']['name'];
+        $ignate_cutoff_date = '?';
     }
 @endphp
 <!DOCTYPE html>
@@ -65,19 +58,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Delivery Order</title>
 </head>
-<style>
-    @page {
-        size: A4;
-        margin: 4mm;
-    }
-
-    body {
-        margin: 0;
-        padding: 0;
-        font-size: 10px;
-        /* Adjust for readability */
-    }
-</style>
 
 <body
     style="
@@ -86,7 +66,7 @@
       padding: 0;
       background-color: #f9f9f9;
     ">
-    <div class="delivery-order" style="max-width: 100%; margin: 0 auto; padding: 10px">
+    <div class="delivery-order" style="max-width: 80rem; margin: 0 auto; padding: 20px">
         <header
             style="
           display: flex;
@@ -97,24 +77,24 @@
           border-bottom: 2px solid #7c7979;
         ">
             <div class="header-left">
-                <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo" class="logo"
+                <img src="https://via.placeholder.com/120" alt="FFC Logo" class="logo"
                     style="width: 120px; height: auto" />
                 <h1 style="font-size: 24px; margin: 0">Delivery Order</h1>
             </div>
             <div class="header-right">
-                <p style="text-align: right; font-size: 12px">
+                <p style="text-align: right; font-size: 14px">
                     <strong>SCAC:</strong> {{ $scac }}
                 </p>
-                <p style="text-align: right; font-size: 12px">
+                <p style="text-align: right; font-size: 14px">
                     <strong>USDOT #:</strong> {{ $usdot }}
                 </p>
-                <p style="text-align: right; font-size: 12px">
+                <p style="text-align: right; font-size: 14px">
                     <strong>MC #:</strong> {{ $mc }}
                 </p>
-                <p style="text-align: right; font-size: 12px">
+                <p style="text-align: right; font-size: 14px">
                     <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
                 </p>
-                <p style="font-size: 12px; font-weight: bold">
+                <p style="font-size: 14px; font-weight: bold">
                     Ocean Freight | Customs Filing | Trucking | Transload | Warehousing
                 </p>
             </div>
@@ -128,7 +108,7 @@
             align-items: flex-start;
           ">
                 <div style="flex: 1">
-                    <p style="font-size: 12px; margin: 5px 0">
+                    <p style="font-size: 14px; margin: 5px 0">
                         <strong>Forwarder :</strong> City Ocean Logistics
                     </p>
                 </div>
@@ -175,7 +155,7 @@
                 ">
                             <strong>Container</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerNo }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">1 x 40HQ</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -322,7 +302,7 @@
             <!-- Left Table -->
             <table border="1" style="width: 50%; border-collapse: collapse; margin: 0">
                 <tr>
-                    <th rowspan="2"
+                    <th rowspan="4"
                         style="
                 width: 30%;
                 padding: 8px;
@@ -353,10 +333,30 @@
                         {{ $shipper_address }}
                     </td>
                 </tr>
-                {{-- <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr>
-                <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr> --}}
                 <tr>
-                    <th rowspan="2"
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        ?
+                    </td>
+                </tr>
+                <tr>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        ?
+                    </td>
+                </tr>
+                <tr>
+                    <th rowspan="4"
                         style="
                 width: 20%;
                 padding: 8px;
@@ -387,8 +387,28 @@
                         {{ $buyer_address }}
                     </td>
                 </tr>
-                {{-- <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr>
-                <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr> --}}
+                <tr>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        ?
+                    </td>
+                </tr>
+                <tr>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        ?
+                    </td>
+                </tr>
                 <tr>
                     <th
                         style="
@@ -449,7 +469,7 @@
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        {{ $containerSize }}
+                        40HQ
                     </td>
                 </tr>
                 <tr>
@@ -478,7 +498,7 @@
             <!-- Right Table -->
             <table border="1" style="width: 50%; border-collapse: collapse; margin: 0">
                 <tr>
-                    <th rowspan="2"
+                    <th rowspan="4"
                         style="
                 width: 30%;
                 padding: 8px;
@@ -509,8 +529,28 @@
                         {{ $consignee_address }}
                     </td>
                 </tr>
-                {{-- <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr>
-                <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr> --}}
+                <tr>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        ?
+                    </td>
+                </tr>
+                <tr>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        ?
+                    </td>
+                </tr>
                 <tr>
                     <th rowspan="4"
                         style="
@@ -583,7 +623,7 @@
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        {{ $po }}
+                        242322
                     </td>
                 </tr>
             </table>
@@ -594,7 +634,6 @@
                 <tr>
                     <th
                         style="
-                width: 15rem;
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
@@ -616,7 +655,6 @@
                 <tr>
                     <th
                         style="
-                width: 15rem;
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
@@ -645,12 +683,12 @@
           align-items: flex-start;
         ">
             <div style="flex: 1">
-                <p style="font-size: 12px; margin: 5px 0">
+                <p style="font-size: 14px; margin: 5px 0">
                     42619 Windflower Drive,Ashbum,VA 20148
                 </p>
             </div>
             <div style="text-align: right">
-                <p style="font-size: 12px; margin: 5px 0">
+                <p style="font-size: 14px; margin: 5px 0">
                     p.703.738.2834; F:703.842.8668
                 </p>
             </div>

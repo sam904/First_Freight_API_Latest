@@ -1,12 +1,19 @@
 @php
+    $receivedDate = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y') ?? null;
+
     // Check if orderDetails exists, and then access the related orderContainerDetails
     $orderDetails = $data['orderDetails'] ?? null;
 
-    $bl = $orderDetails[0]['master_bl'] ?? '';
-    $seal = $orderDetails[0]['seal'] ?? '';
-    $lfd = $orderDetails[0]['last_free_day'] ?? '';
-    $weight = $orderDetails[0]['weight'] ?? '';
-    $pallets = $orderDetails[0]['pallets'] ?? '';
+    $bl = $orderDetails[0]['master_bl'] ?? null;
+    $seal = $orderDetails[0]['seal'] ?? null;
+    $lfd = $orderDetails[0]['last_free_day'] ?? null;
+    $weight = $orderDetails[0]['weight'] ?? null;
+    $pallets = $orderDetails[0]['pallets'] ?? null;
+    $freightLocation = $orderDetails[0]['freight_location'] ?? null;
+    $firmCode = $orderDetails[0]['firm_code'] ?? null;
+    $vesselVoyage = $orderDetails[0]['vessel_voyage'] ?? null;
+    $commodity = $orderDetails[0]['commodity'] ?? null;
+    $eta = $orderDetails[0]['eta'] ?? null;
     // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
     // $orderContainerDetails1 = $orderDetails
     //     ? $orderDetails->map(function ($orderDetail) {
@@ -32,203 +39,162 @@
         $mc = $delivery['vendor']['mc_number'] ?? null;
         $usdot = $delivery['vendor']['us_dot_number'] ?? null;
     }
+
+    $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
 @endphp
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Delivery Order</title>
-    <style>
-        body {
-            font-family: Verdana, Geneva, Tahoma, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
-
-        .delivery-order {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #ffffff;
-        }
-
-        header {
-            width: 100%;
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        header .header-left {
-            float: left;
-        }
-
-        header .header-left img {
-            width: 120px;
-        }
-
-        header .header-right {
-            float: right;
-            text-align: right;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table th,
-        table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
-        }
-
-        table th {
-            background-color: rgb(221, 238, 240);
-            font-weight: bold;
-        }
-
-        .highlight {
-            background: black;
-            color: white;
-            text-align: center;
-            padding: 10px;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-
-        .details-section {
-            margin-top: 20px;
-        }
-
-        .details-section p {
-            margin: 0;
-        }
-
-        footer {
-            margin-top: 0px;
-            /* border-top: 1px solid #ddd; */
-            padding-top: 0px;
-        }
-
-        .clearfix {
-            clear: both;
-        }
-    </style>
 </head>
-{{-- <p>
-    <pre>{{ json_encode($orderContainerDetails, JSON_PRETTY_PRINT) }}</pre>
-</p> --}}
+<style>
+    @page {
+        size: A4;
+        margin: 4mm;
+    }
 
-<body>
-    <div class="delivery-order">
-        <header>
+    body {
+        margin: 0;
+        padding: 0;
+        font-size: 10px;
+        /* Adjust for readability */
+    }
+</style>
+
+<body
+    style="
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+    ">
+    <div class="delivery-order" style="max-width:'100%'; margin: 0 auto; padding: 10px">
+        <header
+            style="
+          display: flex;
+          justify-content: space-between;
+          align-items: start;
+          color: rgb(5, 5, 5);
+          padding: 5px;
+          border-bottom: 2px solid #000;
+        ">
             <div class="header-left">
-                <img src="https://via.placeholder.com/120" alt="FFC Logo">
-                <h1>Delivery Order</h1>
+                <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo" class="logo"
+                    style="width: 100px; padding-bottom: 10px; height: auto" />
+                <h1 style="font-size: 20px; margin: 0">Delivery Order</h1>
             </div>
             <div class="header-right">
-                <p><strong>SCAC:</strong> {{ $scac }}</p>
-                <p><strong>USDOT #:</strong> {{ $usdot }}</p>
-                <p><strong>MC #:</strong> {{ $mc }}</p>
-                <p><a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a></p>
-                <p><strong> Ocean Freight | Customs Filing | Trucking | Transload | Warehousing</strong></p>
+                <p style="text-align: right; font-size: 12px">
+                    <strong>SCAC:</strong> {{ $scac }}
+                </p>
+                <p style="text-align: right; font-size: 12px">
+                    <strong>USDOT #:</strong> {{ $usdot }}
+                </p>
+                <p style="text-align: right; font-size: 12px">
+                    <strong>MC #:</strong> {{ $mc }}
+                </p>
+                <p style="text-align: right; font-size: 12px">
+                    <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
+                </p>
+                <p style="font-size: 12px; font-weight: 700">
+                    Ocean Freight | Customs Filing | Trucking | Transload | Warehousing
+                </p>
             </div>
-            <div class="clearfix"></div>
         </header>
 
-        <section class="details-section">
-            <p>Please have your driver carry a printout of this DO and take the receiving warehouse personnel's name,
-                signature, and delivery date/time as the POD.</p>
-            <p style="display: flex; justify-content: space-between; font-size: 14px; margin: 5px 0;">
-                <span><strong>Trucker:</strong> Retrieving data. Wait a few seconds and try to cut or copy again.</span>
-                <span style="float:right"><strong>Date:</strong>
-                    {{ \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y') ?? null }}</span>
+        <section class="order-info" style="margin-top: 20px">
+            <p style="font-size: 12px; margin: 0">
+                Please have your driver carry a printout of this DO and take the
+                receiving warehouse personnel's name, signature, and delivery
+                date/time as the POD.
             </p>
-            <p style="font-size: 14px; margin: 5px 0">
-                <strong>Email:</strong> Dispatch@firstfreightcarriers.com
+            <br /><br />
+            <div
+                style="
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+          ">
+                <div style="flex: 1">
+                    <p style="font-size: 12px; margin: 5px 0">
+                        <strong>Trucker:</strong> Retrieving data. Wait a few seconds and
+                        try to cut or copy again.
+                    </p>
+                </div>
+                <div style="text-align: right">
+                    <p style="font-size: 12px; margin: 5px 0">
+                        <strong>Date:</strong> {{ $receivedDate }}
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="contact" style="margin-top: 5px; border-radius: 5px">
+            <p class="highlight" style="padding: 5px; text-align: center">
+                Email: Dispatch@firstfreightcarriers.com
             </p>
         </section>
 
-        <table>
+        <table class="details-table" style="width: 100%; margin-top: 5px; border-collapse: collapse">
             <thead>
-                <tr>
-                    <th>CONTAINER #</th>
-                    <th>BL</th>
-                    <th>PO</th>
-                    <th>CPO</th>
-                    <th>Seal</th>
-                    <th>LFD</th>
-                    <th>Weight (lbs)</th>
-                    <th>Size</th>
-                    <th># Of Pallets</th>
+                <tr style="background-color: #f6fafd">
+                    <th
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important; font-weight: 600;">
+                        CONTAINER #
+                    </th>
+                    <th
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important; font-weight: 600;">
+                        BL
+                    </th>
+                    <th
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important; font-weight: 600;">
+                        PO
+                    </th>
+                    <th
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important; font-weight: 600;">
+                        CPO
+                    </th>
+                    <th
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important; font-weight: 600;">
+                        Seal
+                    </th>
+                    <th
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important; font-weight: 600;">
+                        LFD
+                    </th>
+                    <th
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important; font-weight: 600;">
+                        Weight (lbs)
+                    </th>
+                    <th
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important; font-weight: 600;">
+                        Size
+                    </th>
+                    <th
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important; font-weight: 600;">
+                        # Of Pallets
+                    </th>
                 </tr>
             </thead>
             <tbody>
-                {{-- @foreach ($orderContainerDetails1[0] as $containerDetails) --}}
                 @foreach ($orderContainerDetails as $containerDetails)
                     <tr>
-                        <td>{{ $containerDetails['container_no'] ?? null }}</td>
-                        <td>{{ $bl }}</td>
-                        <td>{{ $containerDetails['po'] ?? null }}</td>
-                        <td>{{ $containerDetails['cpo'] ?? null }}</td>
-                        <td>{{ $seal }}</td>
-                        <td>{{ $lfd }}</td>
-                        <td>{{ $weight }}</td>
-                        <td>{{ $containerDetails['container_size'] ?? null }}</td>
-                        <td>{{ $pallets }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['container_no'] ?? null }}
+                        </td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $bl }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['po'] ?? null }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['cpo'] ?? null }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $seal }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $lfd }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $weight }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">
+                            {{ $containerDetails['container_size'] ?? null }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $pallets }}</td>
                     </tr>
                 @endforeach
-            </tbody>
-        </table>
-
-        <table>
-            <thead>
-                <tr>
-                    <th style="text-align: center;">Deliver To</th>
-                    <td colspan="3">{{ $data['address']['company_name'] ?? null }}</td>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="text-align: center;"><strong>Delivery Appt Date</strong></td>
-                    <td>{{ \Carbon\Carbon::parse($data['received_date'])->format('m-d') ?? null }}</td>
-                    <td>Time:</td>
-                    <td>07:00</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="highlight">PLEASE CONTACT FFC TO SCHEDULE DELIVERY</div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Freight Location</th>
-                    <td>{{ $orderDetails[0]['freight_location'] ?? null }}</td>
-                    <th>Firms Code</th>
-                    <td>{{ $orderDetails[0]['firm_code'] ?? null }}</td>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <th>Vessel/Voyage</th>
-                    <td>{{ $orderDetails[0]['vessel_voyage'] ?? null }}</td>
-                    <th>Commodity</th>
-                    <td>{{ $orderDetails[0]['commodity'] ?? null }}</td>
-                </tr>
-                <tr>
-                    <th>ETA</th>
-                    <td>{{ $orderDetails[0]['eta'] ?? null }}</td>
-                </tr>
             </tbody>
         </table>
         <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
@@ -237,122 +203,271 @@
                     <th
                         style="
                 border: 1px solid #ddd;
+                background-color: #f6fafd;
                 padding: 8px;
                 text-align: center;
-                background-color: rgb(221, 238, 240);
+              ">
+                        <strong>Deliver To:</strong>
+                    </th>
+                    <td colspan="3"
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important;">
+                        <p style="margin: 0">{{ $data['address']['company_name'] ?? null }}</p>
+                        {{-- <p style="margin: 0">1111 BROADWAY AVE</p> --}}
+                        {{-- <p style="margin: 0">BRASELTON GA 30517</p> --}}
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td
+                        style="
+                border: 1px solid #ddd;
+                background-color: #f6fafd;
+                padding: 8px;
+                text-align: center;
+              ">
+                        <strong>Delivery Appt Date:</strong>
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: center">
+                        {{ \Carbon\Carbon::parse($data['received_date'])->format('m-d') ?? null }}
+                    </td>
+                    <td
+                        style="
+                border: 1px solid #ddd;
+                padding: 8px;
+                font-weight: bold;
+                text-align: center;
+                background-color: #f6fafd;
+              ">
+                        Time:
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: center">
+                        ?
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <section class="contact" style="margin-top: 20px; background-color: #ffffff; border-radius: 5px">
+            <p class="highlight"
+                style="
+            background: black;
+            color: white;
+            padding: 10px;
+            text-align: center;
+          ">
+                PLEASE CONTACT FFC TO SCHEDULE DELIVERY
+            </p>
+            <table class="details-table" style="width: 100%; margin-top: 10px; border-collapse: collapse">
+                <thead>
+                    <tr>
+                        <th
+                            style="
+                  border: 1px solid #ddd;
+                  padding: 8px;
+                  text-align: left;
+                  background-color: #f6fafd;
+                ">
+                            <strong>Freight Location:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">
+                            {{ $freightLocation }}
+                        </td>
+                        <th
+                            style="
+                  border: 1px solid #ddd;
+                  padding: 8px;
+                  text-align: left;
+                  background-color: #f6fafd;
+                ">
+                            <strong>Firms Code:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $firmCode }}</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th
+                            style="
+                  border: 1px solid #ddd;
+                  padding: 8px;
+                  text-align: left;
+                  background-color: #f6fafd;
+                ">
+                            <strong>Vessel/Voyage:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">
+                            {{ $vesselVoyage }}
+                        </td>
+                        <th
+                            style="
+                  border: 1px solid #ddd;
+                  padding: 8px;
+                  text-align: left;
+                  background-color: #f6fafd;
+                ">
+                            <strong>Commodity:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">
+                            {{ $commodity }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th
+                            style="
+                  border: 1px solid #ddd;
+                  padding: 8px;
+                  text-align: left;
+                  background-color: #f6fafd;
+                ">
+                            <strong>ETA:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $eta }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
+            <thead>
+                <tr>
+                    <th
+                        style="
+                border: 1px solid #ddd;
+                background-color: #f6fafd;
+                padding: 8px;
+                text-align: center;
+              ">
+                        The driver should carry a copy of this BL and an ID to pick up the
+                        cargo.
+                    </th>
+                </tr>
+                <tr>
+                    <th
+                        style="
+                border: 1px solid #ddd;
+                background-color: #f6fafd;
+                padding: 8px;
+                text-align: center;
+              ">
+                        FFC will pay the assigned trucker once the job is completed.
+                    </th>
+                </tr>
+                <tr>
+                    <th
+                        style="
+                border: 1px solid #ddd;
+                background-color: #f6fafd;
+                padding: 8px;
+                text-align: center;
+              ">
+                        The assigned trucker takes responsibility to pay the party
+                        completing this job.
+                    </th>
+                </tr>
+            </thead>
+        </table>
+
+        <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
+            <thead>
+                <tr>
+                    <th
+                        style="
+                width: 15rem;
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: center;
+                background-color: #f6fafd;
               ">
                         <strong>Bill To:</strong>
                     </th>
-                    <td colspan="2" style="border: 1px solid #ddd; padding: 8px; text-align: left">
-                        <p style="margin: 0">firstfreightcarriers.com</p>
-                        <p style="margin: 0">7810 N. Florida Avenue</p>
-                        <p style="margin: 0">Tampa, FL 33604</p>
+                    <td colspan="2"
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important;">
+                        <p style="margin: 0">First Freight Carriers, LLC</p>
+                        <p style="margin: 0">42619 Windflower Drive</p>
+                        <p style="margin: 0">Ashburn, VA 20148, USA</p>
                     </td>
                 </tr>
             </thead>
         </table>
-        <table class="details-table"
-            style="
-          width: 100%;
-          margin-top: 20px;
-          border-collapse: collapse;
-          margin-bottom: 2rem;
-        ">
+
+        <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
             <thead>
                 <tr>
-                    <th rowspan="2"
+                    <th
                         style="
+                width: 15rem;
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
-                font-weight: bold;
-                background-color: rgb(221, 238, 240);
+                background-color: #f6fafd;
               ">
-                        Email:
+                        <strong>Email Invoice to</strong>
                     </th>
-                    <td
-                        style="
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: center;
-                font-weight: bold;
-                background-color: rgb(221, 238, 240);
-              ">
-                        Operations:
-                    </td>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left">
-                        dispatch@firstfreightcarriers.com
-                    </td>
-                </tr>
-
-                <tr>
-                    <td
-                        style="
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: center;
-                font-weight: bold;
-                background-color: rgb(221, 238, 240);
-              ">
-                        Accounts:
-                    </td>
-                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left">
-                        accountant@firstfreightcarriers.com
+                    <td colspan="2"
+                        style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important;">
+                        <p style="margin: 0">
+                            Accountant@firstfreightcarriers.com and
+                            Nathan@firstfreightcarriers.com
+                        </p>
+                        <p style="margin: 0">
+                            Please include container number with your invoice
+                        </p>
                     </td>
                 </tr>
             </thead>
         </table>
 
-        <div style="border: 1px solid #ddd; padding: 1rem; font-size: 14px">
-            <div
-                style="
-            text-align: center;
-            font-weight: bold;
-            padding: 0.5rem;
-            border-bottom: 1px solid #ccc;
-            background-color: rgb(221, 238, 240);
-          ">
-                RECEIVING WAREHOUSE CONFIRMATION
-            </div>
-            <p style="margin: 1rem 0; font-weight: bold">
-                Cargo is received in good condition.
-            </p>
-            <div
-                style="
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-          ">
-                <div>
-                    <strong>Appointment time:</strong>
-                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
-                    <strong style="margin-left:30px">Arrived at:</strong>
-                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
-                    <strong style="margin-left:30px">Departed:</strong>
-                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
-                </div>
+        <table style="width: 100%; margin-top: 10px; border: #dddddd;   border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th colspan="3"
+                        style="background-color: #f6fafd; border: 1px solid #ddd; font-weight: bold; text-align: center; padding: 10px;">
+                        RECEIVING WAREHOUSE CONFIRMATION
+                    </th>
+                </tr>
+            </thead>
+            <tbody style="border: 1px solid #ddd;">
+                <tr>
+                    <td colspan="3" style="padding: 10px; font-weight: 600;">
+                        Cargo is received in good condition.
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px;">
+                        Appointment time: <span
+                            style="display: inline-block; border-bottom: 1px solid #000; width: 150px;"></span>
+                    </td>
+                    <td style="text-align: center; padding: 10px;">
+                        Arrived at: <span
+                            style="display: inline-block; border-bottom: 1px solid #000; width: 150px;"></span>
+                    </td>
+                    <td style="text-align: center; padding: 10px;">
+                        Departed: <span
+                            style="display: inline-block; border-bottom: 1px solid #000; width: 150px;"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-                <div style="margin-top:30px">
-                    <strong>Signature:</strong>
-                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
-                    <strong style="margin-left:85px">Name:</strong>
-                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
-                    <strong style="margin-left:55px">Date:</strong>
-                    <span style="border-bottom: 1px solid #000;display: inline-block;width: 100px;">&nbsp;</span>
-                </div>
-            </div>
 
-        </div>
-
-        <footer>
-            <div>
-                <p>
-                    <span>42619 Windflower Drive, Ashburn, VA 20148</span>
-                    <span style="float:right">p.703.738.2834; F:703.842.8668</span>
-
+        <footer
+            style="
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-top: 3px;
+        ">
+            <div style="flex: 1">
+                <p style="font-size: 10px; margin: 5px 0; font-weight: 600;">
+                    42619 Windflower Drive,Ashbum,VA 20148
                 </p>
             </div>
-
+            <div style="text-align: right">
+                <p style="font-size: 10px; margin: 5px 0; font-weight: 600;">
+                    p.703.738.2834; F:703.842.8668
+                </p>
+            </div>
         </footer>
     </div>
 </body>

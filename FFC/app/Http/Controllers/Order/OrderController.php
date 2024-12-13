@@ -480,6 +480,7 @@ class OrderController extends Controller
 
     /**
      * Order PDF
+     * id should be delivery id
      */
     public function generatePdf($id)
     {
