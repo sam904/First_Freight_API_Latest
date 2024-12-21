@@ -188,8 +188,8 @@ class UserController extends Controller
             ],
             'mobile_number' => [
                 'required',
-                'numeric',
-                'digits_between:10,15',
+                'string',
+                // 'digits_between:10,15',
                 // 'min:10',
                 // 'max:15',
                 Rule::unique('users')->ignore($id),
@@ -200,7 +200,7 @@ class UserController extends Controller
                 'min:8',
                 Rule::unique('users')->ignore($id),
             ],
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:3048',
         ]);
 
         // Check if validation fails

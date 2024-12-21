@@ -226,19 +226,19 @@ class QuoteService
     {
         $searchTerm = $request->input('searchTerm');
         $query = QuoteNotes::with('user:id,first_name,last_name');
-        $model = new QuoteNotes();
-        $query = SearchHelper::applySearchFilters($query, $model, $request);
+        $query->where('quote_id', $quoteId)
+            ->where(function ($q) use ($searchTerm) {
+                $q->where('title', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('description', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('tag', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('status', 'LIKE', "%{$searchTerm}%")
+                    ->orWhereHas('user', function ($q) use ($searchTerm) {
+                        $q->where('first_name', 'LIKE', "%{$searchTerm}%")
+                            ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
+                    });
+            });
 
-        $query->orWhereHas('user', function ($q) use ($searchTerm) {
-            $q->where('first_name', 'LIKE', "%{$searchTerm}%")
-                ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
-        });
-
-        // Apply filter by IDs if they are provided
-        if (!empty($ids)) {
-            $query->whereIn('quote_id', $quoteId);
-        }
-        // Log::info($query->toSql(), $query->getBindings());
+        Log::info($query->toSql(), $query->getBindings());
         return $query->orderBy('id', 'desc')->get();
     }
 

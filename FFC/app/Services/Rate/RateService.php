@@ -231,18 +231,17 @@ class RateService
     {
         $searchTerm = $request->input('searchTerm');
         $query = RateNotes::with('user:id,first_name,last_name');
-        $model = new RateNotes();
-        $query = SearchHelper::applySearchFilters($query, $model, $request);
-
-        $query->orWhereHas('user', function ($q) use ($searchTerm) {
-            $q->where('first_name', 'LIKE', "%{$searchTerm}%")
-                ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
-        });
-        // Apply filter by IDs if they are provided
-        if (!empty($ids)) {
-            $query->whereIn('rate_id', $rateId);
-        }
-
+        $query->where('rate_id', $rateId)
+            ->where(function ($q) use ($searchTerm) {
+                $q->where('title', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('description', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('tag', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('status', 'LIKE', "%{$searchTerm}%")
+                    ->orWhereHas('user', function ($q) use ($searchTerm) {
+                        $q->where('first_name', 'LIKE', "%{$searchTerm}%")
+                            ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
+                    });
+            });
         // Log::info($query->toSql(), $query->getBindings());
         return $query->orderBy('id', 'desc')->get();
     }

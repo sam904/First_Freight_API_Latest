@@ -66,6 +66,7 @@ class UserService
         ]);
         Log::info("user is created => " . $user->id);
         if ($request->hasFile('profile_image')) {
+            Log::info("Uploading Profile Image for user => " . $user->id);
             $destinationPath = 'images/user/' . $user->id . '/';
             if ($image = $request->file('profile_image')) {
                 $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();

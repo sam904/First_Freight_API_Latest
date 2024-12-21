@@ -52,7 +52,7 @@ class AuthController extends Controller
         if ($user && $user->status != "active") {
             return response()->json([
                 'status' => false,
-                'message' => 'Your account is inactive. Please contact support'
+                'message' => 'Your account is inactive. Please contact administrator.'
             ], 401);
         }
 
@@ -127,9 +127,11 @@ class AuthController extends Controller
         return response()->json(['status' => true, 'message' => 'User successfully logged out']);
     }
 
-
     public function sendOtp($userId)
     {
+        Log::info("******************");
+        Log::info("Sending OTP => " . $userId);
+        Log::info("******************");
         try {
             $user = User::findOrFail($userId);
         } catch (ModelNotFoundException $e) {

@@ -257,7 +257,8 @@ class CustomerController extends Controller
             'contact' => 'required|array',
             'contact.*.contact_name' => 'required|string',
             'contact.*.contact_designation' => 'required|string',
-            'contact.*.contact_phone' => 'required|numeric|digits_between:10,15',
+            'contact.*.contact_phone' => 'required|string',
+            // 'contact.*.contact_phone' => 'required|numeric|digits_between:10,15',
             'contact.*.contact_email' => 'required|string|email|max:255',
             'contact.*.contact_fax' => 'nullable|string',
 
@@ -265,6 +266,7 @@ class CustomerController extends Controller
             // 'finance' => 'required|array',
             // 'finance.*.finance_name' => 'required|string',
             // 'finance.*.finance_designation' => 'required|string',
+            // 'finance.*.finance_phone' => 'required|string,
             // 'finance.*.finance_phone' => 'required|numeric|digits_between:10,15',
             // 'finance.*.finance_email' => 'required|string|email|max:255',
             // 'finance.*.finance_fax' => 'nullable|string',
