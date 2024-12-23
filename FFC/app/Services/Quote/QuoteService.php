@@ -47,7 +47,8 @@ class QuoteService
             // 'quoteDetails.charges:quote_detail_id,charge_name,amount',
             'quoteDetails.rate:id,start_date',
             'quoteDetails.serviceType:id,name'
-        ]);
+        ])->withCount('quoteDetails as routes') // Route count
+            ->withSum('quoteDetails as totalAmount', 'dry_fsc'); // Total dry FSC
 
         // Apply filter by IDs if they are provided
         if (!empty($ids)) {
@@ -102,6 +103,7 @@ class QuoteService
         //     $query->join('customers', 'quotes.customer_id', '=', 'customers.id');
         // }
 
+
         if ($isExport && empty($limit)) {
             // Fetch all data without pagination
             Log::info("export is true and limit is empty");
@@ -142,7 +144,7 @@ class QuoteService
                 ]);
             }
         }
-        return true;
+        return $quote->id;
     }
 
     public function updateQuote(Request $request, Quote $quote)
@@ -168,6 +170,9 @@ class QuoteService
             $quoteDetail = $quote->quoteDetails()->create([
                 "freight" => $detail['freight'],
                 "fsc" => $detail['fsc'],
+                "fsc_amount" => $detail['fscAmount'] ?? null,
+                "dry_fsc" => $detail['dryFsc'] ?? null,
+                "quote_tab_name" => $detail['quoteTabName'] ?? null,
                 "quote_id" => $quote->id,
                 "rate_id" => $detail['rateId'] ?? null,
                 'service_type_id' => $detail['serviceType'] ?? null,

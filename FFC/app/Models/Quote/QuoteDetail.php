@@ -7,6 +7,7 @@ use App\Models\Destination\Destination;
 use App\Models\Port\Port;
 use App\Models\Rate\Rate;
 use App\Models\Vendor;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -24,8 +25,19 @@ class QuoteDetail extends Model
         'freight',
         'fsc',
         'service_type_id',
+        "fsc_amount",
+        "dry_fsc",
+        "quote_tab_name",
     ];
 
+    protected $appends = ['routeName']; // Ensure 'routeName' is appended to the JSON output.
+
+    public function getRouteNameAttribute()
+    {
+        $port = $this->portOfLoading->name ?? $this->portOfDischarge->name ?? '';
+        $destination = $this->destination->name ?? '';
+        return "{$port} - {$destination}";
+    }
 
     public function charges()
     {

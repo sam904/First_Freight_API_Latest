@@ -51,6 +51,7 @@ class QuoteController extends Controller
                 'vendors.company_name as vendor_name',
                 'expiry',
                 'rates.freight',
+                'rates.fsc',
                 'rates.vendor_id',
                 'rates.status',
                 DB::raw("DATE_FORMAT(rates.start_date, '%m/%d/%y') as rate_received"),
@@ -222,11 +223,12 @@ class QuoteController extends Controller
 
         try {
             DB::beginTransaction();
-            $this->quoteService->createQuote($request);
+            $quoteId = $this->quoteService->createQuote($request);
             DB::commit();
             return response()->json([
                 'status' => true,
-                'message' => "Quote created successfully"
+                'message' => "Quote created successfully",
+                "quoteId" => $quoteId
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -287,7 +289,8 @@ class QuoteController extends Controller
             DB::commit();
             return response()->json([
                 'status' => true,
-                'message' => "Quote updated successfully"
+                'message' => "Quote updated successfully",
+                "quoteId" => $id
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
