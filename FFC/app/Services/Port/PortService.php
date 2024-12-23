@@ -36,7 +36,8 @@ class PortService
                 'states.name as state',
                 'countries.name as country',
                 'ports.status',
-                'ports.created_at'
+                'ports.created_at',
+                'ports.updated_at'
             );
 
         // Apply filter by IDs if they are provided

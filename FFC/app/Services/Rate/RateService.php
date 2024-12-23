@@ -81,6 +81,7 @@ class RateService
                     ) as rate_validity"),
                 'rates.status',
                 'rates.created_at',
+                'rates.updated_at',
                 'service_types.name as serviceType'
             );
 

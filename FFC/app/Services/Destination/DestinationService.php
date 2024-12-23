@@ -33,7 +33,8 @@ class DestinationService
                 'states.name as state',
                 'countries.name as country',
                 'destinations.status',
-                'destinations.created_at'
+                'destinations.created_at',
+                'destinations.updated_at'
             );
         // Apply filter by IDs if they are provided
         if (!empty($ids)) {
