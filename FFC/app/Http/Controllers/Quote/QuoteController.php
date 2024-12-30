@@ -345,13 +345,26 @@ class QuoteController extends Controller
             // 'quoteDetails.*.serviceType' => 'required|integer',
             'quoteDetails.*.portOfLoadingId' => 'nullable|integer',
             'quoteDetails.*.portOfDischargeId' => 'nullable|integer',
-            'quoteDetails.*.destinationId' => 'required|integer',
+            'quoteDetails.*.destinationId' => 'nullable|integer',
             'quoteNotes' => 'sometimes|array',
             'quoteNotes.*.title' => 'required_with:quoteNotes|string',
             'quoteNotes.*.description' => 'required_with:quoteNotes|string',
             'quoteNotes.*.tag' => 'nullable|string',
             'quoteNotes.*.pin' => 'nullable|boolean',
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            $quoteDetails = $request->input('quoteDetails', []);
+
+            foreach ($quoteDetails as $index => $detail) {
+                $loadingId = $detail['portOfLoadingId'] ?? null;
+                $dischargeId = $detail['portOfDischargeId'] ?? null;
+
+                if (is_null($loadingId) && is_null($dischargeId)) {
+                    $validator->errors()->add("quoteDetails.$index.portOfLoadingId", "At least one port (loading or discharge) is required for item $index.");
+                }
+            }
+        });
 
         // Check if validation fails
         if ($validator->fails()) {

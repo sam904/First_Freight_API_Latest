@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
 class CustomerService
 {
 
-    public function getAllCustomer(Request $request)
+    public function getAllCustomerFilterBy(Request $request)
     {
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
@@ -198,6 +198,111 @@ class CustomerService
             return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
         }
     }
+
+    public function getAllCustomer(Request $request)
+    {
+        $searchTerm = $request->input('searchTerm');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        $page = $request->input('page') ?: 1;
+        $limit = $request->input('limit') ?: 10;
+        $sortColumn = $request->input('sortColumn') ?: 'id';
+        $sortDirection = $request->input('sortDirection') ?: 'desc';
+        $isExport = $request->input('export') ?? false;
+        $ids = $request->input('ids');
+
+        $query = Customer::with([
+            'country',
+            'state',
+            'contact',
+            'finance',
+            'delivery.state',
+            'delivery.country',
+        ])->withCount(['contact', 'finance']);
+
+        // Apply filter by IDs if provided
+        if (!empty($ids)) {
+            $query->whereIn('id', $ids);
+        }
+
+        // Get all column names of the 'Customers' table
+        $model = new Customer();
+
+        // Apply search filters
+        // $query = SearchHelper::applySearchFilters($query, $model, $request);
+
+        // Apply search across related models
+        $query->where(function ($query) use ($searchTerm) {
+            // Search within Customer table
+            $query->where('company_name', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('address', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('city', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('customer_type', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('zip_code', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('payment_terms', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('credit_limit', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('status', 'LIKE', "%{$searchTerm}%");
+
+            // Search within related Contact fields
+            $query->orWhereHas('contact', function ($query) use ($searchTerm) {
+                $query->where('contact_name', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('contact_designation', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('contact_phone', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('contact_email', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('contact_fax', 'LIKE', "%{$searchTerm}%");
+            });
+
+            // Search within related Finance fields
+            $query->orWhereHas('finance', function ($query) use ($searchTerm) {
+                $query->where('finance_name', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('finance_designation', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('finance_phone', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('finance_email', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('finance_fax', 'LIKE', "%{$searchTerm}%");
+            });
+
+            // Search within related Delivery fields
+            $query->orWhereHas('delivery', function ($query) use ($searchTerm) {
+                $query->where('delivery_name', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('delivery_address', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('delivery_city', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('delivery_zip_code', 'LIKE', "%{$searchTerm}%");
+            });
+
+            // Search within Delivery -> State and Country fields
+            $query->orWhereHas('delivery.state', function ($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', "%{$searchTerm}%");
+            })->orWhereHas('delivery.country', function ($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', "%{$searchTerm}%");
+            });
+
+            // Search within Country fields
+            $query->orWhereHas('country', function ($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('iso_code', 'LIKE', "%{$searchTerm}%");
+            });
+
+            // Search within State fields
+            $query->orWhereHas('state', function ($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', "%{$searchTerm}%");
+            });
+        });
+
+        // Handle export logic
+        if ($isExport && empty($limit)) {
+            Log::info("Export is true and limit is empty");
+            $startTime = microtime(true);
+            $limit = $query->count();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            Log::info("Customer Query Count = {$limit} && execution time: {$executionTime} seconds");
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        }
+
+        // Paginate the results
+        return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+    }
+
     public function createCustomer(Request $request)
     {
         // save customer data

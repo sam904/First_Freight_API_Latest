@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class VendorService
 {
-    public function getAllVendorData(Request $request)
+    public function getAllVendorDataFilterBy(Request $request)
     {
         $searchTerm = $request->input('searchTerm');
         $filterBy = $request->input('filterBy');
@@ -184,6 +184,107 @@ class VendorService
         return $vendors;
     }
 
+
+    public function getAllVendorData(Request $request)
+    {
+        $searchTerm = $request->input('searchTerm');
+        $page = $request->input('page') ?: 1;
+        $limit = $request->input('limit');
+        $sortColumn = $request->input('sortColumn') ?: 'id';
+        $sortDirection = $request->input('sortDirection') ?: 'desc';
+        $isExport = $request->input('export') ?? false;
+        $ids = $request->input('ids');
+
+        // Get all column names of the 'Vendors' table
+        $model = new Vendor();
+
+        $query = Vendor::with([
+            'bankCountry:id,name',
+            'country:id,name',
+            'state:id,name',
+            'vendorTypes',
+            'sales',
+            'finance',
+        ])->withCount(['sales', 'finance']);
+
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('id', $ids);
+        }
+
+        // Apply search filters
+        // $query = SearchHelper::applySearchFilters($query, $model, $request);
+
+        // Apply search filters across related models
+        $query->where(function ($query) use ($searchTerm) {
+            if (!empty($searchTerm)) {
+                $query->where('company_name', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('address', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('city', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('zip_code', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('company_tax_id', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('mc_number', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('scac_number', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('us_dot_number', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('bank_name', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('bank_account_number', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('bank_routing', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('bank_address', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('bank_swift_code', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('bank_iban_number', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('bank_ifsc_code', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('remarks', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('status', 'LIKE', "%{$searchTerm}%");
+
+                // Search within related Sales fields
+                $query->orWhereHas('sales', function ($q) use ($searchTerm) {
+                    $q->where('sales_name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('sales_designation', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('sales_phone', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('sales_email', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('sales_fax', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search within related Finance fields
+                $query->orWhereHas('finance', function ($q) use ($searchTerm) {
+                    $q->where('finance_name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('finance_designation', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('finance_phone', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('finance_email', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('finance_fax', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search within related Country fields
+                $query->orWhereHas('country', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('iso_code', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search within related State fields
+                $query->orWhereHas('state', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search within Vendor Types
+                $query->orWhereHas('vendorTypes', function ($q) use ($searchTerm) {
+                    $q->where('type', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+        });
+
+        // Handle export case
+        if ($isExport && empty($limit)) {
+            // Fetch all data without pagination
+            $limit = $query->count();
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        } else {
+            // Apply pagination
+            $limit = $limit ?: 10;
+            $vendors = $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        }
+
+        return $vendors;
+    }
 
     public function createVendor(Request $request)
     {

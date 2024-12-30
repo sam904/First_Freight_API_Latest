@@ -171,7 +171,7 @@ class RateController extends Controller
             // 'port_id' => 'required|integer',
             'port_of_loading_id' => 'nullable|integer',
             'port_of_discharge_id' => 'nullable|integer',
-            'destination_id' => 'required|integer',
+            'destination_id' => 'nullable|integer',
             'start_date' => 'required|date',
             'expiry' => 'required|integer',
             'freight' => 'required|numeric',
