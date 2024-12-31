@@ -1,46 +1,46 @@
 @php
-    $receivedDate = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y') ?? null;
+$receivedDate = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y') ?? null;
 
-    // Check if orderDetails exists, and then access the related orderContainerDetails
-    $orderDetails = $data['orderDetails'] ?? null;
+// Check if orderDetails exists, and then access the related orderContainerDetails
+$orderDetails = $data['orderDetails'] ?? null;
 
-    $bl = $orderDetails[0]['master_bl'] ?? null;
-    $seal = $orderDetails[0]['seal'] ?? null;
-    $lfd = $orderDetails[0]['last_free_day'] ?? null;
-    $weight = $orderDetails[0]['weight'] ?? null;
-    $pallets = $orderDetails[0]['pallets'] ?? null;
-    $freightLocation = $orderDetails[0]['freight_location'] ?? null;
-    $firmCode = $orderDetails[0]['firm_code'] ?? null;
-    $vesselVoyage = $orderDetails[0]['vessel_voyage'] ?? null;
-    $commodity = $orderDetails[0]['commodity'] ?? null;
-    $eta = $orderDetails[0]['eta'] ?? null;
-    // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
-    // $orderContainerDetails1 = $orderDetails
-    //     ? $orderDetails->map(function ($orderDetail) {
-    //         return $orderDetail->orderContainerDetails;
-    //     })
-    //     : null;
+$bl = $orderDetails[0]['master_bl'] ?? null;
+$seal = $orderDetails[0]['seal'] ?? null;
+$lfd = $orderDetails[0]['last_free_day'] ?? null;
+$weight = $orderDetails[0]['weight'] ?? null;
+$pallets = $orderDetails[0]['pallets'] ?? null;
+$freightLocation = $orderDetails[0]['freight_location'] ?? null;
+$firmCode = $orderDetails[0]['firm_code'] ?? null;
+$vesselVoyage = $orderDetails[0]['vessel_voyage'] ?? null;
+$commodity = $orderDetails[0]['commodity'] ?? null;
+$eta = $orderDetails[0]['eta'] ?? null;
+// If orderDetails exists, get the orderContainerDetails for each orderDetails entry
+// $orderContainerDetails1 = $orderDetails
+// ? $orderDetails->map(function ($orderDetail) {
+// return $orderDetail->orderContainerDetails;
+// })
+// : null;
 
-    $orderContainerDetails = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            // Get the first element of the orderContainerDetails array
-            return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
-        })
-        : null;
+$orderContainerDetails = $orderDetails
+? $orderDetails->map(function ($orderDetail) {
+// Get the first element of the orderContainerDetails array
+return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
+})
+: null;
 
-    $orderDeliveries = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            return $orderDetail->deliveries;
-        })
-        : null;
+$orderDeliveries = $orderDetails
+? $orderDetails->map(function ($orderDetail) {
+return $orderDetail->deliveries;
+})
+: null;
 
-    foreach ($orderDeliveries[0] as $delivery) {
-        $scac = $delivery['vendor']['scac_number'] ?? null;
-        $mc = $delivery['vendor']['mc_number'] ?? null;
-        $usdot = $delivery['vendor']['us_dot_number'] ?? null;
-    }
+foreach ($orderDeliveries[0] as $delivery) {
+$scac = $delivery['vendor']['scac_number'] ?? null;
+$mc = $delivery['vendor']['mc_number'] ?? null;
+$usdot = $delivery['vendor']['us_dot_number'] ?? null;
+}
 
-    $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
+$image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -72,7 +72,7 @@
       background-color: #f9f9f9;
     ">
     <div class="delivery-order" style="max-width:'100%'; margin: 0 auto; padding: 10px">
-        <header
+        <!-- <header
             style="
           display: flex;
           justify-content: space-between;
@@ -80,29 +80,57 @@
           color: rgb(5, 5, 5);
           padding: 5px;
           border-bottom: 2px solid #000;
-        ">
-            <div class="header-left">
-                <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo" class="logo"
-                    style="width: 100px; padding-bottom: 10px; height: auto" />
-                <h1 style="font-size: 20px; margin: 0">Delivery Order</h1>
-            </div>
-            <div class="header-right">
-                <p style="text-align: right; font-size: 12px">
-                    <strong>SCAC:</strong> {{ $scac }}
-                </p>
-                <p style="text-align: right; font-size: 12px">
-                    <strong>USDOT #:</strong> {{ $usdot }}
-                </p>
-                <p style="text-align: right; font-size: 12px">
-                    <strong>MC #:</strong> {{ $mc }}
-                </p>
-                <p style="text-align: right; font-size: 12px">
-                    <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
-                </p>
-                <p style="font-size: 12px; font-weight: 700">
-                    Ocean Freight | Customs Filing | Trucking | Transload | Warehousing
-                </p>
-            </div>
+        "> -->
+
+        <header style="border-bottom: 2px solid #000; padding: 10px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <!-- Left Section -->
+                    <td style="width: 50%; vertical-align: top; padding-right: 10px;">
+                        <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo" class="logo"
+                            style="width: 100px; height: auto; margin-bottom: 10px;" />
+                        <h1 style="font-size: 20px; margin: 0;">Delivery Order</h1>
+                    </td>
+
+                    <!-- Right Section -->
+                    <td style="width: 50%; vertical-align: top; text-align: right; padding-left: 10px;">
+                        <div style="font-size: 12px; line-height: 1.8;">
+                            <p style="margin: 0 0 8px 0;"><strong>SCAC:</strong> {{ $scac }}</p>
+                            <p style="margin: 0 0 8px 0;"><strong>USDOT #:</strong> {{ $usdot }}</p>
+                            <p style="margin: 0 0 8px 0;"><strong>MC #:</strong> {{ $mc }}</p>
+                            <p style="margin: 0 0 8px 0;">
+                                <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
+                            </p>
+                            <p style="margin: 5px 0; font-weight: 700; line-height: 1.6;">
+                                Ocean Freight | Customs Filing | Trucking | Transload | Warehousing
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </header>
+        <div class="header-left">
+            <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo" class="logo"
+                style="width: 100px; padding-bottom: 10px; height: auto" />
+            <h1 style="font-size: 20px; margin: 0">Delivery Order</h1>
+        </div>
+        <div class="header-right">
+            <p style="text-align: right; font-size: 12px">
+                <strong>SCAC:</strong> {{ $scac }}
+            </p>
+            <p style="text-align: right; font-size: 12px">
+                <strong>USDOT #:</strong> {{ $usdot }}
+            </p>
+            <p style="text-align: right; font-size: 12px">
+                <strong>MC #:</strong> {{ $mc }}
+            </p>
+            <p style="text-align: right; font-size: 12px">
+                <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
+            </p>
+            <p style="font-size: 12px; font-weight: 700">
+                Ocean Freight | Customs Filing | Trucking | Transload | Warehousing
+            </p>
+        </div>
         </header>
 
         <section class="order-info" style="margin-top: 20px">
@@ -181,19 +209,20 @@
             </thead>
             <tbody>
                 @foreach ($orderContainerDetails as $containerDetails)
-                    <tr>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['container_no'] ?? null }}
-                        </td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $bl }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['po'] ?? null }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['cpo'] ?? null }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $seal }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $lfd }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $weight }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">
-                            {{ $containerDetails['container_size'] ?? null }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $pallets }}</td>
-                    </tr>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['container_no'] ?? null }}
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $bl }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['po'] ?? null }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['cpo'] ?? null }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $seal }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $lfd }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $weight }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">
+                        {{ $containerDetails['container_size'] ?? null }}
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $pallets }}</td>
+                </tr>
                 @endforeach
             </tbody>
         </table>

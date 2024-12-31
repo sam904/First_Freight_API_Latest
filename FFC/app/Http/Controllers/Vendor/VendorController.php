@@ -360,7 +360,7 @@ class VendorController extends Controller
             'bank_routing' => 'nullable|string',
             'bank_address' => 'nullable|string',
             'remarks' => 'nullable|string',
-            'bankCountry' => 'nullable|integer',
+            // 'bankCountry' => 'nullable|integer',
             'bankSwiftCode' => 'nullable|string',
             'bankIBANNumber' => 'nullable|string',
             'bankIFSCCode' => 'nullable|string',
