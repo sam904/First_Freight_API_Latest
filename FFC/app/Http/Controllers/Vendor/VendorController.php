@@ -349,7 +349,7 @@ class VendorController extends Controller
             'mc_number' => 'required|string',
             'scac_number' => 'required|string',
             'us_dot_number' => 'required|string',
-            'upload_document' => 'nullable|array',
+            'upload_document' => 'required|string',
             'upload_document.*' => 'file|mimes:jpeg,png,jpg,pdf,txt,doc,docx,xls,xlsx|max:3048',
             // 'upload_document.*' => 'image|mimes:jpeg,png,jpg,pdf,|max:3048',
             // 'upload_w9' => 'required|image|mimes:jpeg,png,jpg,gif|max:3048',

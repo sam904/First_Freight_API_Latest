@@ -80,6 +80,7 @@ class RateService
                         END
                     ) as rate_validity"),
                 'rates.status',
+                'rates.fsc',
                 'rates.created_at',
                 'rates.updated_at',
                 'service_types.name as serviceType'
