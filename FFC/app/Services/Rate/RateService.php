@@ -44,7 +44,7 @@ class RateService
             ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
             ->leftJoin('ports as loading_ports', 'rates.port_of_loading_id', '=', 'loading_ports.id') // Left join for port_of_loading_id
             ->leftJoin('ports as discharge_ports', 'rates.port_of_discharge_id', '=', 'discharge_ports.id') // Left join for port_of_discharge_id
-            ->join('destinations', 'rates.destination_id', '=', 'destinations.id')
+            ->leftJoin('destinations', 'rates.destination_id', '=', 'destinations.id')
             ->leftJoin('service_types', 'rates.service_type_id', '=', 'service_types.id')
             ->select(
                 'rates.id as rate_id',
