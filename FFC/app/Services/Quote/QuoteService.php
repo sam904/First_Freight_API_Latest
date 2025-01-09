@@ -47,7 +47,8 @@ class QuoteService
             // 'quoteDetails.charges:quote_detail_id,charge_name,amount',
             'quoteDetails.rate:id,start_date',
             'quoteDetails.serviceType:id,name'
-        ])->withCount('quoteDetails as routes') // Route count
+        ])
+            ->withCount('quoteDetails as routes') // Route count
             ->withSum('quoteDetails as totalAmount', 'dry_fsc'); // Total dry FSC
 
         // Apply filter by IDs if they are provided

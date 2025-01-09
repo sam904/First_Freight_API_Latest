@@ -19,7 +19,7 @@
     $ship_to_party_address = $orderDetails[0]['ship_to_party_address'] ?? '';
     $consolidator = $orderDetails[0]['consolidator'] ?? '';
     $consolidator_address = $orderDetails[0]['consolidator_address'] ?? '';
-    $received_date = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y');
+
     // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
     $orderContainerDetails = $orderDetails
         ? $orderDetails->map(function ($orderDetail) {
@@ -61,7 +61,7 @@
 <style>
     @page {
         size: A4;
-        margin: 2mm;
+        margin: 4mm;
     }
 
     body {
@@ -75,50 +75,53 @@
 <body
     style="
       font-family: Verdana, Geneva, Tahoma, sans-serif;
-      margin-bottom: 2rem;
+      margin-bottom: 3rem;
       padding: 0;
       background-color: #f9f9f9;
     ">
     <div style="margin: 0 auto; padding: 10px; max-width: 100%">
         <!-- Header Section -->
         <div style="border-bottom: 1px solid #ddd">
-            <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
-                <tr>
-                    <!-- Logo Section -->
-                    <td>
-                        <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo" />
-                        <!-- Replace with your logo -->
-                    </td>
-                    <!-- Title Section -->
-                    <td style="text-align: center; flex: 3;">
-                        <h2 style="margin: 0; font-size: 12px; font-weight: bold;">
-                            FIRST FREIGHT CARRIERS - ISF Form
-                        </h2>
-                        <p style="margin: 0; font-size: 12px;">
-                            The Importer Security Filing (ISF) became effective 1/26/09.
-                        </p>
-                    </td>
-                    <!-- Additional Section -->
-                    <td style="width: 85px; height: 61px;">
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
-            <tr>
-                <td style="text-align: right; flex: 1;">
-                    <p style="margin-top: 1rem; font-size: 12px;">
-                        <span style="background-color: #1976D20F; padding: 8px;"><strong>Today's Date:</strong>
-                            <span>{{ $received_date }}</span></span>
+            <div style="display: flex; align-items: center">
+                <!-- Logo Section -->
+                <div style="flex: 1">
+                    <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo"
+                        style="width: 100px; height: 100px" />
+                    <!-- Replace with your logo -->
+                </div>
+
+                <!-- Title Section -->
+                <div style="flex: 3; text-align: center">
+                    <h2 style="margin: 0; font-size: 12px; font-weight: bold">
+                        FIRST FREIGHT CARRIERS - ISF Form
+                    </h2>
+                    <p style="margin: 0; font-size: 12px">
+                        The Importer Security Filing (ISF) became effective 1/26/09.
                     </p>
-                </td>
-            </tr>
-        </table>
+                </div>
+
+                <div style="flex: 1">
+                    <!-- <img
+              src="../assests/2c17c7_7916ccc68c1a478abd1027f013a9a64a~mv2 1 (1).png"
+              alt="FFC Logo"
+              style="width: 100px; height: 100px"
+            /> -->
+                    <!-- Replace with your logo -->
+                </div>
+                <!-- Date Section -->
+
+            </div>
+        </div>
+        <div style="flex: 1; text-align: right">
+            <p style="margin-top: 2rem; font-size: 12px">
+                <strong>Today's Date:</strong> <span>10-09-2024</span>
+            </p>
+        </div>
         <!-- Red Note Section -->
         <div style="text-align: center; margin-top: 5px">
-            <p style="color: red; font-size: 10px; padding: 5px">
+            <p style="color: red; font-size: 12px; padding: 10px">
                 ** The following requested information must be accurately completed
-                and returned no later than 48 hours before the container is
+                and <br />returned no later than 48 hours before the container is
                 loaded on the vessel **
             </p>
         </div>
@@ -145,7 +148,7 @@
                     <td
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #1976d20f;
                 text-align: center;
                 padding: 8px;
                 font-weight: bold;
@@ -159,7 +162,7 @@
                     <td
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #1976d20f;
                 text-align: center;
                 padding: 8px;
                 font-weight: bold;
@@ -175,14 +178,14 @@
             border-collapse: collapse;
             margin-top: 8px;
             table-layout: fixed;
-            /* margin-top: 30px; */
+            margin-top: 30px;
           ">
                 <!-- First Row -->
                 <tr>
                     <td
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #1976d20f;
                 text-align: center;
                 padding: 8px;
                 font-weight: bold;
@@ -233,7 +236,7 @@
                     <td
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #1976d20f;
                 text-align: center;
                 padding: 8px;
                 font-weight: bold;
@@ -247,7 +250,7 @@
                     <td
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #1976d20f;
                 text-align: center;
                 padding: 8px;
                 font-weight: bold;
@@ -257,41 +260,49 @@
                     <td style="border: 1px solid #ddd; padding: 8px">{{ $shipper_address }}</td>
                 </tr>
                 {{-- <tr>
-                    <td
-                        style=" border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold; ">
-                        City, State, Zip
-                    </td>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> City, State, Zip </td>
                     <td style="border: 1px solid #ddd; padding: 8px"></td>
                 </tr>
                 <tr>
-                    <td
-                        style=" border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold; ">
-                        Country
-                    </td>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> Country </td>
                     <td style="border: 1px solid #ddd; padding: 8px"></td>
                 </tr> --}}
+                </tr>
             </table>
-
             <table
                 style="
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 10px;
-          table-layout: fixed;
-        ">
-                <tr style="border: 1px solid #ddd; padding: 8px">
-                    <td
-                        style=" border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold;  ">
-                        Importer of Record Name
-                    </td>
-                    <td style="border: 1px solid #ddd; padding: 8px">?</td>
-                </tr>
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            table-layout: fixed;
+          ">
+                <!-- First Row -->
                 <tr>
                     <td
-                        style=" border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold;">
-                        Importer of record Number
+                        style="
+                border: 1px solid #ddd;
+                background-color: #1976d20f;
+                text-align: center;
+                padding: 8px;
+                font-weight: bold;
+              ">
+                        Master B/L Number
                     </td>
-                    <td style="border: 1px solid #ddd; padding: 8px">?</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $master_bl }}</td>
+                </tr>
+                <!-- Second Row -->
+                <tr>
+                    <td
+                        style="
+                border: 1px solid #ddd;
+                background-color: #1976d20f;
+                text-align: center;
+                padding: 8px;
+                font-weight: bold;
+              ">
+                        House B/L Number
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $house_bl }}</td>
                 </tr>
             </table>
             <table
@@ -328,7 +339,7 @@
                     <td
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #1976d20f;
                 text-align: center;
                 padding: 8px;
                 font-weight: bold;
@@ -342,7 +353,7 @@
                     <td
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #1976d20f;
                 text-align: center;
                 padding: 8px;
                 font-weight: bold;
@@ -352,17 +363,11 @@
                     <td style="border: 1px solid #ddd; padding: 8px">{{ $manufacturer_address }}</td>
                 </tr>
                 {{-- <tr>
-                    <td
-                        style=" border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold; ">
-                        City, State, Zip
-                    </td>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> City, State, Zip </td>
                     <td style="border: 1px solid #ddd; padding: 8px"></td>
                 </tr>
                 <tr>
-                    <td
-                        style=" border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold; ">
-                        Country
-                    </td>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> Country </td>
                     <td style="border: 1px solid #ddd; padding: 8px"></td>
                 </tr> --}}
             </table>
@@ -401,7 +406,7 @@
                     <td
                         style="
             border: 1px solid #ddd;
-            background-color: #1976D20F;
+            background-color: #1976d20f;
             text-align: center;
             padding: 8px;
             font-weight: bold;
@@ -415,7 +420,7 @@
                     <td
                         style="
             border: 1px solid #ddd;
-            background-color: #1976D20F;
+            background-color: #1976d20f;
             text-align: center;
             padding: 8px;
             font-weight: bold;
@@ -425,49 +430,18 @@
                     <td style="border: 1px solid #ddd; padding: 8px">{{ $consolidator_address }}</td>
                 </tr>
                 {{-- <tr>
-                    <td
-                        style="
-            border: 1px solid #ddd;
-            background-color: #1976D20F;
-            text-align: center;
-            padding: 8px;
-            font-weight: bold;
-          ">
-                        City, State, Zip
-                    </td>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> City, State, Zip </td>
                     <td style="border: 1px solid #ddd; padding: 8px"></td>
                 </tr>
                 <tr>
-                    <td
-                        style="
-            border: 1px solid #ddd;
-            background-color: #1976D20F;
-            text-align: center;
-            padding: 8px;
-            font-weight: bold;
-          ">
-                        Country
-                    </td>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> Country </td>
                     <td style="border: 1px solid #ddd; padding: 8px"></td>
                 </tr> --}}
             </table>
-            <table
-                style="
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-        table-layout: fixed;
-      ">
-                <!-- First Row -->
+            <table style="width: 100%;border-collapse: collapse;margin-top: 10px;table-layout: fixed;">
                 <tr>
                     <td
-                        style="
-            border: 1px solid #ddd;
-            background-color: #1976D20F;
-            text-align: center;
-            padding: 8px;
-            font-weight: bold;
-          ">
+                        style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold;">
                         Port of Loading
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px">{{ $port_of_loading }}</td>
@@ -477,7 +451,7 @@
                     <td
                         style="
             border: 1px solid #ddd;
-            background-color: #1976D20F;
+            background-color: #1976d20f;
             text-align: center;
             padding: 8px;
             font-weight: bold;
@@ -489,7 +463,7 @@
                 <td
                     style="
             border: 1px solid #ddd;
-            background-color: #1976D20F;
+            background-color: #1976d20f;
             text-align: center;
             padding: 8px;
             font-weight: bold;
@@ -501,7 +475,7 @@
                 <td
                     style="
             border: 1px solid #ddd;
-            background-color: #1976D20F;
+            background-color: #1976d20f;
             text-align: center;
             padding: 8px;
             font-weight: bold;
@@ -523,7 +497,7 @@
                     <td
                         style="
             border: 1px solid #ddd;
-            background-color: #1976D20F;
+            background-color: #1976d20f;
             text-align: center;
             padding: 8px;
             font-weight: bold;
@@ -549,7 +523,7 @@
                     <td
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #1976d20f;
                 text-align: center;
                 padding: 8px;
                 font-weight: bold;
@@ -563,7 +537,7 @@
                     <td
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #1976d20f;
                 text-align: center;
                 padding: 8px;
                 font-weight: bold;
@@ -576,7 +550,7 @@
                     <td
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #1976d20f;
                 text-align: center;
                 padding: 8px;
                 font-weight: bold;
@@ -586,60 +560,118 @@
                     <td style="border: 1px solid #ddd; padding: 0px">
                         @foreach ($orderContainerDetails[0] as $item)
                             <div style="border-bottom: 1px solid #ddd; padding: 10px;">
-                                {{ $item['po'] ?? '' }}
+                                {{ $item['po'] }}
                             </div>
                         @endforeach
                     </td>
                 </tr>
+
             </table>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; ">
-                {{-- <tr>
-                    <td
-                        style="border: 1px solid #ddd; color: #f9f9f9; background-color: black; text-align: left; padding: 8px; font-weight: bold; ">
-                        Buyer
-                    </td>
-                </tr> --}}
-            </table>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; ">
+            <table
+                style="
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        table-layout: fixed;
+      ">
+                <!-- First Row -->
                 <tr>
                     <td
-                        style="border: 1px solid #ddd; color: #f9f9f9; background-color: black; text-align: left; padding: 8px; font-weight: bold; ">
+                        style="
+            border: 1px solid #ddd;
+            color: #f9f9f9;
+            background-color: black;
+            text-align: left;
+            padding: 8px;
+            font-weight: bold;
+          ">
                         Buyer
                     </td>
                 </tr>
             </table>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed;">
+            <table
+                style="
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        table-layout: fixed;
+      ">
                 <!-- First Row -->
                 <tr>
                     <td
-                        style="border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold; ">
+                        style="
+            border: 1px solid #ddd;
+            background-color: #1976d20f;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+          ">
                         Name
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px">{{ $buyer }}</td>
                 </tr>
+                <!-- Second Row -->
                 <tr>
                     <td
-                        style="border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold; ">
+                        style="
+            border: 1px solid #ddd;
+            background-color: #1976d20f;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+          ">
                         Address
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px">{{ $buyer_address }}</td>
                 </tr>
-
+                {{-- <tr>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> City, State, Zip </td>
+                    <td style="border: 1px solid #ddd; padding: 8px"></td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> Country </td>
+                    <td style="border: 1px solid #ddd; padding: 8px"></td>
+                </tr> --}}
             </table>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; ">
+            <table
+                style="
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        table-layout: fixed;
+      ">
                 <!-- First Row -->
                 <tr>
                     <td
-                        style="border: 1px solid #ddd; color: #f9f9f9; background-color: black; text-align: left; padding: 8px; font-weight: bold;">
+                        style="
+            border: 1px solid #ddd;
+            color: #f9f9f9;
+            background-color: black;
+            text-align: left;
+            padding: 8px;
+            font-weight: bold;
+          ">
                         Consignee
                     </td>
                 </tr>
             </table>
-            <table style="width: 100%;border-collapse: collapse; margin-top: 10px;table-layout: fixed; ">
+            <table
+                style="
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        table-layout: fixed;
+      ">
                 <!-- First Row -->
                 <tr>
                     <td
-                        style="border: 1px solid #ddd;  background-color: #1976D20F; text-align: center;padding: 8px; font-weight: bold; ">
+                        style="
+            border: 1px solid #ddd;
+            background-color: #1976d20f;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+          ">
                         Name
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px">{{ $consignee }}</td>
@@ -647,114 +679,131 @@
                 <!-- Second Row -->
                 <tr>
                     <td
-                        style="border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold; ">
+                        style="
+            border: 1px solid #ddd;
+            background-color: #1976d20f;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+          ">
                         Address
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px">{{ $consignee_address }}</td>
                 </tr>
                 {{-- <tr>
-                    <td
-                        style="
-            border: 1px solid #ddd;
-            background-color: #1976D20F;
-            text-align: center;
-            padding: 8px;
-            font-weight: bold;
-          ">
-                        City, State, Zip
-                    </td>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> City, State, Zip </td>
                     <td style="border: 1px solid #ddd; padding: 8px"></td>
-                </tr> 
+                </tr>
                 <tr>
-                    <td
-                        style="
-            border: 1px solid #ddd;
-            background-color: #1976D20F;
-            text-align: center;
-            padding: 8px;
-            font-weight: bold;
-          ">
-                        Country
-                    </td>
-                    <td style="border: 1px solid #ddd; padding: 8px"></td>
-                </tr> --}}
-                {{-- <tr>
-                    <td
-                        style="
-            border: 1px solid #ddd;
-            background-color: #1976D20F;
-            text-align: center;
-            padding: 8px;
-            font-weight: bold;
-          ">
-                        Country of Origin
-                    </td>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> Country </td>
                     <td style="border: 1px solid #ddd; padding: 8px"></td>
                 </tr> --}}
             </table>
-            <table style=" width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; ">
+            <table
+                style="
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        table-layout: fixed;
+      ">
                 <!-- First Row -->
                 <tr>
                     <td
-                        style=" border: 1px solid #ddd; color: #f9f9f9; background-color: black; text-align: left; padding: 8px; font-weight: bold;">
+                        style="
+            border: 1px solid #ddd;
+            color: #f9f9f9;
+            background-color: black;
+            text-align: left;
+            padding: 8px;
+            font-weight: bold;
+          ">
                         Ship to Party
                     </td>
                 </tr>
             </table>
-            <table style=" width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; ">
+            <table
+                style="
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        table-layout: fixed;
+      ">
                 <!-- First Row -->
                 <tr>
                     <td
-                        style=" border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold;">
+                        style="
+            border: 1px solid #ddd;
+            background-color: #1976d20f;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+          ">
                         Name
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px">{{ $ship_to_party }}</td>
                 </tr>
+                <!-- Second Row -->
                 <tr>
                     <td
-                        style="border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold; ">
+                        style="
+            border: 1px solid #ddd;
+            background-color: #1976d20f;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+          ">
                         Address
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px">{{ $ship_to_party_address }}</td>
                 </tr>
                 {{-- <tr>
-                    <td
-                        style="
-            border: 1px solid #ddd;
-            background-color: #1976D20F;
-            text-align: center;
-            padding: 8px;
-            font-weight: bold;
-          ">
-                        City, State, Zip
-                    </td>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> City, State, Zip </td>
                     <td style="border: 1px solid #ddd; padding: 8px"></td>
-                </tr> 
+                </tr>
                 <tr>
-                    <td
-                        style="
-            border: 1px solid #ddd;
-            background-color: #1976D20F;
-            text-align: center;
-            padding: 8px;
-            font-weight: bold;
-          ">
-                        Country
-                    </td>
+                    <td style="border: 1px solid #ddd;background-color: #1976d20f;text-align: center;padding: 8px;font-weight: bold; "> Country </td>
                     <td style="border: 1px solid #ddd; padding: 8px"></td>
                 </tr> --}}
             </table>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; ">
+            <table
+                style="
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        table-layout: fixed;
+      ">
+                <!-- First Row -->
                 <tr>
                     <td
-                        style="border: 1px solid #ddd; color: #f9f9f9; background-color: black; text-align: left; padding: 8px; font-weight: bold; ">
+                        style="
+            border: 1px solid #ddd;
+            color: #f9f9f9;
+            background-color: black;
+            text-align: left;
+            padding: 8px;
+            font-weight: bold;
+          ">
                         Harmonized Tarriff Schedule Numbers
                     </td>
                 </tr>
+
             </table>
-            <table style=" width: 100%;  border-collapse: collapse;  margin-top: 10px; table-layout: fixed; ">
+            <table
+                style="
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      table-layout: fixed;
+    ">
                 <tr>
-                    <th style="padding: 8px; text-align: left; background-color: #1976D20F;  border: 1px solid #ddd; ">
+                    <th
+                        style="
+          width: 40%;
+          padding: 8px;
+          text-align: left;
+          background-color: rgb(221, 238, 240);
+          border: 1px solid #ddd;
+        ">
                         *Product and Parts*
                     </th>
                     <td style="width: 80%;padding: 0px;text-align: center;border: 1px solid #ddd;">

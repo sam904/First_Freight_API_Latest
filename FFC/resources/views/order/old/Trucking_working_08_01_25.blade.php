@@ -1,46 +1,46 @@
 @php
-    $receivedDate = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y') ?? null;
+$receivedDate = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y') ?? null;
 
-    // Check if orderDetails exists, and then access the related orderContainerDetails
-    $orderDetails = $data['orderDetails'] ?? null;
+// Check if orderDetails exists, and then access the related orderContainerDetails
+$orderDetails = $data['orderDetails'] ?? null;
 
-    $bl = $orderDetails[0]['master_bl'] ?? null;
-    $seal = $orderDetails[0]['seal'] ?? null;
-    $lfd = $orderDetails[0]['last_free_day'] ?? null;
-    $weight = $orderDetails[0]['weight'] ?? null;
-    $pallets = $orderDetails[0]['pallets'] ?? null;
-    $freightLocation = $orderDetails[0]['freight_location'] ?? null;
-    $firmCode = $orderDetails[0]['firm_code'] ?? null;
-    $vesselVoyage = $orderDetails[0]['vessel_voyage'] ?? null;
-    $commodity = $orderDetails[0]['commodity'] ?? null;
-    $eta = $orderDetails[0]['eta'] ?? null;
-    // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
-    // $orderContainerDetails1 = $orderDetails
-    //     ? $orderDetails->map(function ($orderDetail) {
-    //         return $orderDetail->orderContainerDetails;
-    //     })
-    //     : null;
+$bl = $orderDetails[0]['master_bl'] ?? null;
+$seal = $orderDetails[0]['seal'] ?? null;
+$lfd = $orderDetails[0]['last_free_day'] ?? null;
+$weight = $orderDetails[0]['weight'] ?? null;
+$pallets = $orderDetails[0]['pallets'] ?? null;
+$freightLocation = $orderDetails[0]['freight_location'] ?? null;
+$firmCode = $orderDetails[0]['firm_code'] ?? null;
+$vesselVoyage = $orderDetails[0]['vessel_voyage'] ?? null;
+$commodity = $orderDetails[0]['commodity'] ?? null;
+$eta = $orderDetails[0]['eta'] ?? null;
+// If orderDetails exists, get the orderContainerDetails for each orderDetails entry
+// $orderContainerDetails1 = $orderDetails
+// ? $orderDetails->map(function ($orderDetail) {
+// return $orderDetail->orderContainerDetails;
+// })
+// : null;
 
-    $orderContainerDetails = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            // Get the first element of the orderContainerDetails array
-            return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
-        })
-        : null;
+$orderContainerDetails = $orderDetails
+? $orderDetails->map(function ($orderDetail) {
+// Get the first element of the orderContainerDetails array
+return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
+})
+: null;
 
-    $orderDeliveries = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            return $orderDetail->deliveries;
-        })
-        : null;
+$orderDeliveries = $orderDetails
+? $orderDetails->map(function ($orderDetail) {
+return $orderDetail->deliveries;
+})
+: null;
 
-    foreach ($orderDeliveries[0] as $delivery) {
-        $scac = $delivery['vendor']['scac_number'] ?? null;
-        $mc = $delivery['vendor']['mc_number'] ?? null;
-        $usdot = $delivery['vendor']['us_dot_number'] ?? null;
-    }
+foreach ($orderDeliveries[0] as $delivery) {
+$scac = $delivery['vendor']['scac_number'] ?? null;
+$mc = $delivery['vendor']['mc_number'] ?? null;
+$usdot = $delivery['vendor']['us_dot_number'] ?? null;
+}
 
-    $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
+$image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -72,34 +72,37 @@
       background-color: #f9f9f9;
     ">
     <div class="delivery-order" style="max-width:'100%'; margin: 0 auto; padding: 10px">
-        <header style="border-bottom: 2px solid #000; padding: 10px;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                    <!-- Left Section -->
-                    <td style="width: 85px; vertical-align: top; padding-right: 10px;">
-                        <div style="width: 100px; height: 90px;">
-                            <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo" class="logo"
-                                style="width: 85px; height: 61px; margin-bottom: 10px;" />
-                        </div>
-                        <h1 style="font-size: 14px; margin: 0;">Delivery Order</h1>
-                    </td>
-
-                    <!-- Right Section -->
-                    <td style="width: 70%; vertical-align: top; text-align: right; padding-left: 10px;">
-                        <div style="font-size: 12px; line-height: 1.4;">
-                            <p style="margin: 0 0 8px 0;"><strong>SCAC:</strong> {{ $scac }}</p>
-                            <p style="margin: 0 0 8px 0;"><strong>USDOT #:</strong> {{ $usdot }}</p>
-                            <p style="margin: 0 0 8px 0;"><strong>MC #:</strong> {{ $mc }}</p>
-                            <p style="margin: 0 0 8px 0;">
-                                <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
-                            </p>
-                            <p style="margin: 5px 0; font-weight: 700; line-height: 1.6;">
-                                Ocean Freight | Customs Filing | Trucking | Transload | Warehousing
-                            </p>
-                        </div>
-                    </td>
-                </tr>
-            </table>
+        <header
+            style="
+          display: flex;
+          justify-content: space-between;
+          align-items: start;
+          color: rgb(5, 5, 5);
+          padding: 5px;
+          border-bottom: 2px solid #000;
+        ">
+            <div class="header-left">
+                <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo" class="logo"
+                    style="width: 100px; padding-bottom: 10px; height: auto" />
+                <h1 style="font-size: 20px; margin: 0">Delivery Order</h1>
+            </div>
+            <div class="header-right">
+                <p style="text-align: right; font-size: 12px">
+                    <strong>SCAC:</strong> {{ $scac }}
+                </p>
+                <p style="text-align: right; font-size: 12px">
+                    <strong>USDOT #:</strong> {{ $usdot }}
+                </p>
+                <p style="text-align: right; font-size: 12px">
+                    <strong>MC #:</strong> {{ $mc }}
+                </p>
+                <p style="text-align: right; font-size: 12px">
+                    <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
+                </p>
+                <p style="font-size: 12px; font-weight: 700">
+                    Ocean Freight | Customs Filing | Trucking | Transload | Warehousing
+                </p>
+            </div>
         </header>
 
         <section class="order-info" style="margin-top: 20px">
@@ -109,25 +112,24 @@
                 date/time as the POD.
             </p>
             <br /><br />
-            <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
-                <tr>
-                    <!-- Forwarder Section -->
-                    <td style="flex: 1; vertical-align: middle;">
-                        <p style="font-size: 12px; margin: 5px 0">
-                            <strong>Trucker:</strong> Retrieving data. Wait a few seconds and
-                            try to cut or copy again.
-                        </p>
-                    </td>
-                    <!-- Date Section -->
-                    <td style="text-align: right; vertical-align: middle;">
-                        <p style="text-align: end;">
-                            <span style="padding: 10px; background-color: #1976D20F; "><strong>Date:</strong>
-                                {{ $receivedDate }}
-                            </span>
-                        </p>
-                    </td>
-                </tr>
-            </table>
+            <div
+                style="
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+          ">
+                <div style="flex: 1">
+                    <p style="font-size: 12px; margin: 5px 0">
+                        <strong>Trucker:</strong> Retrieving data. Wait a few seconds and
+                        try to cut or copy again.
+                    </p>
+                </div>
+                <div style="text-align: right">
+                    <p style="font-size: 12px; margin: 5px 0">
+                        <strong>Date:</strong> {{ $receivedDate }}
+                    </p>
+                </div>
+            </div>
         </section>
 
         <section class="contact" style="margin-top: 5px; border-radius: 5px">
@@ -138,7 +140,7 @@
 
         <table class="details-table" style="width: 100%; margin-top: 5px; border-collapse: collapse">
             <thead>
-                <tr style="background-color: #1976D20F">
+                <tr style="background-color: #f6fafd">
                     <th
                         style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important; font-weight: 600;">
                         CONTAINER #
@@ -179,19 +181,20 @@
             </thead>
             <tbody>
                 @foreach ($orderContainerDetails as $containerDetails)
-                    <tr>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['container_no'] ?? null }}
-                        </td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $bl }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['po'] ?? null }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['cpo'] ?? null }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $seal }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $lfd }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $weight }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">
-                            {{ $containerDetails['container_size'] ?? null }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $pallets }}</td>
-                    </tr>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['container_no'] ?? null }}
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $bl }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['po'] ?? null }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $containerDetails['cpo'] ?? null }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $seal }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $lfd }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $weight }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">
+                        {{ $containerDetails['container_size'] ?? null }}
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $pallets }}</td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
@@ -201,7 +204,7 @@
                     <th
                         style="
                 border: 1px solid #ddd;
-                background-color: #1976D20F;
+                background-color: #f6fafd;
                 padding: 8px;
                 text-align: center;
               ">
@@ -217,7 +220,13 @@
             </thead>
             <tbody>
                 <tr>
-                    <td style="border: 1px solid #ddd;background-color: #1976D20F;padding: 8px;text-align: center;">
+                    <td
+                        style="
+                border: 1px solid #ddd;
+                background-color: #f6fafd;
+                padding: 8px;
+                text-align: center;
+              ">
                         <strong>Delivery Appt Date:</strong>
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: center">
@@ -229,12 +238,12 @@
                 padding: 8px;
                 font-weight: bold;
                 text-align: center;
-                background-color: #1976D20F;
+                background-color: #f6fafd;
               ">
                         Time:
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: center">
-                        07:00
+                        ?
                     </td>
                 </tr>
             </tbody>
@@ -258,7 +267,7 @@
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: #f6fafd;
                 ">
                             <strong>Freight Location:</strong>
                         </th>
@@ -270,7 +279,7 @@
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: #f6fafd;
                 ">
                             <strong>Firms Code:</strong>
                         </th>
@@ -284,7 +293,7 @@
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: #f6fafd;
                 ">
                             <strong>Vessel/Voyage:</strong>
                         </th>
@@ -296,7 +305,7 @@
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: #f6fafd;
                 ">
                             <strong>Commodity:</strong>
                         </th>
@@ -310,7 +319,7 @@
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: #f6fafd;
                 ">
                             <strong>ETA:</strong>
                         </th>
@@ -320,7 +329,45 @@
             </table>
         </section>
 
-
+        <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
+            <thead>
+                <tr>
+                    <th
+                        style="
+                border: 1px solid #ddd;
+                background-color: #f6fafd;
+                padding: 8px;
+                text-align: center;
+              ">
+                        The driver should carry a copy of this BL and an ID to pick up the
+                        cargo.
+                    </th>
+                </tr>
+                <tr>
+                    <th
+                        style="
+                border: 1px solid #ddd;
+                background-color: #f6fafd;
+                padding: 8px;
+                text-align: center;
+              ">
+                        FFC will pay the assigned trucker once the job is completed.
+                    </th>
+                </tr>
+                <tr>
+                    <th
+                        style="
+                border: 1px solid #ddd;
+                background-color: #f6fafd;
+                padding: 8px;
+                text-align: center;
+              ">
+                        The assigned trucker takes responsibility to pay the party
+                        completing this job.
+                    </th>
+                </tr>
+            </thead>
+        </table>
 
         <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
             <thead>
@@ -331,7 +378,7 @@
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
-                background-color: #1976D20F;
+                background-color: #f6fafd;
               ">
                         <strong>Bill To:</strong>
                     </th>
@@ -354,7 +401,7 @@
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
-                background-color: #1976D20F;
+                background-color: #f6fafd;
               ">
                         <strong>Email Invoice to</strong>
                     </th>
@@ -376,7 +423,7 @@
             <thead>
                 <tr>
                     <th colspan="3"
-                        style="background-color: #1976D20F; border: 1px solid #ddd; font-weight: bold; text-align: center; padding: 10px;">
+                        style="background-color: #f6fafd; border: 1px solid #ddd; font-weight: bold; text-align: center; padding: 10px;">
                         RECEIVING WAREHOUSE CONFIRMATION
                     </th>
                 </tr>
@@ -399,28 +446,6 @@
                     <td style="text-align: center; padding: 10px;">
                         Departed: <span
                             style="display: inline-block; border-bottom: 1px solid #000; width: 150px;"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="text-align: center; padding: 7px;">
-                        <span style="display: inline-block; border-bottom: 1px solid #000; width: 150px;"></span>
-                    </td>
-                    <td style="text-align: center; padding: 7px;">
-                        <span style="display: inline-block; border-bottom: 1px solid #000; width: 150px;"></span>
-                    </td>
-                    <td style="text-align: center; padding: 7px;">
-                        <span style="display: inline-block; border-bottom: 1px solid #000; width: 150px;"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="text-align: center; padding: 5px;">
-                        <span style="font-weight: bold;">Signature</span>
-                    </td>
-                    <td style="text-align: center; padding: 5px;">
-                        <span style="font-weight: bold;">Name</span>
-                    </td>
-                    <td style="text-align: center; padding: 5px;">
-                        <span style="font-weight: bold;">Date</span>
                     </td>
                 </tr>
             </tbody>

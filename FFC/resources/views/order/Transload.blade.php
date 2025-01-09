@@ -108,26 +108,24 @@
                 receiving warehouse personnel's name, signature, and delivery
                 date/time as the POD.
             </p>
-            <br /><br />
-            <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
-                <tr>
-                    <!-- Forwarder Section -->
-                    <td style="flex: 1; vertical-align: middle;">
-                        <p style="font-size: 12px; margin: 5px 0">
-                            <strong>Trucker:</strong> Retrieving data. Wait a few seconds and
-                            try to cut or copy again.
-                        </p>
-                    </td>
-                    <!-- Date Section -->
-                    <td style="text-align: right; vertical-align: middle;">
-                        <p style="text-align: end;">
-                            <span style="padding: 10px; background-color: #1976D20F; "><strong>Date:</strong>
-                                {{ $receivedDate }}
-                            </span>
-                        </p>
-                    </td>
-                </tr>
-            </table>
+            <div
+                style="
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+          ">
+                <div style="flex: 1">
+                    <p style="font-size: 12px; margin: 5px 0">
+                        <strong>Trucker:</strong> Retrieving data. Wait a few seconds and
+                        try to cut or copy again.
+                    </p>
+                </div>
+                <div style="text-align: right">
+                    <p style="font-size: 12px; margin: 5px 0">
+                        <strong>Date:</strong> {{ $receivedDate }}
+                    </p>
+                </div>
+            </div>
         </section>
 
         <section class="contact" style="margin-top: 5px; border-radius: 5px">
@@ -210,14 +208,20 @@
                     <td colspan="3"
                         style="border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px !important;">
                         <p style="margin: 0">{{ $data['address']['company_name'] ?? null }}</p>
-                        {{-- <p style="margin: 0">1111 BROADWAY AVE</p> --}}
-                        {{-- <p style="margin: 0">BRASELTON GA 30517</p> --}}
+                        {{-- <p style="margin: 0">1111 BROADWAY AVE</p>
+                        <p style="margin: 0">BRASELTON GA 30517</p> --}}
                     </td>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td style="border: 1px solid #ddd;background-color: #1976D20F;padding: 8px;text-align: center;">
+                    <td
+                        style="
+                border: 1px solid #ddd;
+                background-color: #1976D20F;
+                padding: 8px;
+                text-align: center;
+              ">
                         <strong>Delivery Appt Date:</strong>
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: center">
@@ -320,7 +324,45 @@
             </table>
         </section>
 
-
+        <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
+            <thead>
+                <tr>
+                    <th
+                        style="
+                border: 1px solid #ddd;
+                background-color: #1976D20F;
+                padding: 8px;
+                text-align: center;
+              ">
+                        The driver should carry a copy of this BL and an ID to pick up the
+                        cargo.
+                    </th>
+                </tr>
+                <tr>
+                    <th
+                        style="
+                border: 1px solid #ddd;
+                background-color: #1976D20F;
+                padding: 8px;
+                text-align: center;
+              ">
+                        FFC will pay the assigned trucker once the job is completed.
+                    </th>
+                </tr>
+                <tr>
+                    <th
+                        style="
+                border: 1px solid #ddd;
+                background-color: #1976D20F;
+                padding: 8px;
+                text-align: center;
+              ">
+                        The assigned trucker takes responsibility to pay the party
+                        completing this job.
+                    </th>
+                </tr>
+            </thead>
+        </table>
 
         <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
             <thead>

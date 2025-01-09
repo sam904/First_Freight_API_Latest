@@ -46,6 +46,7 @@ class QuoteController extends Controller
             ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
             ->leftJoin('ports as loading_ports', 'rates.port_of_loading_id', '=', 'loading_ports.id')
             ->leftJoin('ports as discharge_ports', 'rates.port_of_discharge_id', '=', 'discharge_ports.id')
+            ->leftJoin('rate_charges', 'rate_charges.rate_id', '=', 'rates.id')
             ->select(
                 'rates.id as rate_id',
                 'vendors.company_name as vendor_name',
@@ -69,6 +70,22 @@ class QuoteController extends Controller
                             ELSE ''
                         END
                     ) as rate_validity"),
+                // DB::raw("JSON_ARRAYAGG(JSON_OBJECT(
+                //     'charge_id', rate_charges.id,
+                //     'charge_name', rate_charges.charge_name,
+                //     'amount', rate_charges.amount
+                // )) as rate_charges"),
+                DB::raw("COALESCE(
+                    JSON_ARRAYAGG(
+                        CASE
+                            WHEN rate_charges.amount IS NOT NULL AND rate_charges.id IS NOT NULL AND rate_charges.charge_name IS NOT NULL
+                            THEN JSON_OBJECT(
+                                'amount', rate_charges.amount,
+                                'charge_id', rate_charges.id,
+                                'charge_name', rate_charges.charge_name
+                            )
+                        END
+                    ), JSON_ARRAY()) as rate_charges"),
                 DB::raw("0 as temp_sort_column")
             );
 
@@ -88,7 +105,7 @@ class QuoteController extends Controller
             $query->where('rates.service_type_id', $request->serviceType);
         }
 
-        $query->where('rates.status', 'active');
+        $query->where('rates.status', 'active')->groupBy('rates.id');
 
         // Query for the additional record based on vendor_id and rate_id
         if ($request->has('vendor_id') && $request->has('rate_id')) {
@@ -99,6 +116,7 @@ class QuoteController extends Controller
                 ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
                 ->leftJoin('ports as loading_ports', 'rates.port_of_loading_id', '=', 'loading_ports.id') // Join for portOfLoadingId
                 ->leftJoin('ports as discharge_ports', 'rates.port_of_discharge_id', '=', 'discharge_ports.id') // Join for portOfDischargeId
+                ->leftJoin('rate_charges', 'rate_charges.rate_id', '=', 'rates.id')
                 ->select(
                     'rates.id as rate_id',
                     'vendors.company_name as vendor_name',
@@ -121,10 +139,27 @@ class QuoteController extends Controller
                                 ELSE ''
                             END
                         ) as rate_validity"),
+                    // DB::raw("JSON_ARRAYAGG(JSON_OBJECT(
+                    //     'charge_id', rate_charges.id,
+                    //     'charge_name', rate_charges.charge_name,
+                    //     'amount', rate_charges.amount
+                    // )) as rate_charges"),
+                    DB::raw("COALESCE(
+                    JSON_ARRAYAGG(
+                        CASE
+                            WHEN rate_charges.amount IS NOT NULL AND rate_charges.id IS NOT NULL AND rate_charges.charge_name IS NOT NULL
+                            THEN JSON_OBJECT(
+                                'amount', rate_charges.amount,
+                                'charge_id', rate_charges.id,
+                                'charge_name', rate_charges.charge_name
+                            )
+                        END
+                    ), JSON_ARRAY()) as rate_charges"),
                     DB::raw("1 as temp_sort_column")
                 )
                 ->where('rates.vendor_id', $vendorId)
-                ->where('rates.id', $rateId);
+                ->where('rates.id', $rateId)
+                ->groupBy('rates.id');
 
             // Use union to combine both queries
             $query = $query->union($additionalQuery);
@@ -139,6 +174,17 @@ class QuoteController extends Controller
         // Paginate the final sorted result
         $ratesCollection = $finalQuery->paginate(5);
 
+        // $ratesCollection->getCollection()->transform(function ($rate) {
+        //     $rate->rate_charges = json_decode('[' . $rate->rate_charges . ']', true);
+        //     return $rate;
+        // });
+        foreach ($ratesCollection as $rate) {
+            if (empty($rate->rate_charges)) {
+                $rate->rate_charges = []; // Set as an empty array if no charges exist
+            } else {
+                $rate->rate_charges = json_decode($rate->rate_charges, true);
+            }
+        }
         // Return the result
         return response()->json([
             'status' => true,
