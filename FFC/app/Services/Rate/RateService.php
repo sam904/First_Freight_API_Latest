@@ -217,6 +217,7 @@ class RateService
             $charge[] = new RateCharge([
                 'charge_name' => $chargeItem['charge_name'],
                 'amount' => $chargeItem['amount'],
+                'chacked' => $chargeItem['chacked'],
                 'rate_id' => $rate->id
             ]);
         }
@@ -387,7 +388,7 @@ class RateService
             'port:id,name',
             'destination:id,name',
             'serviceType:id,name',
-            'charges:id,charge_name,amount,rate_id',
+            'charges:id,charge_name,amount,rate_id,chacked',
         ]);
         $query->where(function ($query) use ($portFlag, $destinationFlag, $vendorFlag, $serviceTypeFlag, $searchTerm) {
             if ($portFlag) {
