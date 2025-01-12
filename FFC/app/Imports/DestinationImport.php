@@ -44,9 +44,14 @@ class DestinationImport implements OnEachRow, WithStartRow, WithHeadingRow
         $invalidFields = [];
         $missingFields = [];
 
+        Log::info($rowData);
         if (!is_string($rowData['city']) || is_numeric($rowData['city'])) {
             $invalidFields[] = "city (should be string)";
             $missingFields[] = "city";
+        }
+        if (!is_string($rowData['zipcode'])) {
+            $invalidFields[] = "ZipCode (should be numeric)";
+            $missingFields[] = "ZipCode";
         }
         if (!is_string($rowData['state']) || is_numeric($rowData['state'])) {
             $invalidFields[] = "state (should be string)";
@@ -102,6 +107,7 @@ class DestinationImport implements OnEachRow, WithStartRow, WithHeadingRow
                 Log::info("Creating Destination Record...");
                 $destinationData = [
                     'name' => $rowData['city'],
+                    'zip_code' => $rowData['zipcode'],
                     'country_id' => $countryId,
                     'state_id' => $stateId,
                 ];

@@ -13,32 +13,32 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('customers', function (Blueprint $table) {
-            $table->string('address', 1000)->change();
+            $table->string('address', 1000)->change()->nullable();
         });
         Schema::table('customer_delivery_addresses', function (Blueprint $table) {
-            $table->string('delivery_address', 1000)->change();
+            $table->string('delivery_address', 1000)->change()->nullable();
         });
         Schema::table('customer_shipping_addresses', function (Blueprint $table) {
-            $table->string('shipping_address', 1000)->change();
+            $table->string('shipping_address', 1000)->change()->nullable();
         });
         Schema::table('customer_warehouse_addresses', function (Blueprint $table) {
-            $table->string('warehouse_address', 1000)->change();
+            $table->string('warehouse_address', 1000)->change()->nullable();
         });
         Schema::table('order_details', function (Blueprint $table) {
             DB::statement("UPDATE order_details SET shipper_address = '' WHERE shipper_address IS NULL");
-            $table->string('shipper_address', 800)->change();
+            $table->string('shipper_address', 800)->change()->nullable();
             DB::statement("UPDATE order_details SET consignee_address = '' WHERE consignee_address IS NULL");
-            $table->string('consignee_address', 800)->change();
+            $table->string('consignee_address', 800)->change()->nullable();
             DB::statement("UPDATE order_details SET buyer_address = '' WHERE buyer_address IS NULL");
-            $table->string('buyer_address', 800)->change();
+            $table->string('buyer_address', 800)->change()->nullable();
             DB::statement("UPDATE order_details SET consolidator_address = '' WHERE consolidator_address IS NULL");
-            $table->string('consolidator_address', 800)->change();
+            $table->string('consolidator_address', 800)->change()->nullable();
             DB::statement("UPDATE order_details SET manufacturer_address = '' WHERE manufacturer_address IS NULL");
-            $table->string('manufacturer_address', 800)->change();
+            $table->string('manufacturer_address', 800)->change()->nullable();
             DB::statement("UPDATE order_details SET ship_to_party_address = '' WHERE ship_to_party_address IS NULL");
-            $table->string('ship_to_party_address', 800)->change();
+            $table->string('ship_to_party_address', 800)->change()->nullable();
             DB::statement("UPDATE order_details SET freight_location = '' WHERE freight_location IS NULL");
-            $table->string('freight_location', 800)->change();
+            $table->string('freight_location', 800)->change()->nullable();
             DB::statement("UPDATE order_details SET upload_documents = '' WHERE upload_documents IS NULL");
             $table->longText('upload_documents')->change()->nullable();
         });
@@ -50,26 +50,26 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('customers', function (Blueprint $table) {
-            $table->string('address', 1000)->change();
+            $table->string('address', 1000)->change()->nullable();
         });
         Schema::table('customer_delivery_addresses', function (Blueprint $table) {
-            $table->string('delivery_address', 1000)->change();
+            $table->string('delivery_address', 1000)->change()->nullable();
         });
         Schema::table('customer_shipping_addresses', function (Blueprint $table) {
-            $table->string('shipping_address', 1000)->change();
+            $table->string('shipping_address', 1000)->change()->nullable();
         });
         Schema::table('customer_warehouse_addresses', callback: function (Blueprint $table) {
-            $table->string('warehouse_address', 1000)->change();
+            $table->string('warehouse_address', 1000)->change()->nullable();
         });
         Schema::table('order_details', function (Blueprint $table) {
-            $table->string('shipper_address', 800)->change();
-            $table->string('consignee_address', 800)->change();
-            $table->string('buyer_address', 800)->change();
-            $table->string('consolidator_address', 800)->change();
-            $table->string('manufacturer_address', 800)->change();
-            $table->string('ship_to_party_address', 800)->change();
-            $table->string('freight_location', 800)->change();
-            $table->text('upload_documents')->change();
+            $table->string('shipper_address', 800)->change()->nullable();
+            $table->string('consignee_address', 800)->change()->nullable();
+            $table->string('buyer_address', 800)->change()->nullable();
+            $table->string('consolidator_address', 800)->change()->nullable();
+            $table->string('manufacturer_address', 800)->change()->nullable();
+            $table->string('ship_to_party_address', 800)->change()->nullable();
+            $table->string('freight_location', 800)->change()->nullable();
+            $table->text('upload_documents')->change()->nullable();
         });
     }
 };

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Destination;
 use App\Exports\DestinationExport;
 use App\Http\Controllers\Controller;
 use App\Imports\DestinationImport;
-use App\Models\Destination\County;
 use App\Models\Destination\Destination;
 use App\Services\Destination\DestinationService;
 use Illuminate\Http\Request;
@@ -136,6 +135,7 @@ class DestinationController extends Controller
             'name' => 'required|string',
             'state' => 'required|integer',
             'country' => 'required|integer',
+            'zipCode' => 'required|integer',
         ]);
 
         // Check if validation fails
@@ -168,7 +168,6 @@ class DestinationController extends Controller
                 'errors' => $e->errors()
             ], 422);
         }
-
 
         $updatedColumns = $request->input('updatedColumns');
 

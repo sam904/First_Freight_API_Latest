@@ -41,6 +41,139 @@ class QuoteController extends Controller
         $isDestinationId = $request->input('destination_id') ?? false;
         $isServiceType = $request->input('serviceType') ?? false;
         $today = Carbon::now()->toDateString();
+
+        $query = DB::table('rates')
+            ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
+            ->leftJoin('ports as loading_ports', 'rates.port_of_loading_id', '=', 'loading_ports.id')
+            ->leftJoin('ports as discharge_ports', 'rates.port_of_discharge_id', '=', 'discharge_ports.id')
+            ->select(
+                'rates.id as rate_id',
+                'vendors.company_name as vendor_name',
+                'expiry',
+                'rates.freight',
+                'rates.fsc',
+                'rates.vendor_id',
+                'rates.status',
+                DB::raw("DATE_FORMAT(rates.start_date, '%m/%d/%y') as rate_received"),
+                DB::raw("CONCAT(
+                DATE_FORMAT(
+                    DATE_ADD(
+                        rates.start_date, 
+                        INTERVAL GREATEST(rates.expiry - DATEDIFF('$today', rates.start_date), 0) DAY
+                    ), '%m/%d/%Y'
+                ),
+                '',
+                CASE 
+                    WHEN GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0) = 0 
+                    THEN ', Expired' 
+                    ELSE ''
+                END
+            ) as rate_validity"),
+                DB::raw("0 as temp_sort_column")
+            );
+
+        // Apply conditions for filtering
+        if ($isPortOfLoadingId) {
+            $query->where('rates.port_of_loading_id', $isPortOfLoadingId);
+        }
+        if ($isPortOfDischargeId) {
+            $query->where('rates.port_of_discharge_id', $isPortOfDischargeId);
+        }
+        if ($isDestinationId) {
+            $query->where('rates.destination_id', $isDestinationId);
+        }
+        if ($isServiceType) {
+            $query->where('rates.service_type_id', $isServiceType);
+        }
+
+        $query->where('rates.status', 'active');
+        // ->groupBy('rates.id');
+
+        // Additional query for vendor_id and rate_id (if required)
+        if ($request->has('vendor_id') && $request->has('rate_id')) {
+            $vendorId = $request->input('vendor_id');
+            $rateId = $request->input('rate_id');
+
+            $additionalQuery = DB::table('rates')
+                ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
+                ->select(
+                    'rates.id as rate_id',
+                    'vendors.company_name as vendor_name',
+                    'expiry',
+                    'rates.freight',
+                    'rates.vendor_id',
+                    'rates.status',
+                    DB::raw("DATE_FORMAT(rates.start_date, '%m/%d/%y') as rate_received"),
+                    DB::raw("CONCAT(
+                    DATE_FORMAT(
+                        DATE_ADD(
+                            rates.start_date, 
+                            INTERVAL GREATEST(rates.expiry - DATEDIFF('$today', rates.start_date), 0) DAY
+                        ), '%m/%d/%Y'
+                    ),
+                    '',
+                    CASE 
+                        WHEN GREATEST(DATEDIFF(DATE_ADD(rates.start_date, INTERVAL rates.expiry DAY), CURDATE()), 0) = 0 
+                        THEN ', Expired' 
+                        ELSE ''
+                    END
+                ) as rate_validity"),
+                    DB::raw("1 as temp_sort_column")
+                )
+                ->where('rates.vendor_id', $vendorId)
+                ->where('rates.id', $rateId);
+            // ->groupBy('rates.id');
+
+            $query = $query->union($additionalQuery);
+        }
+
+        // Apply sorting after union
+        $finalQuery = DB::table(DB::raw("({$query->toSql()}) as combined"))
+            ->mergeBindings($query)
+            ->orderBy('temp_sort_column', 'desc')
+            ->orderBy('freight', 'asc');
+
+        // Paginate the result
+        $ratesCollection = $finalQuery->paginate(5);
+
+        // Fetch and Attach Rate Charges
+        $rateIds = $ratesCollection->pluck('rate_id'); // Get all rate IDs in the current page
+        $rateCharges = DB::table('rate_charges')
+            ->whereIn('rate_id', $rateIds)
+            ->get()
+            ->groupBy('rate_id');
+
+        // Attach the charges to the rates
+        foreach ($ratesCollection as $rate) {
+            $rate->rate_charges = $rateCharges->get($rate->rate_id, []); // Attach charges or an empty array
+        }
+
+        // Return the result
+        return response()->json([
+            'status' => true,
+            'message' => 'Records with additional data and proper sorting',
+            'data' => $ratesCollection,
+        ], 200);
+    }
+
+
+    public function getVendorListwithJson(Request $request)
+    {
+        Log::info("*******************************");
+        Log::info("Getting Vendor list for quotes");
+        Log::info("*******************************");
+        /*
+        Process:
+        1. First, it searches for vendors based on the provided port_id, destination_id, serviceType
+        2. During the edit operation, when the rate_id and vendor_id are provided, it retrieves the data matching 
+            those values and adds it to the existing dataset. This step is specifically for the edit functionality.
+        */
+
+        $isPortOfLoadingId = $request->input('portOfLoadingId') ?? false;
+        $isPortOfDischargeId = $request->input('portOfDischargeId') ?? false;
+        $isDestinationId = $request->input('destination_id') ?? false;
+        $isServiceType = $request->input('serviceType') ?? false;
+        $today = Carbon::now()->toDateString();
         // Main query
         $query = DB::table('rates')
             ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')

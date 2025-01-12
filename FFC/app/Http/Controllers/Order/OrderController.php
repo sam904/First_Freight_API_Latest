@@ -307,6 +307,7 @@ class OrderController extends Controller
             // 'order_details.pierpassFees' => 'required|in:Yes,No',
             // 'order_details.cleanTruckFees' => 'required|in:Yes,No',
             // 'order_details.accessorialCharges' => 'required|in:Yes,No',
+            // 'order_details.ein' => 'required|string',
         ]);
 
         // Check if validation fails

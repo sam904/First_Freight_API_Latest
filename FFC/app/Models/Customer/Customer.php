@@ -30,6 +30,7 @@ class Customer extends Model
         "payment_terms",
         "credit_limit",
         "status",
+        "upload_document"
         // 'contact_name',
         // 'phone',
         // 'email',
@@ -45,6 +46,7 @@ class Customer extends Model
         'state_id',
         'material_type',
         'email',
+        'upload_document'
     ];
 
     public function getSearchableColumns()

@@ -34,7 +34,8 @@ class DestinationService
                 'countries.name as country',
                 'destinations.status',
                 'destinations.created_at',
-                'destinations.updated_at'
+                'destinations.updated_at',
+                'destinations.zip_code',
             );
         // Apply filter by IDs if they are provided
         if (!empty($ids)) {
@@ -58,6 +59,7 @@ class DestinationService
                 $query->where(function ($query) use ($searchTerm) {
                     $query->where('destinations.name', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('destinations.status', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('destinations.zip_code', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('countries.name', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('countries.iso_code', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('states.name', 'LIKE', "%{$searchTerm}%");
@@ -90,6 +92,7 @@ class DestinationService
             'name' => $request['name'],
             'state_id' => $request['state'],
             'country_id' => $request['country'],
+            'zipCode' => $request['zip_code'],
         ]);
         return true;
     }
@@ -101,6 +104,7 @@ class DestinationService
             'name' => $request['name'],
             'state_id' => $request['state'],
             'country_id' => $request['country'],
+            'zip_code' => $request['zipCode'],
         ]);
         return true;
     }

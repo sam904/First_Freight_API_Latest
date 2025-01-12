@@ -347,6 +347,7 @@ class OrderService
                         'mother_vessel_date' => $detail['motherVesselDate'] ?? null,
                         'vessel_loaded_date' => $detail['vesselLoadedDate'] ?? null,
                         'consolidator_address' => $detail['consolidatorAddress'] ?? null,
+                        'ein' => $detail['ein'] ?? null,
                     ];
 
                     if ($detail['isOrderDetailsRequest'] === 'insert') {
@@ -374,10 +375,10 @@ class OrderService
 
 
                     // Documement Upload
-                    if (!empty($detail['uploadDocuments'])) {
-                        Log::info("Order Documents are uploading...");
-                        $this->uploadImages($detail['uploadDocuments'], $order, $orderDetail);
-                    }
+                    // if (!empty($detail['uploadDocuments'])) {
+                    //     Log::info("Order Documents are uploading...");
+                    //     $this->uploadImages($detail['uploadDocuments'], $order, $orderDetail);
+                    // }
 
                     // Handle deliveryDetails
                     if (!empty($detail['deliveries'])) {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Common\SuggestionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -135,6 +136,17 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::post('/destinationList', 'getAllDestinationList');
                     Route::post('/customerList', 'getAllCustomerList');
                     Route::post('/documentUpload', 'documentUpload');
+                });
+            }
+        );
+
+        Route::prefix('common/suggestion')->group(
+            function () {
+                Route::controller(SuggestionController::class)->group(function () {
+                    Route::get('/customer', 'getSuggestionCustomer');
+                    Route::post('/customer', 'storeSuggestionCustomer');
+                    Route::get('/address', 'getSuggestionAddress');
+                    Route::post('/address', 'storeSuggestionAddress');
                 });
             }
         );
