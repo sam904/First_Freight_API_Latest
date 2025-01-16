@@ -155,7 +155,7 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
         Route::prefix('port')->group(
             function () {
                 Route::controller(PortController::class)->group(function () {
-                    Route::get('/port-type', 'portType');
+                    Route::get('/port-type/{id?}', 'portType');
                     Route::post('/index', 'index')->middleware(CheckPermission::class . ':Port,can_view');
                     Route::post('/save', 'store')->middleware(CheckPermission::class . ':Port,can_create');
                     Route::get('/edit/{id}', 'edit')->middleware(CheckPermission::class . ':Port,can_edit');

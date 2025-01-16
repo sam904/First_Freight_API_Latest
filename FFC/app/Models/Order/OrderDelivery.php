@@ -33,7 +33,7 @@ class OrderDelivery extends Model
         'delivery_created_by',
         'country_of_origin',
         'ignate_cutoff_date',
-        'delivery_time',
+        'rail_ramp_id'
     ];
 
     public function orderDetail()

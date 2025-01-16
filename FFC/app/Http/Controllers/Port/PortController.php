@@ -144,8 +144,21 @@ class PortController extends Controller
         ]);
     }
 
-    public function portType()
+    public function portType($id = null)
     {
+        if ($id) {
+            $portType = findModel(PortType::class, $id);
+            // Check if the returned value is a JSON response (meaning the model was not found)
+            if ($portType instanceof \Illuminate\Http\JsonResponse) {
+                return $portType;  // Return the not found response
+            }
+            $portType = Port::with(['portType', 'portTerminals'])->where('port_type_id', $id)->get();
+            if (!$portType) {
+                return response()->json(['status' => false, 'message' => 'PortType not found'], 404);
+            }
+            return response()->json(['status' => true, 'data' => $portType], 200);
+        }
+
         $portType = PortType::all();
         return response()->json(['status' => true, 'data' => $portType], 200);
     }
@@ -276,5 +289,17 @@ class PortController extends Controller
         $port = $this->portService->getAllPort($request);
         // Export to Excel
         return Excel::download(new PortExport($port), 'Export_Port_' . date('YmdHis') . '.xlsx');
+    }
+
+
+    /**
+     * Get Port Type wise data
+     */
+
+    public function getPortDataByPortType($id)
+    {
+        $ports = $this->portService->getAllPort($id);
+        // $ports = Port::paginate(10);
+        return response()->json(['status' => true, 'data' => $ports], 200);
     }
 }

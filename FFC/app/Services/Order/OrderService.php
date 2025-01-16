@@ -348,6 +348,10 @@ class OrderService
                         'vessel_loaded_date' => $detail['vesselLoadedDate'] ?? null,
                         'consolidator_address' => $detail['consolidatorAddress'] ?? null,
                         'ein' => $detail['ein'] ?? null,
+                        'inco' => $detail['inco'] ?? null,
+                        'customer_rate' => $detail['customerRate'] ?? null,
+                        'pallet_dimensions' => $detail['palletDimensions'] ?? null,
+                        'cubic_meter' => $detail['cubicMeter'] ?? null,
                     ];
 
                     if ($detail['isOrderDetailsRequest'] === 'insert') {
@@ -403,6 +407,7 @@ class OrderService
                                     'delivery_created_by' => $delivery['deliveryCreatedBy'] ?? null,
                                     'ignate_cutoff_date' => $delivery['ignateCutoffDate'] ?? null,
                                     'country_of_origin' => $delivery['countryOfOrigin'] ?? null,
+                                    'rail_ramp_id' => $delivery['railRampId'] ?? null,
                                 ];
                                 if ($delivery['isRequestType'] === 'insert') {
                                     Log::info("Order Delivery is being created...");
