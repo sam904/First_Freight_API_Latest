@@ -10,7 +10,15 @@
 <body style="font-family: Arial, sans-serif; font-size: 12px; margin: 0; padding: 0;">
     @php
         $quoteId = $data['id'] ?? null;
-        $generated_date = \Carbon\Carbon::parse($data['created_at'])->format('m-d-Y');
+        $generated_date = isset($data['created_at'])
+            ? \Carbon\Carbon::parse($data['created_at'])->format('m/d/Y')
+            : null;
+
+        $validity = isset($data['created_at'])
+            ? \Carbon\Carbon::parse($data['created_at'])
+                ->addDays(15)
+                ->format('m/d/Y')
+            : null;
         $perPage = 16; // Number of rows per page
         $quoteDetailsArray = $data['quoteDetails']->load('portOfLoading', 'destination')->toArray();
         $chunks = array_chunk($quoteDetailsArray, $perPage); // Split data into chunks
@@ -55,7 +63,7 @@
                 </tr>
                 <tr>
                     <th style="padding: 5px; text-align: left; font-weight: normal;">Validity</th>
-                    <td style="padding: 5px; text-align: left;">?</td>
+                    <td style="padding: 5px; text-align: left;">{{ $validity }}</td>
                 </tr>
             </table>
         </div>

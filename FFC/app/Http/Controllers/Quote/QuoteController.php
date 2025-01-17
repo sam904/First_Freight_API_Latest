@@ -736,7 +736,7 @@ class QuoteController extends Controller
 
             return response()->streamDownload(
                 fn() => print($dompdf->output()),
-                'delivery_order.pdf',
+                'quote_pdf.pdf',
                 [
                     'Content-Type' => 'application/pdf',
                     'Content-Disposition' => 'attachment; filename="quote_pdf.pdf"',
