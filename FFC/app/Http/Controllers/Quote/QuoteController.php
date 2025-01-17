@@ -9,6 +9,7 @@ use App\Models\Quote\QuoteNotes;
 use App\Services\Quote\QuoteService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -720,21 +721,59 @@ class QuoteController extends Controller
         Log::info("*****************************");
         Log::info('Quote PDF Downloading...');
         Log::info("*****************************");
-        $data = [
-            'quotes' => [
-                ['port' => 'Baltimore', 'destination' => 'Abingdon', 'dray_fsc' => 12200],
-                ['port' => 'Boston', 'destination' => 'Acworth', 'dray_fsc' => 15000],
-                // Add more quotes as needed
-            ],
-        ];
+        $data = $this->quoteService->getPdfData($id);
+        Log::info($data);
 
-        $pdf = Pdf::loadView('quote/quote_pdf', compact('data'))->setPaper('a4', 'portrait');
-        // return $pdf->stream('quotation.pdf');
-        // Attempt to download
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'quotation.pdf', [
-            'Content-Type' => 'application/pdf',
-        ]);
+        $html = view('quote/quote_pdf', ['data' => $data[0]])->render();
+        if (!empty($html)) {
+            // Load the HTML and pass the data
+            $dompdf = new Dompdf();
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+            // Get the raw PDF content
+            $pdfContent = $dompdf->output();
+
+            return response()->streamDownload(
+                fn() => print($dompdf->output()),
+                'delivery_order.pdf',
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'attachment; filename="quote_pdf.pdf"',
+                ]
+            );
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Html View is empty. So not able to generate PDF'
+            ], 400); // Return error response
+        }
+
+
+        // $data1 = [
+        //     'quotes' => [
+        //         ['port' => 'Baltimore', 'destination' => 'Abingdon', 'dray_fsc' => 12200],
+        //         ['port' => 'dfa', 'destination' => 'dfsd', 'dray_fsc' => 12200],
+        //         // Add more quotes as needed
+        //     ],
+        // ];
+
+        // // $pdf = Pdf::loadView('quote/quote_pdf', compact('data'))->setPaper('a4', 'portrait');
+
+        // // // $pdf = Pdf::loadView('quote/quote_pdf', ['data' => $data[0]])->setPaper('a4', 'portrait');
+        // // // // Attempt to download
+        // // return response()->streamDownload(function () use ($pdf) {
+        // //     echo $pdf->output();
+        // // }, 'quotation.pdf', [
+        // //     'Content-Type' => 'application/pdf',
+        // // ]);
+
+        // // // Encode as Base64
+        // // // $pdfContent = $pdf->output();
+        // // // $base64Pdf = base64_encode($pdfContent);
+        // // // return response()->json([
+        // // //     'pdf_base64' => $base64Pdf,
+        // // // ]);
+
     }
 }
