@@ -54,6 +54,8 @@ class RateService
                 'destinations.name as destination_name',
                 'service_types.name as serviceTypeName',
                 'freight',
+                'fsc',
+                DB::raw('(COALESCE(freight, 0) + COALESCE(fsc, 0)) as dray_fsc_amount'),
                 'expiry',
                 // DB::raw("DATEDIFF('$today', rates.start_date) as days_passed"),
                 DB::raw("DATE_FORMAT(rates.start_date, '%m/%d/%y') as rate_received"),
