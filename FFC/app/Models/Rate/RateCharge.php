@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class RateCharge extends Model
 {
     use HasFactory;
-    protected $fillable = ['charge_name', 'amount', 'rate_id'];
+    protected $fillable = ['charge_name', 'amount', 'rate_id', 'chacked'];
 
     protected $hidden = ['created_at', 'updated_at'];
 

@@ -1,61 +1,61 @@
 @php
-    $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
-    // Check if orderDetails exists, and then access the related orderContainerDetails
-    $orderDetails = $data['orderDetails'] ?? null;
+$image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
+// Check if orderDetails exists, and then access the related orderContainerDetails
+$orderDetails = $data['orderDetails'] ?? null;
 
-    $shipper = $orderDetails[0]['shipper'] ?? null;
-    $shipper_address = $orderDetails[0]['shipper_address'] ?? null;
-    $consignee = $orderDetails[0]['consignee'] ?? null;
-    $consignee_address = $orderDetails[0]['consignee_address'] ?? null;
-    $buyer = $orderDetails[0]['buyer'] ?? null;
-    $buyer_address = $orderDetails[0]['buyer_address'] ?? null;
-    $notify_party = $orderDetails[0]['notify_party'] ?? null;
-    $hts_code = $orderDetails[0]['hts_code'] ?? null;
-    $commodity = $orderDetails[0]['commodity'] ?? null;
-    $weight = $orderDetails[0]['weight'] ?? null;
-    $ssl = $orderDetails[0]['streamship_line'] ?? null;
-    $etd = $orderDetails[0]['etd'] ?? null;
-    $eta = $orderDetails[0]['eta'] ?? null;
-    $si_cut_off = $orderDetails[0]['si_cut_off'] ?? null;
-    $vgm_cut_off = $orderDetails[0]['vgm_cut_off'] ?? null;
-    $all_inclusive_rate = $orderDetails[0]['all_inclusive_rate'] ?? null;
-    $freight_prepaid = $orderDetails[0]['freight_prepaid'] ?? null;
-    $received_date = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y');
-    // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
-    // $orderContainerDetails1 = $orderDetails
-    // ? $orderDetails->map(function ($orderDetail) {
-    // return $orderDetail->orderContainerDetails;
-    // })
-    // : null;
+$shipper = $orderDetails[0]['shipper'] ?? null;
+$shipper_address = $orderDetails[0]['shipper_address'] ?? null;
+$consignee = $orderDetails[0]['consignee'] ?? null;
+$consignee_address = $orderDetails[0]['consignee_address'] ?? null;
+$buyer = $orderDetails[0]['buyer'] ?? null;
+$buyer_address = $orderDetails[0]['buyer_address'] ?? null;
+$notify_party = $orderDetails[0]['notify_party'] ?? null;
+$hts_code = $orderDetails[0]['hts_code'] ?? null;
+$commodity = $orderDetails[0]['commodity'] ?? null;
+$weight = $orderDetails[0]['weight'] ?? null;
+$ssl = $orderDetails[0]['streamship_line'] ?? null;
+$etd = $orderDetails[0]['etd'] ?? null;
+$eta = $orderDetails[0]['eta'] ?? null;
+$si_cut_off = $orderDetails[0]['si_cut_off'] ?? null;
+$vgm_cut_off = $orderDetails[0]['vgm_cut_off'] ?? null;
+$all_inclusive_rate = $orderDetails[0]['all_inclusive_rate'] ?? null;
+$freight_prepaid = $orderDetails[0]['freight_prepaid'] ?? null;
+$received_date = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y');
+// If orderDetails exists, get the orderContainerDetails for each orderDetails entry
+// $orderContainerDetails1 = $orderDetails
+// ? $orderDetails->map(function ($orderDetail) {
+// return $orderDetail->orderContainerDetails;
+// })
+// : null;
 
-    $orderContainerDetails = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            // Get the first element of the orderContainerDetails array
-            return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
-        })
-        : null;
+$orderContainerDetails = $orderDetails
+? $orderDetails->map(function ($orderDetail) {
+// Get the first element of the orderContainerDetails array
+return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
+})
+: null;
 
-    foreach ($orderContainerDetails as $containerDetails) {
-        $containerNo = $containerDetails['container_no'] ?? null;
-        $containerSize = $containerDetails['container_size'] ?? null;
-        $po = $containerDetails['po'] ?? null;
-    }
+foreach ($orderContainerDetails as $containerDetails) {
+$containerNo = $containerDetails['container_no'] ?? null;
+$containerSize = $containerDetails['container_size'] ?? null;
+$po = $containerDetails['po'] ?? null;
+}
 
-    $orderDeliveries = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            return $orderDetail->deliveries;
-        })
-        : null;
+$orderDeliveries = $orderDetails
+? $orderDetails->map(function ($orderDetail) {
+return $orderDetail->deliveries;
+})
+: null;
 
-    foreach ($orderDeliveries[0] as $delivery) {
-        $scac = $delivery['vendor']['scac_number'] ?? null;
-        $mc = $delivery['vendor']['mc_number'] ?? null;
-        $usdot = $delivery['vendor']['us_dot_number'] ?? null;
-        $transit_time = $delivery['transit_time'] ?? null;
-        $empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'] ?? null;
-        $transhipment_port = $delivery['transhipmentPort']['name'] ?? null;
-        $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
-    }
+foreach ($orderDeliveries[0] as $delivery) {
+$scac = $delivery['vendor']['scac_number'] ?? null;
+$mc = $delivery['vendor']['mc_number'] ?? null;
+$usdot = $delivery['vendor']['us_dot_number'] ?? null;
+$transit_time = $delivery['transit_time'] ?? null;
+$empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'] ?? null;
+$transhipment_port = $delivery['transhipmentPort']['name'] ?? null;
+$ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
+}
 @endphp
 <!DOCTYPE html>
 <html lang="en">

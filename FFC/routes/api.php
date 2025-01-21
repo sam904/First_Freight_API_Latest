@@ -29,6 +29,8 @@ Route::prefix('user')->group(
         Route::controller(AuthController::class)->group(
             function () {
                 Route::post('/login', action: 'login');
+                Route::post('/checkEmailExists', 'checkEmailExists');
+                Route::post('/checkMobileExists', 'checkMobileExists');
                 Route::post('/refresh', 'refreshToken');
                 Route::post('/sendOtp/{id}', 'sendOtp');
                 Route::post('/verifyOtp', 'verifyOtp');

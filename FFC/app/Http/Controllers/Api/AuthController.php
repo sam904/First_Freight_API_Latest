@@ -28,6 +28,62 @@ class AuthController extends Controller
         $this->tokenService = $tokenService;
     }
 
+    public function checkEmailExists(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'email' => 'required|string|email'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->errors()
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Email exists and account is active.'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Email does not exist.'
+        ], 200);
+    }
+
+    public function checkMobileExists(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'mobile_number' => 'required|regex:/^[^a-zA-Z]*$/',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->errors()
+            ], 422);
+        }
+
+        $user = User::where('mobile_number', $request->mobile_number)->first();
+
+        if ($user) {
+            return response()->json([
+                'status' => true,
+                'message' => 'mobile number exists and account is active.'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'mobile number does not exist.'
+        ], 200);
+    }
+
     public function login(Request $request)
     {
         try {

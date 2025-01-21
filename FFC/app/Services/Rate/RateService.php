@@ -44,7 +44,7 @@ class RateService
             ->join('vendors', 'rates.vendor_id', '=', 'vendors.id')
             ->leftJoin('ports as loading_ports', 'rates.port_of_loading_id', '=', 'loading_ports.id') // Left join for port_of_loading_id
             ->leftJoin('ports as discharge_ports', 'rates.port_of_discharge_id', '=', 'discharge_ports.id') // Left join for port_of_discharge_id
-            ->join('destinations', 'rates.destination_id', '=', 'destinations.id')
+            ->leftJoin('destinations', 'rates.destination_id', '=', 'destinations.id')
             ->leftJoin('service_types', 'rates.service_type_id', '=', 'service_types.id')
             ->select(
                 'rates.id as rate_id',
@@ -82,6 +82,7 @@ class RateService
                         END
                     ) as rate_validity"),
                 'rates.status',
+                'rates.fsc',
                 'rates.created_at',
                 'rates.updated_at',
                 'service_types.name as serviceType'
@@ -218,6 +219,7 @@ class RateService
             $charge[] = new RateCharge([
                 'charge_name' => $chargeItem['charge_name'],
                 'amount' => $chargeItem['amount'],
+                'chacked' => $chargeItem['chacked'],
                 'rate_id' => $rate->id
             ]);
         }
@@ -388,7 +390,7 @@ class RateService
             'port:id,name',
             'destination:id,name',
             'serviceType:id,name',
-            'charges:id,charge_name,amount,rate_id',
+            'charges:id,charge_name,amount,rate_id,chacked',
         ]);
         $query->where(function ($query) use ($portFlag, $destinationFlag, $vendorFlag, $serviceTypeFlag, $searchTerm) {
             if ($portFlag) {

@@ -302,6 +302,7 @@ class VendorService
             // 'vendor_type_id' => $request['vendor_type'],
             'company_name' => $request['company_name'],
             'address' => $request['address'],
+            'upload_document' => $request['upload_document'],
             'city' => $request['city'],
             'state_id' => $request['state'],
             'country_id' => $request['country'],
@@ -329,9 +330,9 @@ class VendorService
             'payment_term' => $request['paymentTerm'],
         ]);
 
-        if ($request->hasFile('upload_document')) {
-            $this->uploadImages($request, $vendor);
-        }
+        // if ($request->hasFile('upload_document')) {
+        //     $this->uploadImages($request, $vendor);
+        // }
 
         // Create sales records
         $this->storeSales($request, $vendor);
@@ -362,6 +363,7 @@ class VendorService
             // 'vendor_type_id' => $request['vendor_type'],
             'company_name' => $request['company_name'],
             'address' => $request['address'],
+            'upload_document' => $request['upload_document'],
             'city' => $request['city'],
             'state_id' => $request['state'],
             'country_id' => $request['country'],
@@ -395,9 +397,9 @@ class VendorService
         // Create finance records
         $this->storeFinance($request, $vendor);
 
-        if ($request->hasFile('upload_document')) {
-            $this->uploadImages($request, $vendor);
-        }
+        // if ($request->hasFile('upload_document')) {
+        //     $this->uploadImages($request, $vendor);
+        // }
 
         // Now unlink(delete) image
         if (isset($vendorOldImages['upload_document'])) {
