@@ -162,6 +162,7 @@ class CustomerController extends Controller
             ], 400); // Return error response
         }
     }
+
     public function destroy($customerId)
     {
         // Use the findModel helper to retrieve the customer
@@ -190,6 +191,7 @@ class CustomerController extends Controller
             'message' => 'Customer deleted successfully'
         ], 200);
     }
+
     public function status(Request $request, $customerId)
     {
         // Use the statusUpdate helper to update status
@@ -197,6 +199,7 @@ class CustomerController extends Controller
             'status' => $request->status
         ]);
     }
+
     public function customerValidateData(Request $request, $customerId = null)
     {
         $validator = Validator::make($request->all(), [
@@ -209,6 +212,7 @@ class CustomerController extends Controller
             'zip_code' => 'required|integer',
             // 'company_tax_id' => 'required|string',
             'payment_terms' => 'required|string',
+            'uploadDocuments' => 'nullable|string',
             // 'credit_limit' => 'required|string',
             // 'contact_name' => 'required|string',
             // 'phone' => [

@@ -11,7 +11,7 @@ class Destination extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'county_id', 'state_id', 'country_id', 'status'];
+    protected $fillable = ['name', 'county_id', 'state_id', 'country_id', 'status', 'zip_code'];
 
     protected $hidden  = ['status'];
 

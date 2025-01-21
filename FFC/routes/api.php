@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Common\SuggestionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Common\CommonController;
+use App\Http\Controllers\Common\ReceiverDetailsController;
 use App\Http\Controllers\Common\ServiceTypeController;
 use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Destination\DestinationController;
@@ -141,11 +143,33 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
             }
         );
 
+        Route::prefix('common/suggestion')->group(
+            function () {
+                Route::controller(SuggestionController::class)->group(function () {
+                    Route::get('/customer', 'getSuggestionCustomer');
+                    Route::post('/customer', 'storeSuggestionCustomer');
+                    Route::get('/address', 'getSuggestionAddress');
+                    Route::post('/address', 'storeSuggestionAddress');
+                });
+            }
+        );
+
+        Route::prefix('common/receiver')->group(
+            function () {
+                Route::controller(ReceiverDetailsController::class)->group(function () {
+                    Route::get('/name', 'getReceiverName');
+                    Route::post('/saveReceiverName', 'storeReceiverName');
+                    Route::get('/address', 'getReceiverAddress');
+                    Route::post('/saveReceiverAddress', 'storeReceiverAddress');
+                });
+            }
+        );
+
         //Port
         Route::prefix('port')->group(
             function () {
                 Route::controller(PortController::class)->group(function () {
-                    Route::get('/port-type', 'portType');
+                    Route::get('/port-type/{id?}', 'portType');
                     Route::post('/index', 'index')->middleware(CheckPermission::class . ':Port,can_view');
                     Route::post('/save', 'store')->middleware(CheckPermission::class . ':Port,can_create');
                     Route::get('/edit/{id}', 'edit')->middleware(CheckPermission::class . ':Port,can_edit');

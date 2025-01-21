@@ -2,6 +2,8 @@
 
 namespace App\Models\Order;
 
+use App\Models\Common\ReceiverAddress;
+use App\Models\Common\ReceiverName;
 use App\Models\Common\ServiceType;
 use App\Models\Destination\Destination;
 use App\Models\Port\Port;
@@ -33,6 +35,9 @@ class OrderDelivery extends Model
         'delivery_created_by',
         'country_of_origin',
         'ignate_cutoff_date',
+        'rail_ramp_id',
+        'receiver_name_id',
+        'receiver_address_id',
     ];
 
     public function orderDetail()
@@ -78,5 +83,18 @@ class OrderDelivery extends Model
     public function latestStatus()
     {
         return $this->hasOne(OrderDeliveryStatus::class)->latest('created_at');
+    }
+
+    public function railRamp()
+    {
+        return $this->belongsTo(Port::class, 'rail_ramp_id');
+    }
+    public function receiverName()
+    {
+        return $this->belongsTo(ReceiverName::class, 'receiver_name_id');
+    }
+    public function receiverAddress()
+    {
+        return $this->belongsTo(ReceiverAddress::class, 'receiver_address_id');
     }
 }

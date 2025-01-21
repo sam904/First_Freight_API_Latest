@@ -70,6 +70,11 @@ class OrderDetails extends Model
         'mother_vessel_date',
         'vessel_loaded_date',
         'consolidator_address',
+        'ein',
+        'inco',
+        'customer_rate',
+        'pallet_dimensions',
+        'cubic_meter',
     ];
 
     public function order()

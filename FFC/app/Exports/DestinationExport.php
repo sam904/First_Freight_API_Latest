@@ -31,7 +31,8 @@ class DestinationExport implements FromArray, WithHeadings, WithCustomStartCell,
             [
                 'City',
                 'State',
-                'Country'
+                'Country',
+                'ZipCode',
             ]
         ];
     }
@@ -47,6 +48,7 @@ class DestinationExport implements FromArray, WithHeadings, WithCustomStartCell,
                 $destination->city,
                 $destination->state,
                 $destination->country,
+                $destination->zip_code,
             ];
         }, $destinations) : []; // Convert to array if necessary
     }
@@ -58,7 +60,7 @@ class DestinationExport implements FromArray, WithHeadings, WithCustomStartCell,
         $sheet->getRowDimension(1)->setRowHeight(24); // Set the height of the first header row
 
         // Style the first header row (e.g., background color and bold font)
-        $sheet->getStyle('A1:C1')->applyFromArray([
+        $sheet->getStyle('A1:D1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['argb' => '000000'], // White font

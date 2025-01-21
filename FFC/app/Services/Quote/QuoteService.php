@@ -47,7 +47,8 @@ class QuoteService
             // 'quoteDetails.charges:quote_detail_id,charge_name,amount',
             'quoteDetails.rate:id,start_date',
             'quoteDetails.serviceType:id,name'
-        ])->withCount('quoteDetails as routes') // Route count
+        ])
+            ->withCount('quoteDetails as routes') // Route count
             ->withSum('quoteDetails as totalAmount', 'dry_fsc'); // Total dry FSC
 
         // Apply filter by IDs if they are provided
@@ -271,5 +272,24 @@ class QuoteService
             "user_id" =>  $this->loginUser->id,
         ]);
         return true;
+    }
+
+    public function getPdfData($id)
+    {
+        $query = Quote::with([
+            'customer:id,company_name',  // Load customer and only select 'id' and 'company_name'
+            'user:id,first_name,last_name,profile_image',
+            'quoteDetails.rate:id,start_date,vendor_id,port_of_loading_id,port_of_discharge_id,destination_id',
+            'quoteDetails.portOfLoading:id,name',
+            'quoteDetails.portOfDischarge:id,name',
+            'quoteDetails.destination:id,name',  // Load destination inside quoteDetails and select only 'id' and 'name'
+            'quoteDetails.rate:id,start_date',
+            'quoteDetails.serviceType:id,name'
+        ]);
+
+        // Apply filter by IDs if they are provided
+        $query->where('id', $id);
+
+        return $query->get();
     }
 }

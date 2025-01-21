@@ -317,6 +317,7 @@ class CustomerService
             'company_tax_id' => $request['company_tax_id'] ?? null,
             'payment_terms' => $request['payment_terms'],
             'credit_limit' => $request['credit_limit'] ?? null,
+            'upload_document' => $request['uploadDocuments'] ?? null,
             // 'contact_name' => $request['contact_name'],
             // 'phone' => $request['phone'],
             // 'email' => $request['email'],
@@ -341,7 +342,6 @@ class CustomerService
         return true;
     }
 
-
     public function updateCustomer(Request $request, $id, Customer $customer)
     {
         // Delete existing related records
@@ -362,6 +362,7 @@ class CustomerService
             'company_tax_id' => $request['company_tax_id'] ?? null,
             'payment_terms' => $request['payment_terms'],
             'credit_limit' => $request['credit_limit'] ?? null,
+            'upload_document' => $request['uploadDocuments'] ?? null,
             // 'contact_name' => $request['contact_name'],
             // 'phone' => $request['phone'],
             // 'email' => $request['email'],

@@ -55,6 +55,9 @@ class OrderService
                             'vendor:id,company_name',
                             'transhipmentPort:id,name',
                             'createdBy:id,first_name,last_name',
+                            'railRamp:id,name',
+                            'receiverName:id,name',
+                            'receiverAddress:id,address',
                             'statuses' => function ($query) {
                                 $query->with([
                                     'deliveryStatus:id,name'
@@ -97,6 +100,21 @@ class OrderService
                         ->orWhere('po', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('cpo', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('overweight', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in receiverName within deliveries
+                $query->orWhereHas('orderDetails.deliveries.receiverName', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in receiverAddress within deliveries
+                $query->orWhereHas('orderDetails.deliveries.receiverAddress', function ($q) use ($searchTerm) {
+                    $q->where('address', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in railRamp within deliveries
+                $query->orWhereHas('orderDetails.deliveries.railRamp', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
                 });
 
                 // Search in portOfLoading within deliveries
@@ -347,6 +365,11 @@ class OrderService
                         'mother_vessel_date' => $detail['motherVesselDate'] ?? null,
                         'vessel_loaded_date' => $detail['vesselLoadedDate'] ?? null,
                         'consolidator_address' => $detail['consolidatorAddress'] ?? null,
+                        'ein' => $detail['ein'] ?? null,
+                        'inco' => $detail['inco'] ?? null,
+                        'customer_rate' => $detail['customerRate'] ?? null,
+                        'pallet_dimensions' => $detail['palletDimensions'] ?? null,
+                        'cubic_meter' => $detail['cubicMeter'] ?? null,
                     ];
 
                     if ($detail['isOrderDetailsRequest'] === 'insert') {
@@ -374,10 +397,10 @@ class OrderService
 
 
                     // Documement Upload
-                    if (!empty($detail['uploadDocuments'])) {
-                        Log::info("Order Documents are uploading...");
-                        $this->uploadImages($detail['uploadDocuments'], $order, $orderDetail);
-                    }
+                    // if (!empty($detail['uploadDocuments'])) {
+                    //     Log::info("Order Documents are uploading...");
+                    //     $this->uploadImages($detail['uploadDocuments'], $order, $orderDetail);
+                    // }
 
                     // Handle deliveryDetails
                     if (!empty($detail['deliveries'])) {
@@ -402,6 +425,9 @@ class OrderService
                                     'delivery_created_by' => $delivery['deliveryCreatedBy'] ?? null,
                                     'ignate_cutoff_date' => $delivery['ignateCutoffDate'] ?? null,
                                     'country_of_origin' => $delivery['countryOfOrigin'] ?? null,
+                                    'rail_ramp_id' => $delivery['railRampId'] ?? null,
+                                    'receiver_name_id' => $delivery['receiverNameId'] ?? null,
+                                    'receiver_address_id' => $delivery['receiverAddressId'] ?? null,
                                 ];
                                 if ($delivery['isRequestType'] === 'insert') {
                                     Log::info("Order Delivery is being created...");

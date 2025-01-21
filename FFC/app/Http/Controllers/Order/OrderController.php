@@ -128,6 +128,9 @@ class OrderController extends Controller
                                 'vendor:id,company_name',
                                 'transhipmentPort:id,name',
                                 'createdBy:id,first_name,last_name',
+                                'railRamp:id,name',
+                                'receiverName:id,name',
+                                'receiverAddress:id,address',
                                 'statuses' => function ($query) {
                                     // $query->latest('created_at')->limit(1);
                                     $query->with([
@@ -307,6 +310,7 @@ class OrderController extends Controller
             // 'order_details.pierpassFees' => 'required|in:Yes,No',
             // 'order_details.cleanTruckFees' => 'required|in:Yes,No',
             // 'order_details.accessorialCharges' => 'required|in:Yes,No',
+            // 'order_details.ein' => 'required|string',
         ]);
 
         // Check if validation fails
@@ -550,9 +554,12 @@ class OrderController extends Controller
         Log::info($serviceData);
         Log::info("PDF DATA => " . $data[0]);
         // $html = view('order/Trucking', compact('data'))->render();
-        if (isset($serviceData['id']) && ($serviceData['id'] == 1 || $serviceData['id'] == 2 || $serviceData['id'] == 5)) {
+        if (isset($serviceData['id']) && ($serviceData['id'] == 1 || $serviceData['id'] == 5)) {
             Log::info("Getting view for Trucking Template");
             $html = view('order/Trucking', ['data' => $data[0]])->render();
+        } else if (isset($serviceData['id']) && ($serviceData['id'] == 2)) {
+            Log::info("Getting view for Transload Template");
+            $html = view('order/Transload', ['data' => $data[0]])->render();
         } else if (isset($serviceData['id']) && ($serviceData['id'] == 3 || $serviceData['id'] == 4)) {
             Log::info("Getting view for Ocean Template");
             $html = view('order/Ocean', ['data' => $data[0]])->render();

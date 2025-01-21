@@ -1,61 +1,61 @@
 @php
-$image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
-// Check if orderDetails exists, and then access the related orderContainerDetails
-$orderDetails = $data['orderDetails'] ?? null;
+    $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
+    // Check if orderDetails exists, and then access the related orderContainerDetails
+    $orderDetails = $data['orderDetails'] ?? null;
 
-$shipper = $orderDetails[0]['shipper'] ?? null;
-$shipper_address = $orderDetails[0]['shipper_address'] ?? null;
-$consignee = $orderDetails[0]['consignee'] ?? null;
-$consignee_address = $orderDetails[0]['consignee_address'] ?? null;
-$buyer = $orderDetails[0]['buyer'] ?? null;
-$buyer_address = $orderDetails[0]['buyer_address'] ?? null;
-$notify_party = $orderDetails[0]['notify_party'] ?? null;
-$hts_code = $orderDetails[0]['hts_code'] ?? null;
-$commodity = $orderDetails[0]['commodity'] ?? null;
-$weight = $orderDetails[0]['weight'] ?? null;
-$ssl = $orderDetails[0]['streamship_line'] ?? null;
-$etd = $orderDetails[0]['etd'] ?? null;
-$eta = $orderDetails[0]['eta'] ?? null;
-$si_cut_off = $orderDetails[0]['si_cut_off'] ?? null;
-$vgm_cut_off = $orderDetails[0]['vgm_cut_off'] ?? null;
-$all_inclusive_rate = $orderDetails[0]['all_inclusive_rate'] ?? null;
-$freight_prepaid = $orderDetails[0]['freight_prepaid'] ?? null;
-$received_date = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y');
-// If orderDetails exists, get the orderContainerDetails for each orderDetails entry
-// $orderContainerDetails1 = $orderDetails
-// ? $orderDetails->map(function ($orderDetail) {
-// return $orderDetail->orderContainerDetails;
-// })
-// : null;
+    $shipper = $orderDetails[0]['shipper'] ?? null;
+    $shipper_address = $orderDetails[0]['shipper_address'] ?? null;
+    $consignee = $orderDetails[0]['consignee'] ?? null;
+    $consignee_address = $orderDetails[0]['consignee_address'] ?? null;
+    $buyer = $orderDetails[0]['buyer'] ?? null;
+    $buyer_address = $orderDetails[0]['buyer_address'] ?? null;
+    $notify_party = $orderDetails[0]['notify_party'] ?? null;
+    $hts_code = $orderDetails[0]['hts_code'] ?? null;
+    $commodity = $orderDetails[0]['commodity'] ?? null;
+    $weight = $orderDetails[0]['weight'] ?? null;
+    $ssl = $orderDetails[0]['streamship_line'] ?? null;
+    $etd = $orderDetails[0]['etd'] ?? null;
+    $eta = $orderDetails[0]['eta'] ?? null;
+    $si_cut_off = $orderDetails[0]['si_cut_off'] ?? null;
+    $vgm_cut_off = $orderDetails[0]['vgm_cut_off'] ?? null;
+    $all_inclusive_rate = $orderDetails[0]['all_inclusive_rate'] ?? null;
+    $freight_prepaid = $orderDetails[0]['freight_prepaid'] ?? null;
+    $received_date = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y');
+    // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
+    // $orderContainerDetails1 = $orderDetails
+    // ? $orderDetails->map(function ($orderDetail) {
+    // return $orderDetail->orderContainerDetails;
+    // })
+    // : null;
 
-$orderContainerDetails = $orderDetails
-? $orderDetails->map(function ($orderDetail) {
-// Get the first element of the orderContainerDetails array
-return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
-})
-: null;
+    $orderContainerDetails = $orderDetails
+        ? $orderDetails->map(function ($orderDetail) {
+            // Get the first element of the orderContainerDetails array
+            return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
+        })
+        : null;
 
-foreach ($orderContainerDetails as $containerDetails) {
-$containerNo = $containerDetails['container_no'] ?? null;
-$containerSize = $containerDetails['container_size'] ?? null;
-$po = $containerDetails['po'] ?? null;
-}
+    foreach ($orderContainerDetails as $containerDetails) {
+        $containerNo = $containerDetails['container_no'] ?? null;
+        $containerSize = $containerDetails['container_size'] ?? null;
+        $po = $containerDetails['po'] ?? null;
+    }
 
-$orderDeliveries = $orderDetails
-? $orderDetails->map(function ($orderDetail) {
-return $orderDetail->deliveries;
-})
-: null;
+    $orderDeliveries = $orderDetails
+        ? $orderDetails->map(function ($orderDetail) {
+            return $orderDetail->deliveries;
+        })
+        : null;
 
-foreach ($orderDeliveries[0] as $delivery) {
-$scac = $delivery['vendor']['scac_number'] ?? null;
-$mc = $delivery['vendor']['mc_number'] ?? null;
-$usdot = $delivery['vendor']['us_dot_number'] ?? null;
-$transit_time = $delivery['transit_time'] ?? null;
-$empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'] ?? null;
-$transhipment_port = $delivery['transhipmentPort']['name'] ?? null;
-$ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
-}
+    foreach ($orderDeliveries[0] as $delivery) {
+        $scac = $delivery['vendor']['scac_number'] ?? null;
+        $mc = $delivery['vendor']['mc_number'] ?? null;
+        $usdot = $delivery['vendor']['us_dot_number'] ?? null;
+        $transit_time = $delivery['transit_time'] ?? null;
+        $empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'] ?? null;
+        $transhipment_port = $delivery['transhipmentPort']['name'] ?? null;
+        $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -87,56 +87,63 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
       background-color: #f9f9f9;
     ">
     <div class="delivery-order" style="max-width: 100%; margin: 0 auto; padding: 10px">
-        <header style="border-bottom: 2px solid #000; padding: 10px;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                    <!-- Left Section -->
-                    <td style="width: 85px; vertical-align: top; padding-right: 10px;">
-                        <div style="width: 100px; height: 90px;">
-                            <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo" class="logo"
-                                style="width: 85px; height: 61px; margin-bottom: 10px;" />
-                        </div>
-                        <h1 style="font-size: 14px; margin: 0;">Delivery Order</h1>
-                    </td>
-
-                    <!-- Right Section -->
-                    <td style="width: 70%; vertical-align: top; text-align: right; padding-left: 10px;">
-                        <div style="font-size: 12px; line-height: 1.4;">
-                            <p style="margin: 0 0 8px 0;"><strong>SCAC:</strong> {{ $scac }}</p>
-                            <p style="margin: 0 0 8px 0;"><strong>USDOT #:</strong> {{ $usdot }}</p>
-                            <p style="margin: 0 0 8px 0;"><strong>MC #:</strong> {{ $mc }}</p>
-                            <p style="margin: 0 0 8px 0;">
-                                <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
-                            </p>
-                            <p style="margin: 5px 0; font-weight: 700; line-height: 1.6;">
-                                Ocean Freight | Customs Filing | Trucking | Transload | Warehousing
-                            </p>
-                        </div>
-                    </td>
-                </tr>
-            </table>
+        <header
+            style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          color: rgb(5, 5, 5);
+          padding: 5px;
+          border-bottom: 2px solid #7c7979;
+        ">
+            <div class="header-left">
+                <img src="data:image/jpeg;base64,{{ $image }}" alt="FFC Logo" class="logo"
+                    style="width: 120px; height: auto" />
+                <h1 style="font-size: 24px; margin: 0">Delivery Order</h1>
+            </div>
+            <div class="header-right">
+                <p style="text-align: right; font-size: 12px">
+                    <strong>SCAC:</strong> {{ $scac }}
+                </p>
+                <p style="text-align: right; font-size: 12px">
+                    <strong>USDOT #:</strong> {{ $usdot }}
+                </p>
+                <p style="text-align: right; font-size: 12px">
+                    <strong>MC #:</strong> {{ $mc }}
+                </p>
+                <p style="text-align: right; font-size: 12px">
+                    <a href="https://www.firstfreightcarriers.com">www.firstfreightcarriers.com</a>
+                </p>
+                <p style="font-size: 12px; font-weight: bold">
+                    Ocean Freight | Customs Filing | Trucking | Transload | Warehousing
+                </p>
+            </div>
         </header>
 
         <section class="order-info" style="margin-top: 20px; border-bottom: 2px solid #7c7979">
-            <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
-                <tr>
-                    <!-- Forwarder Section -->
-                    <td style="flex: 1; vertical-align: middle;">
-                        <p style="font-size: 12px; margin: 5px 0;">
-                            <strong>Forwarder:</strong> City Ocean Logistics
-                        </p>
-                    </td>
-                    <!-- Date Section -->
-                    <td style="text-align: right; vertical-align: middle;">
-                        <p style="text-align: end;">
-                            <span style="padding: 10px; background-color: #1976D20F; "><strong>Date:</strong>
-                                {{ $received_date }}
-                            </span>
-                        </p>
-                    </td>
-                </tr>
-            </table>
-
+            <div
+                style="
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+          ">
+                <div style="flex: 1">
+                    <p style="font-size: 12px; margin: 5px 0">
+                        <strong>Forwarder :</strong> City Ocean Logistics
+                    </p>
+                </div>
+                <div style="text-align: right">
+                    <p
+                        style="
+                border: 1px solid #ddd;
+                /* padding: 8px; */
+                text-align: left;
+                background-color: rgb(221, 238, 240);
+              ">
+                        <strong>Date:</strong> {{ $received_date }}
+                    </p>
+                </div>
+            </div>
             <br />
         </section>
 
@@ -152,7 +159,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             <strong>Lane</strong>
                         </th>
@@ -164,7 +171,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             <strong>Container</strong>
                         </th>
@@ -178,7 +185,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             <strong>SSL/Vessel</strong>
                         </th>
@@ -190,7 +197,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             <strong>ETD</strong>
                         </th>
@@ -200,7 +207,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             ETA
                         </th>
@@ -212,7 +219,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             <strong>Transit Time</strong>
                         </th>
@@ -222,7 +229,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             <strong>Empty pick up cutoff date</strong>
                         </th>
@@ -232,7 +239,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             Ingate cutoff date
                         </th>
@@ -244,7 +251,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             <strong>SI Cutoff</strong>
                         </th>
@@ -254,7 +261,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             <strong>Transhipment Port</strong>
                         </th>
@@ -264,7 +271,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             VGM cutoff date
                         </th>
@@ -276,7 +283,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             <strong>All Inclusive Rate</strong>
                         </th>
@@ -286,7 +293,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             <strong>Freight</strong>
                         </th>
@@ -296,7 +303,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
-                  background-color: #1976D20F;
+                  background-color: rgb(221, 238, 240);
                 ">
                             BL to be submitted at origin
                         </th>
@@ -313,14 +320,14 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
           align-items: flex-start;
         ">
             <!-- Left Table -->
-            <table border="1" style="width: 100%; border-collapse: collapse; margin: 0">
+            <table border="1" style="width: 50%; border-collapse: collapse; margin: 0">
                 <tr>
                     <th rowspan="2"
                         style="
                 width: 30%;
                 padding: 8px;
                 text-align: left;
-                background-color: #1976D20F;
+                background-color: rgb(221, 238, 240);
                 border: 1px solid #ddd;
               ">
                         Shipper
@@ -334,12 +341,149 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
               ">
                         {{ $shipper }}
                     </td>
+                </tr>
+                <tr>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        {{ $shipper_address }}
+                    </td>
+                </tr>
+                {{-- <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr>
+                <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr> --}}
+                <tr>
+                    <th rowspan="2"
+                        style="
+                width: 20%;
+                padding: 8px;
+                text-align: left;
+                background-color: rgb(221, 238, 240);
+                border: 1px solid #ddd;
+              ">
+                        Buyer
+                    </th>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        {{ $buyer }}
+                    </td>
+                </tr>
+                <tr>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        {{ $buyer_address }}
+                    </td>
+                </tr>
+                {{-- <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr>
+                <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr> --}}
+                <tr>
+                    <th
+                        style="
+                width: 20%;
+                padding: 8px;
+                text-align: left;
+                background-color: rgb(221, 238, 240);
+                border: 1px solid #ddd;
+              ">
+                        HTS Code
+                    </th>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        {{ $hts_code }}
+                    </td>
+                </tr>
+                <tr>
+                    <th
+                        style="
+                width: 20%;
+                padding: 8px;
+                text-align: left;
+                background-color: rgb(221, 238, 240);
+                border: 1px solid #ddd;
+              ">
+                        Commodity
+                    </th>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        {{ $commodity }}
+                    </td>
+                </tr>
+                <tr>
+                    <th
+                        style="
+                width: 20%;
+                padding: 8px;
+                text-align: left;
+                background-color: rgb(221, 238, 240);
+                border: 1px solid #ddd;
+              ">
+                        Container Size
+                    </th>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        {{ $containerSize }}
+                    </td>
+                </tr>
+                <tr>
+                    <th
+                        style="
+                width: 20%;
+                padding: 8px;
+                text-align: left;
+                background-color: rgb(221, 238, 240);
+                border: 1px solid #ddd;
+              ">
+                        Weight
+                    </th>
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        {{ $weight }}
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Right Table -->
+            <table border="1" style="width: 50%; border-collapse: collapse; margin: 0">
+                <tr>
                     <th rowspan="2"
                         style="
                 width: 30%;
                 padding: 8px;
                 text-align: left;
-                background-color: #1976D20F;
+                background-color: rgb(221, 238, 240);
                 border: 1px solid #ddd;
               ">
                         Consignee
@@ -362,66 +506,18 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        {{ $shipper_address }}
-                    </td>
-                    <td
-                        style="
-                width: 80%;
-                padding: 8px;
-                text-align: left;
-                border: 1px solid #ddd;
-              ">
                         {{ $consignee_address }}
                     </td>
                 </tr>
-                {{-- <tr>
-                    <td
-                        style="
-                width: 80%;
-                padding: 8px;
-                text-align: left;
-                border: 1px solid #ddd;
-              ">
-                        TAIPEI
-                    </td>
-                </tr>
+                {{-- <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr>
+                <tr><td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">?</td></tr> --}}
                 <tr>
-                    <td
-                        style="
-                width: 80%;
-                padding: 8px;
-                text-align: left;
-                border: 1px solid #ddd;
-              ">
-                        Taiwan
-                    </td>
-                </tr> --}}
-                <tr>
-                    <th rowspan="2"
-                        style="
-                width: 20%;
-                padding: 8px;
-                text-align: left;
-                background-color: #1976D20F;
-                border: 1px solid #ddd;
-              ">
-                        Buyer
-                    </th>
-                    <td
-                        style="
-                width: 80%;
-                padding: 8px;
-                text-align: left;
-                border: 1px solid #ddd;
-              ">
-                        {{ $buyer }}
-                    </td>
                     <th rowspan="4"
                         style="
                 width: 20%;
                 padding: 8px;
                 text-align: left;
-                background-color: #1976D20F;
+                background-color: rgb(221, 238, 240);
                 border: 1px solid #ddd;
               ">
                         Notify Party
@@ -437,25 +533,16 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                     </td>
                 </tr>
                 <tr>
-                    <td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">
-                        {{ $buyer_address }}
-                    </td>
-                    <td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">
+                    <td
+                        style="
+                width: 80%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
                         42619 Windflower Dr, Ashburn, VA 20148
                     </td>
                 </tr>
-
-                {{-- <tr>
-                    <td
-                        style="
-                width: 80%;
-                padding: 8px;
-                text-align: left;
-                border: 1px solid #ddd;
-              ">
-                        Tampa, FL 33619
-                    </td>
-                </tr>
                 <tr>
                     <td
                         style="
@@ -464,32 +551,10 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        USA
-                    </td>
-                </tr> --}}
-                <tr>
-                    <th
-                        style="width: 20%;padding: 8px;text-align: left;background-color: #1976D20F;border: 1px solid #ddd;">
-                        HTS Code
-                    </th>
-                    <td style="width: 80%; padding: 8px; text-align: left; border: 1px solid #ddd; ">
-                        {{ $hts_code }}
-                    </td>
-                    <td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">
                         dispatch@firstfreightcarriers.com
                     </td>
                 </tr>
                 <tr>
-                    <th
-                        style="
-                width: 20%;
-                padding: 8px;
-                text-align: left;
-                background-color: #1976D20F;
-                border: 1px solid #ddd;
-              ">
-                        Commodity
-                    </th>
                     <td
                         style="
                 width: 80%;
@@ -497,117 +562,31 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                 text-align: left;
                 border: 1px solid #ddd;
               ">
-                        {{ $commodity }}
-                    </td>
-                    <td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">
                         dispatch@firstfreightcarriers.com
                     </td>
                 </tr>
                 <tr>
-                    <th
-                        style="
-                width: 20%;
-                padding: 8px;
-                text-align: left;
-                background-color: #1976D20F;
-                border: 1px solid #ddd;
-              ">
-                        Container Size
-                    </th>
-                    <td
-                        style="
-                width: 80%;
-                padding: 8px;
-                text-align: left;
-                border: 1px solid #ddd;
-              ">
-                        {{ $containerSize }}
-                    </td>
                     <th
                         style="
                 width: 30%;
                 padding: 8px;
                 text-align: left;
-                background-color: #1976D20F;
+                background-color: rgb(221, 238, 240);
                 border: 1px solid #ddd;
               ">
                         PO #/Proforma #
                     </th>
-                    <td style="width: 70%; padding: 8px; text-align: left; border: 1px solid #ddd; ">
-                        242322
+                    <td
+                        style="
+                width: 70%;
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+              ">
+                        {{ $po }}
                     </td>
-                </tr>
-                <tr>
-                    <th
-                        style="width: 20%; padding: 8px; text-align: left; background-color: #1976D20F; border: 1px solid #ddd;">
-                        Weight
-                    </th>
-                    <th style="width: 80%; padding: 8px; text-align: left;  border: 1px solid #ddd;">
-                        {{ $weight }}
-                    </th>
                 </tr>
             </table>
-
-            <!-- Right Table -->
-            {{-- <table border="1" style="width: 50%; border-collapse: collapse; margin: 0">
-                <tr>
-                    <th rowspan="2"
-                        style=" width: 30%;padding: 8px;text-align: left;background-color: #1976D20F;border: 1px solid #ddd;">
-                        Consignee
-                    </th>
-                    <td style=" width: 70%; padding: 8px; text-align: left; border: 1px solid #ddd;">
-                        {{ $consignee }}
-                    </td>
-                </tr>
-                <tr>
-                    <td style=" width: 80%; padding: 8px; text-align: left; border: 1px solid #ddd; ">
-                        {{ $consignee_address }}
-                    </td>
-                </tr>
-                <tr>
-                    <td style="  width: 80%; padding: 8px; text-align: left; border: 1px solid #ddd; ">
-                        Tampa, FL 33619
-                    </td>
-                </tr>
-                <tr>
-                    <td style=" width: 80%; padding: 8px; text-align: left; border: 1px solid #ddd; ">
-                        USA
-                    </td>
-                </tr>
-                <tr>
-                    <th rowspan="4"
-                        style="width: 20%; padding: 8px; text-align: left; background-color: #1976D20F; border: 1px solid #ddd; ">
-                        Notify Party
-                    </th>
-                    <td style=" width: 80%; padding: 8px; text-align: left; border: 1px solid #ddd; ">
-                        First Freight Carriers
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width: 80%; padding: 8px; text-align: left; border: 1px solid #ddd; ">
-                        42619 Windflower Dr, Ashburn, VA 20148
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width: 80%;padding: 8px;text-align: left;border: 1px solid #ddd;">
-                        dispatch@firstfreightcarriers.com
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width: 80%; padding: 8px; text-align: left; border: 1px solid #ddd;">
-                        dispatch@firstfreightcarriers.com
-                    </td>
-                </tr>
-                <tr>
-                    <th
-                        style="width: 30%; padding: 8px; text-align: left; background-color: #1976D20F; border: 1px solid #ddd; ">
-                        PO #/Proforma #
-                    </th>
-                    <td style="width: 70%; padding: 8px; text-align: left; border: 1px solid #ddd; ">
-                        242322
-                    </td>
-                </tr>
-            </table> --}}
         </div>
 
         <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
@@ -619,7 +598,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
-                background-color: #1976D20F;
+                background-color: rgb(221, 238, 240);
               ">
                         <strong>Bill To:</strong>
                     </th>
@@ -641,7 +620,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                 border: 1px solid #ddd;
                 padding: 8px;
                 text-align: center;
-                background-color: #1976D20F;
+                background-color: rgb(221, 238, 240);
               ">
                         <strong>Email Invoice to</strong>
                     </th>
