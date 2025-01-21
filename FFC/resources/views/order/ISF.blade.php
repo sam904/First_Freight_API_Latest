@@ -1,53 +1,55 @@
 @php
-    $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
-    $orderDetails = $data['orderDetails'] ?? null;
-    $master_bl = $orderDetails[0]['master_bl'] ?? '';
-    $house_bl = $orderDetails[0]['house_bl'] ?? '';
-    $vessel_loaded_date = $orderDetails[0]['vessel_loaded_date'] ?? '';
-    $mother_vessel_date = $orderDetails[0]['mother_vessel_date'] ?? '';
-    $etd = $orderDetails[0]['etd'] ?? '';
-    $eta = $orderDetails[0]['eta'] ?? '';
-    $shipper = $orderDetails[0]['shipper'] ?? '';
-    $shipper_address = $orderDetails[0]['shipper_address'] ?? '';
-    $buyer = $orderDetails[0]['buyer'] ?? '';
-    $buyer_address = $orderDetails[0]['buyer_address'] ?? '';
-    $consignee = $orderDetails[0]['consignee'] ?? '';
-    $consignee_address = $orderDetails[0]['consignee_address'] ?? '';
-    $manufacturer = $orderDetails[0]['manufacturer'] ?? '';
-    $manufacturer_address = $orderDetails[0]['manufacturer_address'] ?? '';
-    $ship_to_party = $orderDetails[0]['ship_to_party'] ?? '';
-    $ship_to_party_address = $orderDetails[0]['ship_to_party_address'] ?? '';
-    $consolidator = $orderDetails[0]['consolidator'] ?? '';
-    $consolidator_address = $orderDetails[0]['consolidator_address'] ?? '';
-    $received_date = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y');
-    // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
-    $orderContainerDetails = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            return $orderDetail->orderContainerDetails;
-        })
-        : null;
+$image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
+$orderDetails = $data['orderDetails'] ?? null;
+$master_bl = $orderDetails[0]['master_bl'] ?? '';
+$house_bl = $orderDetails[0]['house_bl'] ?? '';
+$vessel_loaded_date = $orderDetails[0]['vessel_loaded_date'] ?? '';
+$mother_vessel_date = $orderDetails[0]['mother_vessel_date'] ?? '';
+$etd = $orderDetails[0]['etd'] ?? '';
+$eta = $orderDetails[0]['eta'] ?? '';
+$shipper = $orderDetails[0]['shipper'] ?? '';
+$shipper_address = $orderDetails[0]['shipper_address'] ?? '';
+$buyer = $orderDetails[0]['buyer'] ?? '';
+$buyer_address = $orderDetails[0]['buyer_address'] ?? '';
+$consignee = $orderDetails[0]['consignee'] ?? '';
+$consignee_address = $orderDetails[0]['consignee_address'] ?? '';
+$manufacturer = $orderDetails[0]['manufacturer'] ?? '';
+$manufacturer_address = $orderDetails[0]['manufacturer_address'] ?? '';
+$ship_to_party = $orderDetails[0]['ship_to_party'] ?? '';
+$ship_to_party_address = $orderDetails[0]['ship_to_party_address'] ?? '';
+$consolidator = $orderDetails[0]['consolidator'] ?? '';
+$consolidator_address = $orderDetails[0]['consolidator_address'] ?? '';
+$importer_record_name = $orderDetails[0]['importer_of_record_name'] ?? '';
+$importer_record_number = $orderDetails[0]['importer_of_record_number'] ?? '';
+$received_date = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y');
+// If orderDetails exists, get the orderContainerDetails for each orderDetails entry
+$orderContainerDetails = $orderDetails
+    ? $orderDetails->map(function ($orderDetail) {
+        return $orderDetail->orderContainerDetails;
+    })
+    : null;
 
-    $orderDeliveries = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            return $orderDetail->deliveries;
-        })
-        : null;
+$orderDeliveries = $orderDetails
+    ? $orderDetails->map(function ($orderDetail) {
+        return $orderDetail->deliveries;
+    })
+    : null;
 
-    $orderHormonize = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            return $orderDetail->orderHormonizeDetails;
-        })
-        : null;
+$orderHormonize = $orderDetails
+    ? $orderDetails->map(function ($orderDetail) {
+        return $orderDetail->orderHormonizeDetails;
+    })
+    : null;
 
-    foreach ($orderDeliveries[0] as $delivery) {
-        $port_of_loading = $delivery['portOfLoading']['name'];
-        $port_of_discharge = $delivery['portOfDischarge']['name'];
-        //     $usdot = $delivery['vendor']['us_dot_number'];
-        //     $transit_time = $delivery['transit_time'];
-        //     $empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'];
-        //     $transhipment_port = $delivery['transhipmentPort']['name'];
-        //     $ignate_cutoff_date = '?';
-    }
+foreach ($orderDeliveries[0] as $delivery) {
+    $port_of_loading = $delivery['portOfLoading']['name'];
+    $port_of_discharge = $delivery['portOfDischarge']['name'];
+    //     $usdot = $delivery['vendor']['us_dot_number'];
+    //     $transit_time = $delivery['transit_time'];
+    //     $empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'];
+    //     $transhipment_port = $delivery['transhipmentPort']['name'];
+    //     $ignate_cutoff_date = '?';
+}
 
 @endphp
 <!DOCTYPE html>
@@ -284,14 +286,14 @@
                         style=" border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold;  ">
                         Importer of Record Name
                     </td>
-                    <td style="border: 1px solid #ddd; padding: 8px">?</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{ $importer_record_name}}</td>
                 </tr>
                 <tr>
                     <td
                         style=" border: 1px solid #ddd; background-color: #1976D20F; text-align: center; padding: 8px; font-weight: bold;">
                         Importer of record Number
                     </td>
-                    <td style="border: 1px solid #ddd; padding: 8px">?</td>
+                    <td style="border: 1px solid #ddd; padding: 8px">{{$importer_record_number}}</td>
                 </tr>
             </table>
             <table

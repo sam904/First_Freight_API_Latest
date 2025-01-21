@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Common\CommonController;
+use App\Http\Controllers\Common\ReceiverDetailsController;
 use App\Http\Controllers\Common\ServiceTypeController;
 use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Destination\DestinationController;
@@ -147,6 +148,17 @@ Route::middleware(['auth:api', CheckTokenExpiry::class])
                     Route::post('/customer', 'storeSuggestionCustomer');
                     Route::get('/address', 'getSuggestionAddress');
                     Route::post('/address', 'storeSuggestionAddress');
+                });
+            }
+        );
+
+        Route::prefix('common/receiver')->group(
+            function () {
+                Route::controller(ReceiverDetailsController::class)->group(function () {
+                    Route::get('/name', 'getReceiverName');
+                    Route::post('/saveReceiverName', 'storeReceiverName');
+                    Route::get('/address', 'getReceiverAddress');
+                    Route::post('/saveReceiverAddress', 'storeReceiverAddress');
                 });
             }
         );

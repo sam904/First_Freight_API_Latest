@@ -55,6 +55,9 @@ class OrderService
                             'vendor:id,company_name',
                             'transhipmentPort:id,name',
                             'createdBy:id,first_name,last_name',
+                            'railRamp:id,name',
+                            'receiverName:id,name',
+                            'receiverAddress:id,address',
                             'statuses' => function ($query) {
                                 $query->with([
                                     'deliveryStatus:id,name'
@@ -97,6 +100,21 @@ class OrderService
                         ->orWhere('po', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('cpo', 'LIKE', "%{$searchTerm}%")
                         ->orWhere('overweight', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in receiverName within deliveries
+                $query->orWhereHas('orderDetails.deliveries.receiverName', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in receiverAddress within deliveries
+                $query->orWhereHas('orderDetails.deliveries.receiverAddress', function ($q) use ($searchTerm) {
+                    $q->where('address', 'LIKE', "%{$searchTerm}%");
+                });
+
+                // Search in railRamp within deliveries
+                $query->orWhereHas('orderDetails.deliveries.railRamp', function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%");
                 });
 
                 // Search in portOfLoading within deliveries
@@ -408,6 +426,8 @@ class OrderService
                                     'ignate_cutoff_date' => $delivery['ignateCutoffDate'] ?? null,
                                     'country_of_origin' => $delivery['countryOfOrigin'] ?? null,
                                     'rail_ramp_id' => $delivery['railRampId'] ?? null,
+                                    'receiver_name_id' => $delivery['receiverNameId'] ?? null,
+                                    'receiver_address_id' => $delivery['receiverAddressId'] ?? null,
                                 ];
                                 if ($delivery['isRequestType'] === 'insert') {
                                     Log::info("Order Delivery is being created...");
