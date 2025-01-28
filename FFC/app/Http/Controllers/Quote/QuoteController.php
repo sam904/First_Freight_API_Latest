@@ -733,15 +733,18 @@ class QuoteController extends Controller
             $dompdf->render();
             // Get the raw PDF content
             $pdfContent = $dompdf->output();
-
-            return response()->streamDownload(
-                fn() => print($dompdf->output()),
-                'quote_pdf.pdf',
-                [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'attachment; filename="quote_pdf.pdf"',
-                ]
-            );
+            $base64Pdf = base64_encode($pdfContent);
+            return response()->json([
+                'pdf_base64' => $base64Pdf,
+            ]);
+            // return response()->streamDownload(
+            //     fn() => print($dompdf->output()),
+            //     'quote_pdf.pdf',
+            //     [
+            //         'Content-Type' => 'application/pdf',
+            //         'Content-Disposition' => 'attachment; filename="quote_pdf.pdf"',
+            //     ]
+            // );
         } else {
             return response()->json([
                 'status' => false,
@@ -768,12 +771,11 @@ class QuoteController extends Controller
         // //     'Content-Type' => 'application/pdf',
         // // ]);
 
-        // // // Encode as Base64
-        // // // $pdfContent = $pdf->output();
-        // // // $base64Pdf = base64_encode($pdfContent);
-        // // // return response()->json([
-        // // //     'pdf_base64' => $base64Pdf,
-        // // // ]);
-
+        // // Encode as Base64
+        // $pdfContent = $pdf->output();
+        // $base64Pdf = base64_encode($pdfContent);
+        // return response()->json([
+        //     'pdf_base64' => $base64Pdf,
+        // ]);
     }
 }

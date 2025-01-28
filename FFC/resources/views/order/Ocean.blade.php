@@ -29,32 +29,32 @@ $received_date = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y');
 // : null;
 
 $orderContainerDetails = $orderDetails
-? $orderDetails->map(function ($orderDetail) {
-// Get the first element of the orderContainerDetails array
-return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
-})
-: null;
+    ? $orderDetails->map(function ($orderDetail) {
+        // Get the first element of the orderContainerDetails array
+        return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
+    })
+    : null;
 
 foreach ($orderContainerDetails as $containerDetails) {
-$containerNo = $containerDetails['container_no'] ?? null;
-$containerSize = $containerDetails['container_size'] ?? null;
-$po = $containerDetails['po'] ?? null;
+    $containerNo = $containerDetails['container_no'] ?? null;
+    $containerSize = $containerDetails['container_size'] ?? null;
+    $po = $containerDetails['po'] ?? null;
 }
 
 $orderDeliveries = $orderDetails
-? $orderDetails->map(function ($orderDetail) {
-return $orderDetail->deliveries;
-})
-: null;
+    ? $orderDetails->map(function ($orderDetail) {
+        return $orderDetail->deliveries;
+    })
+    : null;
 
 foreach ($orderDeliveries[0] as $delivery) {
-$scac = $delivery['vendor']['scac_number'] ?? null;
-$mc = $delivery['vendor']['mc_number'] ?? null;
-$usdot = $delivery['vendor']['us_dot_number'] ?? null;
-$transit_time = $delivery['transit_time'] ?? null;
-$empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'] ?? null;
-$transhipment_port = $delivery['transhipmentPort']['name'] ?? null;
-$ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
+    $scac = $delivery['vendor']['scac_number'] ?? null;
+    $mc = $delivery['vendor']['mc_number'] ?? null;
+    $usdot = $delivery['vendor']['us_dot_number'] ?? null;
+    $transit_time = $delivery['transit_time'] ?? null;
+    $empty_pick_up_cutoff_date = $delivery['empty_pick_up_cutoff_date'] ?? null;
+    $transhipment_port = $delivery['transhipmentPort']['name'] ?? null;
+    $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
 }
 @endphp
 <!DOCTYPE html>
@@ -658,13 +658,7 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
             </thead>
         </table>
 
-        <footer
-            style="
-          margin-top: 3rem;
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-        ">
+        {{-- <footer style="margin-top: 3rem;display: flex;justify-content: space-between;align-items: flex-start;">
             <div style="flex: 1">
                 <p style="font-size: 12px; margin: 5px 0">
                     42619 Windflower Drive,Ashbum,VA 20148
@@ -675,7 +669,19 @@ $ignate_cutoff_date = $delivery['ignate_cutoff_date'] ?? null;
                     p.703.738.2834; F:703.842.8668
                 </p>
             </div>
-        </footer>
+        </footer> --}}
+        <div style="position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 12px;">
+            <table style="width: 100%; border-collapse: collapse; ">
+                <tr>
+                    <td style="flex: 1; vertical-align: middle;">
+                        <p>42619 Windflower Drive,Ashbum,VA 20148</p>
+                    </td>
+                    <td style="text-align: right; vertical-align: middle;">
+                        <p style="margin-right: 6%">p.703.738.2834; F:703.842.8668</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 </body>
 

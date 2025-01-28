@@ -314,13 +314,7 @@ $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
                         </td>
                     </tr>
                     <tr>
-                        <th
-                            style="
-                  border: 1px solid #ddd;
-                  padding: 8px;
-                  text-align: left;
-                  background-color: #1976D20F;
-                ">
+                        <th style="border: 1px solid #ddd;padding: 8px;text-align: left;background-color: #1976D20F;">
                             <strong>ETA:</strong>
                         </th>
                         <td style="border: 1px solid #ddd; padding: 8px">{{ $eta }}</td>
@@ -329,7 +323,27 @@ $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
             </table>
         </section>
 
-
+        <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
+            <thead>
+                <tr>
+                    <th style="border: 1px solid #ddd;background-color: #1976D20F;padding: 8px;text-align: center;">
+                        The driver should carry a copy of this BL and an ID to pick up the
+                        cargo.
+                    </th>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd;background-color: #1976D20F;padding: 8px;text-align: center;">
+                        FFC will pay the assigned trucker once the job is completed.
+                    </th>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #ddd;background-color: #1976D20F;padding: 8px;text-align: center;">
+                        The assigned trucker takes responsibility to pay the party
+                        completing this job.
+                    </th>
+                </tr>
+            </thead>
+        </table>
 
         <table class="details-table" style="width: 100%; margin-top: 20px; border-collapse: collapse">
             <thead>

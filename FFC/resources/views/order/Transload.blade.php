@@ -38,6 +38,14 @@
         $scac = $delivery['vendor']['scac_number'] ?? null;
         $mc = $delivery['vendor']['mc_number'] ?? null;
         $usdot = $delivery['vendor']['us_dot_number'] ?? null;
+        $schedule_date_time = $delivery['schedule_date'] ?? null;
+        if ($schedule_date_time) {
+            $ScheduleDate = \Carbon\Carbon::parse($schedule_date_time)->toDateString(); // Extracts date (YYYY-MM-DD)
+            $ScheduleTime = \Carbon\Carbon::parse($schedule_date_time)->toTimeString(); // Extracts time (HH:MM:SS)
+        } else {
+            $date = null;
+            $time = null;
+        }
     }
 
     $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
@@ -225,7 +233,7 @@
                         <strong>Delivery Appt Date:</strong>
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: center">
-                        {{ \Carbon\Carbon::parse($data['received_date'])->format('m-d') ?? null }}
+                        {{ \Carbon\Carbon::parse($ScheduleDate)->format('m-d') ?? null }}
                     </td>
                     <td
                         style="
@@ -238,7 +246,7 @@
                         Time:
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: center">
-                        07:00
+                    {{ $ScheduleTime ?? null }}
                     </td>
                 </tr>
             </tbody>
@@ -469,13 +477,7 @@
         </table>
 
 
-        <footer
-            style="
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          margin-top: 3px;
-        ">
+        {{-- <footer style="display: flex;justify-content: space-between;align-items: flex-end;margin-top: 3px;">
             <div style="flex: 1">
                 <p style="font-size: 10px; margin: 5px 0; font-weight: 600;">
                     42619 Windflower Drive,Ashbum,VA 20148
@@ -486,7 +488,19 @@
                     p.703.738.2834; F:703.842.8668
                 </p>
             </div>
-        </footer>
+        </footer> --}}
+        <div style="position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 12px;">
+            <table style="width: 100%; border-collapse: collapse; ">
+                <tr>
+                    <td style="flex: 1; vertical-align: middle;">
+                        <p>42619 Windflower Drive,Ashbum,VA 20148</p>
+                    </td>
+                    <td style="text-align: right; vertical-align: middle;">
+                        <p style="margin-right: 6%">p.703.738.2834; F:703.842.8668</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 </body>
 
