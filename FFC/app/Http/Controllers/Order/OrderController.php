@@ -229,10 +229,66 @@ class OrderController extends Controller
         return response()->json(['status' => true, 'message' => 'Order deleted successfully'], 200);
     }
 
+    public function generatePdfValidateOrder(Request $request)
+    {
+        $validator = Validator::make(
+            $request->all(),
+            [
+                // 'customerId' => ['sometimes', 'required_if:order_details.deliveries.*.serviceTypeId,1,2,3,4,5,6', 'integer',],
+                'customerId' => [
+                    'nullable', // Allow null values
+                    function ($attribute, $value, $fail) use ($request) {
+                        // Check if any serviceTypeId in the deliveries is 1, 2, 3, 4, 5, or 6
+                        $serviceTypes = collect($request->input('order_details'))->pluck('deliveries')->flatten()->pluck('serviceTypeId');
+
+                        if ($serviceTypes->contains(fn($type) => in_array($type, [1, 2, 3, 4, 5, 6])) && !$value) {
+                            $fail('The customer ID is required when any serviceTypeId is 1, 2, 3, 4, 5, or 6.');
+                        }
+                    },
+                    'integer', // Validate as integer only if provided
+                ],
+                'order_details.deliveries.*.serviceTypeId' => 'required|integer',
+                'order_container_details.*.po' => ['sometimes', 'string'],
+            ],
+        );
+        if ($validator->passes()) {
+            foreach ($request->order_details as $detail) {
+                Log::info($detail['serviceTypeId']);
+                if (in_array($detail['serviceTypeId'], [1, 2, 3, 4, 5, 6])) {
+                    if (empty($request['customerId'])) {
+                        Log::info("customer name is mepy");
+                        $validator->errors()->add('customerId', 'The customerId field is required when serviceTypeId is 1,2,3,4,5,6.');
+                    }
+                    foreach ($detail['deliveries'] as $delivery) {
+                    }
+                }
+            }
+            $data = $request->all();
+            Log::info($data);
+            // foreach ($data['order_details']['deliveries'] as $delivery) {
+            //     if (in_array($delivery['serviceTypeId'], [1, 2, 3, 4, 5, 6])) {
+            //         foreach ($data['order_container_details'] as $container) {
+            //             if (empty($container['po'])) {
+            //                 $validator->errors()->add('order_container_details.po', 'The PO field is required when serviceTypeId is 1,2,3,4,5,6.');
+            //             }
+            //         }
+            //     }
+            // }
+        }
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+
+        // Return validated data
+        return $validator->validated();
+    }
+
     public function validateOrder(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'customerId' => 'required|integer',
+            // 'customerId' => 'required|integer',
             // 'quoteId' => 'nullable|integer',
             // 'receivedDate' => 'required|date',
             // 'addressId' => 'required|integer',
@@ -554,9 +610,12 @@ class OrderController extends Controller
         Log::info($serviceData);
         Log::info("PDF DATA => " . $data[0]);
         // $html = view('order/Trucking', compact('data'))->render();
-        if (isset($serviceData['id']) && ($serviceData['id'] == 1 || $serviceData['id'] == 5)) {
+        if (isset($serviceData['id']) && ($serviceData['id'] == 1)) {
             Log::info("Getting view for Trucking Template");
             $html = view('order/Trucking', ['data' => $data[0]])->render();
+        } else if (isset($serviceData['id']) && ($serviceData['id'] == 5)) {
+            Log::info("Getting view for Warehouse Template");
+            $html = view('order/Warehouse', ['data' => $data[0]])->render();
         } else if (isset($serviceData['id']) && ($serviceData['id'] == 2)) {
             Log::info("Getting view for Transload Template");
             $html = view('order/Transload', ['data' => $data[0]])->render();

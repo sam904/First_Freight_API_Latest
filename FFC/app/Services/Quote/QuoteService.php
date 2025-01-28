@@ -18,7 +18,7 @@ class QuoteService
         $this->loginUser =  Auth::user();
     }
 
-    public function getAllQuotes(Request $request)
+    public function getAllQuotesFilterBy(Request $request)
     {
         Log::info("*******************");
         Log::info("Quotes Search");
@@ -120,6 +120,84 @@ class QuoteService
         }
     }
 
+    public function getAllQuotes(Request $request)
+    {
+        Log::info("*******************");
+        Log::info("Quotes Search");
+        Log::info("*******************");
+        $searchTerm = $request->input('searchTerm');
+        $filterBy = $request->input('filterBy');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        $page = $request->input('page') ?: 1;
+        $limit = $request->input('limit');
+        $sortColumn = $request->input('sortColumn') ?: 'id';
+        $sortDirection = $request->input('sortDirection') ?: 'desc';
+        $isExport = $request->input('export') ?? false;
+        $ids = $request->input('ids');
+
+        $query = Quote::with([
+            'customer:id,company_name',  // Load customer and only select 'id' and 'company_name'
+            'user:id,first_name,last_name,profile_image',
+            'quoteDetails.rate:id,start_date,vendor_id,port_of_loading_id,port_of_discharge_id,destination_id',
+            // 'quoteDetails.rate.vendor:id,company_name',
+            // 'quoteDetails.vendor:id,company_name',  // Load vendor inside quoteDetails and select only 'id' and 'name'
+            // 'quoteDetails.port:id,name',  // Load port inside quoteDetails and select only 'id' and 'name'
+            'quoteDetails.portOfLoading:id,name',
+            'quoteDetails.portOfDischarge:id,name',
+            'quoteDetails.destination:id,name',  // Load destination inside quoteDetails and select only 'id' and 'name'
+            // 'quoteDetails.charges:quote_detail_id,charge_name,amount',
+            'quoteDetails.rate:id,start_date',
+            'quoteDetails.serviceType:id,name'
+        ])
+            ->withCount('quoteDetails as routes') // Route count
+            ->withSum('quoteDetails as totalAmount', 'dry_fsc'); // Total dry FSC
+
+        // Apply filter by IDs if they are provided
+        if (!empty($ids)) {
+            $query->whereIn('id', $ids);
+        }
+
+        if (!empty($searchTerm)) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('id', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('customer', function ($q) use ($searchTerm) {
+                        $q->where('company_name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('user', function ($q) use ($searchTerm) {
+                        $q->where('first_name', 'like', "%{$searchTerm}%")
+                            ->orWhere('last_name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('quoteDetails.portOfLoading', function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('quoteDetails.portOfDischarge', function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('quoteDetails.destination', function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('quoteDetails.serviceType', function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', "%{$searchTerm}%");
+                    });
+            });
+        }
+
+        if ($isExport && empty($limit)) {
+            // Fetch all data without pagination
+            Log::info("export is true and limit is empty");
+            $startTime = microtime(true);
+            $limit = $query->count();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            Log::info("Quote Query Count = {$limit} && execution time: {$executionTime} seconds");
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        } else {
+            $limit = $limit ?: 10;
+            return $query->orderBy($sortColumn, $sortDirection)->paginate($limit, ['*'], 'page', $page);
+        }
+    }
+
     public function createQuote(Request $request)
     {
         Log::info("Creating Quoates by = " . $this->loginUser->id);
@@ -181,6 +259,7 @@ class QuoteService
                 'port_of_loading_id' => $detail['portOfLoadingId'] ?? null,
                 'port_of_discharge_id' => $detail['portOfDischargeId'] ?? null,
                 "destination_id" => $detail['destinationId'],
+                "isChecked" => $detail['isChecked'] ?? 0,
                 // "vendor_id" => $detail['vendorId'],
                 // "shipment_type" => $detail['shipmentType'],
             ]);

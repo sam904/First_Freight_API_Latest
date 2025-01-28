@@ -428,6 +428,7 @@ class OrderService
                                     'rail_ramp_id' => $delivery['railRampId'] ?? null,
                                     'receiver_name_id' => $delivery['receiverNameId'] ?? null,
                                     'receiver_address_id' => $delivery['receiverAddressId'] ?? null,
+                                    'isChecked' => $delivery['isChecked'] ?? 0,
                                 ];
                                 if ($delivery['isRequestType'] === 'insert') {
                                     Log::info("Order Delivery is being created...");

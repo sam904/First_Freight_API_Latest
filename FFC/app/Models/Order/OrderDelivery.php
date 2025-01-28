@@ -38,6 +38,7 @@ class OrderDelivery extends Model
         'rail_ramp_id',
         'receiver_name_id',
         'receiver_address_id',
+        'isChecked',
     ];
 
     public function orderDetail()

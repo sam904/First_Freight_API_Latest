@@ -28,6 +28,7 @@ class QuoteDetail extends Model
         "fsc_amount",
         "dry_fsc",
         "quote_tab_name",
+        'isChecked',
     ];
 
     protected $appends = ['routeName']; // Ensure 'routeName' is appended to the JSON output.
