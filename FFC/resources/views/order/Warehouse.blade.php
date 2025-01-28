@@ -35,6 +35,8 @@ $orderDeliveries = $orderDetails
     : null;
 
 foreach ($orderDeliveries[0] as $delivery) {
+    $mode = $delivery['mode'] ?? null;
+    $pickedUpDate = \Carbon\Carbon::parse($delivery['pickedUpDate'])->format('m-d-Y') ?? null;
     $scac = $delivery['vendor']['scac_number'] ?? null;
     $mc = $delivery['vendor']['mc_number'] ?? null;
     $usdot = $delivery['vendor']['us_dot_number'] ?? null;
@@ -274,7 +276,18 @@ $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
                         <td style="border: 1px solid #ddd; padding: 8px">
                             {{ $freightLocation }}
                         </td>
-                        <th
+                        <th rowspan="3" style="
+                                          border: 1px solid #ddd;
+                                          padding: 8px;
+                                          text-align: left;
+                                          background-color: #1976D20F;
+                                        ">
+                            <strong>Commodity:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">
+                            {{ $commodity }}
+                        </td>
+                        {{-- <th
                             style="
                   border: 1px solid #ddd;
                   padding: 8px;
@@ -283,7 +296,7 @@ $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
                 ">
                             <strong>Firms Code:</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $firmCode }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $firmCode }}</td> --}}
                     </tr>
                 </thead>
                 <tbody>
@@ -295,29 +308,44 @@ $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
                   text-align: left;
                   background-color: #1976D20F;
                 ">
-                            <strong>Vessel/Voyage:</strong>
+                            <strong>Mode Of Transport:</strong>
                         </th>
                         <td style="border: 1px solid #ddd; padding: 8px">
-                            {{ $vesselVoyage }}
+                            {{ $mode }}
                         </td>
-                        <th
+                        {{-- <th
                             style="
                   border: 1px solid #ddd;
                   padding: 8px;
                   text-align: left;
                   background-color: #1976D20F;
                 ">
+                            <strong>Vessel/Voyage:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">
+                            {{ $vesselVoyage }}
+                        </td> --}}
+                        {{-- <th style="
+                                          border: 1px solid #ddd;
+                                          padding: 8px;
+                                          text-align: left;
+                                          background-color: #1976D20F;
+                                        ">
                             <strong>Commodity:</strong>
                         </th>
                         <td style="border: 1px solid #ddd; padding: 8px">
                             {{ $commodity }}
-                        </td>
+                        </td> --}}
                     </tr>
                     <tr>
                         <th style="border: 1px solid #ddd;padding: 8px;text-align: left;background-color: #1976D20F;">
+                            <strong>Pick Up Date/Time:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $pickedUpDate }}</td>
+                        {{-- <th style="border: 1px solid #ddd;padding: 8px;text-align: left;background-color: #1976D20F;">
                             <strong>ETA:</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $eta }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $eta }}</td> --}}
                     </tr>
                 </tbody>
             </table>

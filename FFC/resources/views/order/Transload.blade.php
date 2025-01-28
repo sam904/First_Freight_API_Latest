@@ -1,54 +1,56 @@
 @php
-    $receivedDate = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y') ?? null;
+$receivedDate = \Carbon\Carbon::parse($data['received_date'])->format('m-d-Y') ?? null;
 
-    // Check if orderDetails exists, and then access the related orderContainerDetails
-    $orderDetails = $data['orderDetails'] ?? null;
+// Check if orderDetails exists, and then access the related orderContainerDetails
+$orderDetails = $data['orderDetails'] ?? null;
 
-    $bl = $orderDetails[0]['master_bl'] ?? null;
-    $seal = $orderDetails[0]['seal'] ?? null;
-    $lfd = $orderDetails[0]['last_free_day'] ?? null;
-    $weight = $orderDetails[0]['weight'] ?? null;
-    $pallets = $orderDetails[0]['pallets'] ?? null;
-    $freightLocation = $orderDetails[0]['freight_location'] ?? null;
-    $firmCode = $orderDetails[0]['firm_code'] ?? null;
-    $vesselVoyage = $orderDetails[0]['vessel_voyage'] ?? null;
-    $commodity = $orderDetails[0]['commodity'] ?? null;
-    $eta = $orderDetails[0]['eta'] ?? null;
-    // If orderDetails exists, get the orderContainerDetails for each orderDetails entry
-    // $orderContainerDetails1 = $orderDetails
-    //     ? $orderDetails->map(function ($orderDetail) {
-    //         return $orderDetail->orderContainerDetails;
-    //     })
-    //     : null;
+$bl = $orderDetails[0]['master_bl'] ?? null;
+$seal = $orderDetails[0]['seal'] ?? null;
+$lfd = $orderDetails[0]['last_free_day'] ?? null;
+$weight = $orderDetails[0]['weight'] ?? null;
+$pallets = $orderDetails[0]['pallets'] ?? null;
+$freightLocation = $orderDetails[0]['freight_location'] ?? null;
+$firmCode = $orderDetails[0]['firm_code'] ?? null;
+$vesselVoyage = $orderDetails[0]['vessel_voyage'] ?? null;
+$commodity = $orderDetails[0]['commodity'] ?? null;
+$eta = $orderDetails[0]['eta'] ?? null;
+// If orderDetails exists, get the orderContainerDetails for each orderDetails entry
+// $orderContainerDetails1 = $orderDetails
+//     ? $orderDetails->map(function ($orderDetail) {
+//         return $orderDetail->orderContainerDetails;
+//     })
+//     : null;
 
-    $orderContainerDetails = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            // Get the first element of the orderContainerDetails array
-            return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
-        })
-        : null;
+$orderContainerDetails = $orderDetails
+    ? $orderDetails->map(function ($orderDetail) {
+        // Get the first element of the orderContainerDetails array
+        return isset($orderDetail->orderContainerDetails[0]) ? $orderDetail->orderContainerDetails[0] : null;
+    })
+    : null;
 
-    $orderDeliveries = $orderDetails
-        ? $orderDetails->map(function ($orderDetail) {
-            return $orderDetail->deliveries;
-        })
-        : null;
+$orderDeliveries = $orderDetails
+    ? $orderDetails->map(function ($orderDetail) {
+        return $orderDetail->deliveries;
+    })
+    : null;
 
-    foreach ($orderDeliveries[0] as $delivery) {
-        $scac = $delivery['vendor']['scac_number'] ?? null;
-        $mc = $delivery['vendor']['mc_number'] ?? null;
-        $usdot = $delivery['vendor']['us_dot_number'] ?? null;
-        $schedule_date_time = $delivery['schedule_date'] ?? null;
-        if ($schedule_date_time) {
-            $ScheduleDate = \Carbon\Carbon::parse($schedule_date_time)->toDateString(); // Extracts date (YYYY-MM-DD)
-            $ScheduleTime = \Carbon\Carbon::parse($schedule_date_time)->toTimeString(); // Extracts time (HH:MM:SS)
-        } else {
-            $date = null;
-            $time = null;
-        }
+foreach ($orderDeliveries[0] as $delivery) {
+    $mode = $delivery['mode'] ?? null;
+    $pickedUpDate = \Carbon\Carbon::parse($delivery['pickedUpDate'])->format('m-d-Y') ?? null;
+    $scac = $delivery['vendor']['scac_number'] ?? null;
+    $mc = $delivery['vendor']['mc_number'] ?? null;
+    $usdot = $delivery['vendor']['us_dot_number'] ?? null;
+    $schedule_date_time = $delivery['schedule_date'] ?? null;
+    if ($schedule_date_time) {
+        $ScheduleDate = \Carbon\Carbon::parse($schedule_date_time)->toDateString(); // Extracts date (YYYY-MM-DD)
+        $ScheduleTime = \Carbon\Carbon::parse($schedule_date_time)->toTimeString(); // Extracts time (HH:MM:SS)
+    } else {
+        $date = null;
+        $time = null;
     }
+}
 
-    $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
+$image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -277,7 +279,18 @@
                         <td style="border: 1px solid #ddd; padding: 8px">
                             {{ $freightLocation }}
                         </td>
-                        <th
+                        <th rowspan="3" style="
+                                                                  border: 1px solid #ddd;
+                                                                  padding: 8px;
+                                                                  text-align: left;
+                                                                  background-color: #1976D20F;
+                                                                ">
+                            <strong>Commodity:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">
+                            {{ $commodity }}
+                        </td>
+                        {{-- <th
                             style="
                   border: 1px solid #ddd;
                   padding: 8px;
@@ -286,12 +299,23 @@
                 ">
                             <strong>Firms Code:</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $firmCode }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $firmCode }}</td> --}}
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <th
+                        <th style="
+                                          border: 1px solid #ddd;
+                                          padding: 8px;
+                                          text-align: left;
+                                          background-color: #1976D20F;
+                                        ">
+                            <strong>Mode Of Transport:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">
+                            {{ $mode }}
+                        </td>
+                        {{-- <th
                             style="
                   border: 1px solid #ddd;
                   padding: 8px;
@@ -302,8 +326,8 @@
                         </th>
                         <td style="border: 1px solid #ddd; padding: 8px">
                             {{ $vesselVoyage }}
-                        </td>
-                        <th
+                        </td> --}}
+                        {{-- <th
                             style="
                   border: 1px solid #ddd;
                   padding: 8px;
@@ -314,10 +338,14 @@
                         </th>
                         <td style="border: 1px solid #ddd; padding: 8px">
                             {{ $commodity }}
-                        </td>
+                        </td> --}}
                     </tr>
                     <tr>
-                        <th
+                        <th style="border: 1px solid #ddd;padding: 8px;text-align: left;background-color: #1976D20F;">
+                            <strong>Pick Up Date/Time:</strong>
+                        </th>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $pickedUpDate }}</td>
+                        {{-- <th
                             style="
                   border: 1px solid #ddd;
                   padding: 8px;
@@ -326,7 +354,7 @@
                 ">
                             <strong>ETA:</strong>
                         </th>
-                        <td style="border: 1px solid #ddd; padding: 8px">{{ $eta }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px">{{ $eta }}</td> --}}
                     </tr>
                 </tbody>
             </table>
