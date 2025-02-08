@@ -253,6 +253,7 @@ class OrderService
                     'po' => $container['po'] ?? null,
                     'cpo' => $container['cpo'] ?? null,
                     'overweight' => $container['overweight'] ?? null,
+                    'container_type' => $container['container_type'] ?? null,
                 ];
                 if (isset($container['orderContainerId']) && $container['orderContainerId'] != null) {
                     // Update existing record

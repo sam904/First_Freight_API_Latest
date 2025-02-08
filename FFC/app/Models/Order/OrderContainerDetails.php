@@ -9,7 +9,6 @@ class OrderContainerDetails extends Model
 {
     use HasFactory;
 
-
     protected $fillable = [
         'container_no',
         'container_size',
@@ -17,6 +16,7 @@ class OrderContainerDetails extends Model
         'cpo',
         'order_id',
         'overweight',
+        'container_type',
     ];
 
     protected $hidden = ['created_at', 'updated_at'];

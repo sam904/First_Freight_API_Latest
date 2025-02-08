@@ -16,13 +16,15 @@
 
         $validity = isset($data['created_at'])
             ? \Carbon\Carbon::parse($data['created_at'])
-                ->addDays(15)
+                ->addDays(30)
                 ->format('m/d/Y')
             : null;
         $perPage = 16; // Number of rows per page
         $quoteDetailsArray = $data['quoteDetails']->load('portOfLoading', 'destination')->toArray();
         $chunks = array_chunk($quoteDetailsArray, $perPage); // Split data into chunks
         $image = base64_encode(file_get_contents(public_path('images/ffc_logo.jpeg')));
+        $customeName = $data['customer']['company_name'] ?? null;
+        $customeAddress = $data['customer']['address'] ?? null;
     @endphp
 
     <!-- Header -->
@@ -47,9 +49,9 @@
     <div
         style="margin-bottom: 5%; padding: 10px; padding-top:3%; background-color: #f6fafd; border: 1px solid #ddd; border-radius: 5px;">
         <p style="margin: 0; font-size: 12px;line-height:25px;text-align: left;">
-            <strong>Knight-Swift Transport</strong><br>
-            10700 E 40th Ave Denver, CO 80239<br>
-            +1 303-371-1500
+            <strong>{{$customeName}}</strong><br>
+            {{$customeAddress}}<br>
+            
         </p>
         <div style="margin-bottom: 20px; margin-left:70%; margin-top:-15%;  background-color: #f6fafd;">
             <table style="width: 100%; border-collapse: collapse;">
@@ -87,13 +89,17 @@
                                 {{ $page * $perPage + $index + 1 }}
                             </td>
                             <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">
-                                {{ optional($quote['port_of_loading'])['name'] ?? '' }}
+                                {{ optional($quote['port_of_loading'])['name'] ?? ($quote['port_of_discharge']['name'] ?? '') }}
                             </td>
                             <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">
                                 {{ $quote['destination']['name'] ?? ($quote['port_of_discharge']['name'] ?? '') }}
                             </td>
                             <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">
-                                ${{ number_format(($quote['dry_fsc'] ?? 0) + ($quote['fsc_amount'] ?? 0), 2) }}</td>
+                                @php
+                                    $fscPer = ($quote['freight'] ?? 0) * (($quote['fsc'] ?? 1) ?: 1) /100;
+                                @endphp
+                               ${{ number_format(($quote['freight'] ?? 0) + $fscPer, 2) }}
+                                </td>
                             </td>
                         </tr>
                     @endforeach
