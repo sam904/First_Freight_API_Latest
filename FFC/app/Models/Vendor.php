@@ -1,0 +1,110 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
+
+class Vendor extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'company_name',
+        'address',
+        'city',
+        'state_id',
+        'country_id',
+        'zip_code',
+        'company_tax_id',
+        'mc_number',
+        'scac_number',
+        'us_dot_number',
+        'upload_w9',
+        'void_check',
+        'upload_insurance_certificate',
+        'bank_name',
+        'bank_account_number',
+        'bank_routing',
+        'bank_address',
+        'bank_country_id',
+        'bank_swift_code',
+        'bank_iban_number',
+        'bank_ifsc_code',
+        'remarks',
+        'status',
+        // 'date_of_expiration',
+        // 'contact_name',
+        // 'phone',
+        // 'email',
+        'payment_term',
+        'upload_document',
+    ];
+
+    protected $hidden = ['email', 'upload_w9', 'void_check', 'upload_insurance_certificate'];
+
+    protected $excludedColumns = [
+        'id',
+        'created_at',
+        'updated_at',
+        'upload_w9',
+        'void_check',
+        'upload_insurance_certificate',
+        'upload_document',
+    ];
+
+    public function getSearchableColumns()
+    {
+        // Fetch all columns of the table dynamically, and exclude specific ones
+        $table = $this->getTable();
+        $columns = Schema::getColumnListing($table);
+        // $columns = array_merge($columns, ['sales_name']);
+        return array_diff($columns, $this->excludedColumns);
+    }
+
+    public function sales()
+    {
+        return $this->hasMany(VendorSales::class, 'vendors_id');
+    }
+
+    public function finance()
+    {
+        return $this->hasMany(VendorFinances::class, 'vendors_id');
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function state()
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    public function vendorTypes()
+    {
+        return $this->belongsToMany(VendorType::class, 'vendor_vendor_type', 'vendor_id', 'vendor_type_id');
+    }
+
+    public function bankCountry()
+    {
+        return $this->belongsTo(Country::class, 'bank_country_id');
+    }
+
+    public function getVendor($name)
+    {
+        return Vendor::where('company_name', $name)->first();
+    }
+
+    public function getVendorOld($name, $lineNo)
+    {
+        try {
+            $vendor = Vendor::where('company_name', $name)->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, "Vendor : '{$name}' not found at line number : " . $lineNo);
+        }
+        return $vendor;
+    }
+}

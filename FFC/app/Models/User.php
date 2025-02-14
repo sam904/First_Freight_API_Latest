@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
@@ -23,7 +24,15 @@ class User extends Authenticatable
         'email',
         'username',
         'password',
-        'mobile_number'
+        'mobile_number',
+        'profile_image',
+        'access_token',
+        'access_token_expires_at',
+        'refresh_token',
+        'refresh_token_expires_at',
+        // 'secret_password',
+        // 'secret_key',
+        'status',
     ];
 
     /**
@@ -34,6 +43,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'secret_password',
+        'secret_key',
     ];
 
     /**
@@ -47,5 +58,44 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected $excludedColumns = [
+        'id',
+        'username',
+        'email_verified_at',
+        'password',
+        'role',
+        'profile_image',
+        'access_token',
+        'access_token_expires_at',
+        'refresh_token',
+        'refresh_token_expires_at',
+        'remember_token',
+        'secret_password',
+        'secret_key',
+        'updated_at',
+        'created_at',
+    ];
+
+    // Map user-friendly names to actual database columns
+    // public static $columnMap = ['First Name' => 'first_name','Last Name' => 'last_name','Email' => 'email','Contact Number' => 'mobile_number','Status' => 'status'];
+
+    // Fetch all columns of the table dynamically, and exclude specific ones
+    public function getSearchableColumns()
+    {
+        $table = $this->getTable();
+        $columns = Schema::getColumnListing($table);
+        return array_diff($columns, $this->excludedColumns);
+    }
+
+    public function permissions()
+    {
+        return $this->hasMany(Permission::class);
+    }
+
+    public function otp()
+    {
+        return $this->hasMany(Otp::class);
     }
 }

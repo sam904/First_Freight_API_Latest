@@ -20,7 +20,12 @@ return new class extends Migration {
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role')->default('user');
-            $table->string('status')->default('activate');
+            $table->string('status')->default('activated');
+            $table->string('profile_image')->nullable();
+            $table->text('access_token')->nullable();
+            $table->dateTime('access_token_expires_at')->nullable();
+            $table->text('refresh_token')->nullable();
+            $table->dateTime('refresh_token_expires_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

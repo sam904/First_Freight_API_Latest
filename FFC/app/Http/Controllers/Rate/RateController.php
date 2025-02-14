@@ -1,0 +1,463 @@
+<?php
+
+namespace App\Http\Controllers\Rate;
+
+use App\Exports\RateExport;
+use App\Http\Controllers\Controller;
+use App\Imports\RateImport;
+use App\Models\Rate\Rate;
+use App\Models\Rate\RateNotes;
+use App\Services\Rate\RateService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
+
+class RateController extends Controller
+{
+
+    protected $rateService;
+    public function __construct(RateService $rateService)
+    {
+        $this->rateService = $rateService;
+    }
+
+    public function index(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Rate Search');
+        Log::info("*****************************");
+        $rates = $this->rateService->getAllRateData($request);
+        return response()->json(['status' => true, 'data' => $rates], 200);
+    }
+
+    public function store(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Rate Save');
+        Log::info("*****************************");
+        $validatedData = $this->rateValidateData($request);
+        // Check if the validated data is an array (i.e., no validation errors)
+        if (!is_array($validatedData)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Rate validation failed',
+                'error' => $validatedData
+            ], 422);
+        }
+
+        DB::beginTransaction();  // Start the transaction
+        try {
+            $this->rateService->createRate($request);
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => "Rate created successfully"
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to insert rate data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to insert rate data',
+                "error" => $e->getMessage()
+            ], 400); // Return error response
+        }
+    }
+
+    public function edit($id)
+    {
+        Log::info("*****************************");
+        Log::info('Rate Edit');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the customer
+        $rate = findModel(Rate::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rate instanceof \Illuminate\Http\JsonResponse) {
+            return $rate;  // Return the not found response
+        }
+
+        $rateResult = Rate::with('charges')->find($id);
+        return response()->json(['status' => true, 'data' => $rateResult], 200);
+    }
+
+    public function update(Request $request, $id)
+    {
+        Log::info("*****************************");
+        Log::info('Rate Update');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the customer
+        $rate = findModel(Rate::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rate instanceof \Illuminate\Http\JsonResponse) {
+            return $rate;  // Return the not found response
+        }
+
+        $validatedData = $this->rateValidateData($request);
+        // Check if the validated data is an array (i.e., no validation errors)
+        if (!is_array($validatedData)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Rate validation failed',
+                'error' => $validatedData
+            ], 422);
+        }
+
+        DB::beginTransaction();  // Start the transaction
+
+        try {
+            $this->rateService->updateRate($request,  $rate, $id);
+            DB::commit();
+            return response()->json([
+                'status' => true,
+                'message' => "Rate updated successfully"
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to update rate data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update rate data',
+                'error' => $e->getMessage()
+            ], 400); // Return error response
+        }
+    }
+
+    public function status(Request $request, $id)
+    {
+        Log::info("*****************************");
+        Log::info('Rate status');
+        Log::info("*****************************");
+        // Use the statusUpdate helper to update status
+        return statusUpdate(Rate::class, $id, [
+            'status' => $request->status
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        Log::info("*****************************");
+        Log::info('Rate Delete');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the rate
+        $rate = findModel(Rate::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rate instanceof \Illuminate\Http\JsonResponse) {
+            return $rate;  // Return the not found response
+        }
+
+        DB::transaction(function () use ($rate) {
+            // Delete the rate record
+            $rate->charges()->delete();
+            $rate->delete();
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Rate deleted successfully'
+        ], 200);
+    }
+
+    public function rateValidateData(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'vendor_id' => 'required|integer',
+            // 'port_id' => 'required|integer',
+            'port_of_loading_id' => 'nullable|integer',
+            'port_of_discharge_id' => 'nullable|integer',
+            'destination_id' => 'nullable|integer',
+            'start_date' => 'required|date',
+            'expiry' => 'required|integer',
+            'freight' => 'required|numeric',
+            'fsc' => 'nullable',
+            'serviceType' => 'nullable|integer',
+            'rateNotes' => 'sometimes|array',
+            'rateNotes.*.title' => 'required_with:rateNotes|string',
+            'rateNotes.*.description' => 'required_with:rateNotes|string',
+            'rateNotes.*.tag' => 'nullable|string',
+            'rateNotes.*.pin' => 'nullable|boolean',
+        ]);
+
+        // Custom validation to check that at least one port is provided
+        $validator->after(function ($validator) use ($request) {
+            if (is_null($request->input('port_of_loading_id')) && is_null($request->input('port_of_discharge_id'))) {
+                $validator->errors()->add('port_of_loading_id', 'At least one port (loading or discharge) is required.');
+            }
+        });
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+
+        // Return validated data
+        return $validator->validated();
+    }
+
+    /*
+    * Start Rate Notes
+    */
+
+    // Passing RateId
+    public function getRateNote(Request $request, $rateId)
+    {
+        Log::info("*****************************");
+        Log::info('Get Rate Note');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the customer
+        $rate = findModel(Rate::class, $rateId);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rate instanceof \Illuminate\Http\JsonResponse) {
+            return $rate;  // Return the not found response
+        }
+        $rateNote = $this->rateService->getRateNoteData($request, $rateId);
+        // $rateNote = RateNotes::with('user:id,first_name,last_name')->where('rate_id', $rateId)->orderBy('id', 'desc')->get();
+        return response()->json(['status' => true, 'data' => $rateNote], 200);
+    }
+
+    public function storeNote(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Save Rate Note');
+        Log::info("*****************************");
+        $validatedData = $this->rateNoteValidation($request);
+        if (!is_array($validatedData)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Rate Note validation failed',
+                'error' => $validatedData
+            ], 422);
+        }
+
+        DB::beginTransaction();  // Start the transaction
+        try {
+            $this->rateService->saveNotes($request);
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => "Rate Notes created successfully"
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to insert rate note data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to insert rate note',
+                "error" => $e->getMessage()
+            ], 400); // Return error response
+        }
+    }
+
+    public function updateNote(Request $request, $id)
+    {
+        Log::info("*****************************");
+        Log::info('Update Rate Note');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the customer
+        $rateNotes = findModel(RateNotes::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rateNotes instanceof \Illuminate\Http\JsonResponse) {
+            return $rateNotes;  // Return the not found response
+        }
+
+        $validatedData = $this->rateNoteValidation($request);
+        if (!is_array($validatedData)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Rate Note validation failed',
+                'error' => $validatedData
+            ], 422);
+        }
+
+        DB::beginTransaction();  // Start the transaction
+        try {
+            $this->rateService->updateNote($request, $rateNotes);
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => "Rate Notes updated successfully"
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if something goes wrong            
+            Log::error('Failed to update rate note data: ', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update rate note',
+                "error" => $e->getMessage()
+            ], 400); // Return error response
+        }
+    }
+
+    public function editNote($id)
+    {
+        Log::info("*****************************");
+        Log::info('Edit Rate Note');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the customer
+        $rateNotes = findModel(RateNotes::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rateNotes instanceof \Illuminate\Http\JsonResponse) {
+            return $rateNotes;  // Return the not found response
+        }
+
+        $rateNote = RateNotes::find($id);
+        return response()->json(['status' => true, 'data' => $rateNote], 200);
+    }
+
+    public function destroyNote($id)
+    {
+        Log::info("*****************************");
+        Log::info('Delete Rate Note');
+        Log::info("*****************************");
+        // Use the findModel helper to retrieve the rate
+        $rateNotes = findModel(RateNotes::class, $id);
+
+        // Check if the returned value is a JSON response (meaning the model was not found)
+        if ($rateNotes instanceof \Illuminate\Http\JsonResponse) {
+            return $rateNotes;  // Return the not found response
+        }
+
+        DB::transaction(function () use ($rateNotes) {
+            $rateNotes->delete();
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Rate Note deleted successfully'
+        ], 200);
+    }
+
+    public function statusNote(Request $request, $id)
+    {
+        Log::info("*****************************");
+        Log::info('Status Rate Note');
+        Log::info("*****************************");
+        // Use the statusUpdate helper to update status
+        return statusUpdate(RateNotes::class, $id, [
+            'status' => $request->status
+        ]);
+    }
+
+    private function rateNoteValidation(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'rateId' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        return $validator->validated();
+    }
+    /** 
+     * End Rate Notes
+     */
+
+    /**
+     * Zero Count means there are already record exit while uploading
+     */
+    public function excelUpload(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Importing Rate Excel sheet...');
+        Log::info("*****************************");
+
+        try {
+            // Validate that the file is required, must be Excel, and not exceed 2MB
+            $validatedData = $request->validate([
+                'uploadFile' => 'required|file|mimes:xlsx,xls',
+                // 'updatedColumns' => 'required|array'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+        $updatedColumns = $request->input('updatedColumns');
+
+        try {
+            DB::beginTransaction();
+
+            // Instantiate PortImport before the import
+            $excelImport = new RateImport($updatedColumns);
+
+            // Perform the import
+            Excel::import($excelImport, $request->file('uploadFile'));
+
+            // Get Rows inserted count
+            $validRowcount = $excelImport->getValidRowCount();
+            Log::info("Valid rows count : " . $validRowcount);
+
+            // Check for any errors after the import
+            $errorsResponse = $excelImport->getErrorsResponse();
+            if ($errorsResponse) {
+                DB::rollBack();
+                return response()->json($errorsResponse, 400);
+            }
+
+            DB::commit();
+            return response()->json([
+                'status' => true,
+                'message' => 'Excel Upload Successfully',
+                // 'inserted_records_count' => $validRowcount,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred during the import process.',
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    public function excelUploadOld(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Importing Rate Excel sheet...');
+        Log::info("*****************************");
+
+        $request->validate([
+            'uploadFile' => 'required|mimes:xlsx,xls,csv',
+            // 'updatedColumns' => 'required|array'
+        ]);
+
+        $updatedColumns = $request->input('updatedColumns');
+
+        try {
+            DB::beginTransaction();
+            Excel::import(new RateImport($updatedColumns), $request->file('uploadFile'));
+            DB::commit();
+            return response()->json(['status' => true, 'message' => 'Excel Upload Successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
+        }
+    }
+
+    public function excelExport(Request $request)
+    {
+        Log::info("*****************************");
+        Log::info('Exporting Rate Excel sheet...');
+        Log::info("*****************************");
+
+        $rates = $this->rateService->getAllRateData($request);
+        // Export to Excel
+        return Excel::download(new RateExport($rates), 'Export_Rate_' . date('YmdHis') . '.xlsx');
+    }
+}
